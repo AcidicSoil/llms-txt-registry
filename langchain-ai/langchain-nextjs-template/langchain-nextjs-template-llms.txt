@@ -1,0 +1,32 @@
+# Langchain Nextjs Template
+
+> This template provides a ready-to-use foundation for developers to experiment with LangChain.js in Next.js applications. It showcases practical use cases such as conversational agents, structured output via OpenAI Functions, and RAG with vector stores. The goal is to reduce boilerplate and accelerate development by offering preconfigured components, clear documentation, and deployment-ready scaffolding. It’s ideal for learning, prototyping, and building production-grade AI apps with minimal setup.
+
+**Remember:**
+- LangChain.js
+- Next.js
+- Vercel AI SDK
+- LangGraph.js
+- Retrieval-Augmented Generation (RAG)
+- Structured Output with Zod
+
+## API
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/ai_sdk/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/ai_sdk/agent/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/ai_sdk/tools/README.md): install & quickstart.
+- [Action](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/ai_sdk/agent/action.ts): docs page.
+- [Action](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/ai_sdk/tools/action.ts): docs page.
+- [Route](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/api/chat/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/api/chat/agents/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/api/chat/retrieval/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/api/chat/retrieval_agents/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/api/chat/structured_output/route.ts): API reference.
+
+## Optional
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/README.md): docs page.
+- [Agent](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/app/langgraph/agent/agent.ts): docs page.
+- [Defaultretrievaltext](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/data/DefaultRetrievalText.ts): docs page.
+- [Next.Config](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/next.config.js): docs page.
+- [Postcss.Config](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/postcss.config.js): docs page.
+- [Tailwind.Config](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/tailwind.config.js): docs page.
+- [Cn](https://raw.githubusercontent.com/langchain-ai/langchain-nextjs-template/main/utils/cn.ts): docs page.

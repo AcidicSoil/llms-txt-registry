@@ -1,0 +1,1092 @@
+# llms-full (private-aware)
+> Built from GitHub files and website pages. Large files may be truncated.
+
+--- docs/avoid-useEffect-summary.md ---
+
+Don’t fetch or derive app state in useEffect.
+
+1. Fetch on navigation via TanStack Router loaders (SSR + streaming). Optionally seed TanStack Query in the loader with queryClient.ensureQueryData. \[1]
+2. Do server work on the server via TanStack Start Server Functions; after mutations call router.invalidate() and/or queryClient.invalidateQueries(). \[2]
+3. Keep page/UI state in the URL with typed search params (validateSearch, Route.useSearch, navigate). \[3]
+4. Reserve useEffect for real external side-effects only (DOM, subscriptions, analytics). \[4]\[6]
+
+# If your useEffect was doing X → Use Y
+
+Fetching on mount/params change → route loader (+ ensureQueryData). \[1]
+Submitting/mutating → Server Function → invalidate router/queries. \[2]
+Syncing UI to querystring → typed search params + navigate. \[3]
+Derived state → compute during render (useMemo only if expensive). \[4]
+Subscribing to external stores → useSyncExternalStore. \[5]
+DOM/non-React widgets/listeners → small useEffect/useLayoutEffect. \[6]
+
+# Idiomatic patterns (names only, no boilerplate)
+
+Loader: queryClient.ensureQueryData(queryOptions({ queryKey, queryFn })) → useSuspenseQuery reads hydrated cache. \[1]
+Mutation: createServerFn(...).handler(...) → onSuccess: qc.invalidateQueries, router.invalidate. Supports <form action={serverFn.url}> for progressive enhancement. \[2]
+Search params as state: validateSearch → Route.useSearch → navigate({ search }). \[3]
+External store read: useSyncExternalStore(subscribe, getSnapshot). \[5]
+
+# Decision checklist
+
+Data needed at render → loader (defer/stream as needed). \[1]
+User changed data → Server Function → invalidate. \[2]
+Belongs in URL → typed search params. \[3]
+Purely derived → compute in render. \[4]
+External system only → useEffect/useLayoutEffect. \[6]
+SSR/SEO → loader-based fetching; configure streaming/deferred. \[7]
+
+# React 19 helpers
+
+useActionState for form pending/error/result (pairs with Server Functions or TanStack Form). \[8]
+use to suspend on promises (client or server). \[9]
+
+# Zustand in TanStack Start (where it fits)
+
+Use for client/UI/session and push-based domain state (theme, modals, wizards, optimistic UI, WebSocket buffers). Keep server data in loaders/Query.
+Per request store instance to avoid SSR leaks. Inject via Router context; provide with Wrap; dehydrate/hydrate via router.dehydrate/router.hydrate so snapshots stream with the page. After navigation resolution, clear transient UI (router.subscribe('onResolved', ...)).
+Mutations: do work in Server Function → optionally update store optimistically → router.invalidate to reconcile with loader data.
+Add persist middleware only for client/session state; avoid touching storage during SSR.
+Use atomic selectors (useStore(s => slice)) and equality helpers to limit re-renders.
+
+Docs map: \[1] Router data loading, \[2] Server Functions, \[3] Search Params, \[4] You Might Not Need an Effect, \[5] useSyncExternalStore, \[6] Synchronizing with Effects, \[7] SSR, \[8] useActionState, \[9] use.
+
+--- docs/tanstack-rc1-upgrade-guide.md ---
+# TanStack Start RC1 Upgrade Guide
+
+This guide captures the mandatory changes and local patches we applied while upgrading the project to TanStack Start RC1 (router v1.132.x).
+
+## Platform Requirements
+- Node.js **>= 22.12** (enforced via `package.json` / engines).
+- Vite **>= 7**. Install `@vitejs/plugin-react` (or the matching framework plugin) manually; the Start plugin no longer autoconfigures React/Solid.
+
+## Vite Configuration
+- `tanstackStart()` options renamed:
+  - `tsr` → `router` for the virtual route config.
+  - `srcDirectory` moved to the top level of the plugin options.
+- Wrap `defineConfig` with a factory and call `loadEnv(mode, process.cwd(), '')`, then `Object.assign(process.env, ...)`. This restores the pre-RC behaviour where all `.env` keys are exposed (RC1 regression currently filters out non-`VITE_` prefixes).
+- Ensure `tanstackStart()` is registered **before** `viteReact()` in the plugin array. The RC1 router plugin throws if React runs first.
+- Continue including `viteReact()`, `tailwindcss()`, and other project plugins explicitly.
+
+## Router Entry
+- `createRouter` export renamed to `getRouter`. Update module augmentation to reference `ReturnType<typeof getRouter>`.
+- Initialising any browser-only tooling (like Browser Echo) should be wrapped in `if (typeof window !== 'undefined')` to keep SSR builds safe.
+- Route tree generation now emits the module declaration automatically; remove any manual declarations in `routeTree.gen.ts`.
+
+## Server Functions & Helpers
+- `.validator()` → `.inputValidator()`.
+- `getWebRequest` → `getRequest`, `getHeaders` → `getRequestHeaders`, etc. Apply the full set of renames listed in `docs/tasks/03-upgrade-tanstack-rc1.md`.
+- Response modes were removed—return a `Response` directly when needed.
+- Keep shared types (e.g. `Theme`) exported from server modules so route loaders and components can import them without circular dependencies.
+
+## API Routes
+- Replace `createServerFileRoute` with `createFileRoute` and wrap server handlers inside `server: { handlers: { ... } }`.
+
+## Global Middleware
+- `registerGlobalMiddleware` was removed. Create `src/start.ts` and export `startInstance = createStart(async () => ({ ... }))`, registering request/function middleware there.
+- Harden `src/utils/loggingMiddleware.tsx`: drop the `{ type: 'function' }` option and guard every context read before logging timings so RC1's reordered execution doesn't crash the client.
+
+## Client Entry
+- Import `StartClient` from `@tanstack/react-start/client` and render `<StartClient />` without the router prop.
+- Add `src/entry-client.tsx` that hydrates `<StartClient />` via `startTransition()` and `StrictMode`.
+
+## Known Regressions / Local Patches
+- **Env loading**: Add the `loadEnv(..., '', )` workaround in `vite.config.ts` until the upstream fix lands.
+- **Logging middleware**: Use the guarded implementation noted above; RC1 sometimes runs the server middleware before the client context exists.
+- **Root Route Devtools**: Mount `<ReactQueryDevtools />` and `<TanStackRouterDevtools />` behind `import.meta.env.DEV`, and ensure the root route imports any loader types it returns.
+
+## Validation Steps
+- Rebuild after changes: `pnpm vite build` (confirms route tree generation and SSR build succeed).
+- Verify the dev server launches without env validation errors or blank screens.
+
+
+--- src/routes/api/test.ts ---
+import { createFileRoute } from '@tanstack/react-router';
+import { json } from '@tanstack/react-start';
+
+export const Route = createFileRoute('/api/test')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        return json({
+          message: 'Hello from GET!',
+          method: 'GET',
+          timestamp: new Date().toISOString(),
+          url: request.url,
+        });
+      },
+      POST: async ({ request }) => {
+        const body = await request.json().catch(() => ({}));
+
+        return json(
+          {
+            message: 'Hello from POST!',
+            method: 'POST',
+            received: body,
+            timestamp: new Date().toISOString(),
+          },
+          {
+            status: 201,
+          }
+        );
+      },
+    },
+  },
+});
+
+
+--- CHANGELOG.md ---
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-09-25
+
+### Added
+- **TanStack Start RC1** - Full-stack React framework with modern routing and server functions
+- **React 19** - Latest React version with concurrent features and improved performance
+- **Tailwind CSS v4** - Modern utility-first CSS framework with enhanced performance
+- **shadcn/ui Integration** - Beautiful, accessible component library with pre-configured components:
+  - Button, Card, Dropdown Menu components
+  - Radix UI primitives for advanced interactions
+- **Browser Echo** - Advanced client-side logging and debugging tool with Vite integration
+- **Unplugin Icons** - Automatic icon loading and optimization system
+- **TypeScript Support** - Full type safety with strict configuration and path aliases
+- **Modern Development Tools**:
+  - Biome for fast code formatting and linting
+  - Oxlint for additional linting rules
+  - Vitest for unit testing with modern API
+- **TanStack Ecosystem**:
+  - TanStack Query for server state management
+  - TanStack Table for advanced data table functionality
+  - TanStack Router Devtools for development debugging
+- **UI/UX Enhancements**:
+  - Framer Motion for smooth animations
+  - Lucide React icons for consistent iconography
+  - Sonner for toast notifications
+  - Theme provider with dark/light mode support
+  - Gradient orb component for visual appeal
+- **Developer Experience**:
+  - File-based routing with automatic route generation
+  - Path aliases (`~` resolves to root `./src`)
+  - Hot module replacement with Vite
+  - Environment variable management
+  - SEO utilities for meta tags and structured data
+
+### Technical Features
+- **Server-Side Rendering (SSR)** - Built-in SSR with TanStack Start
+- **API Routes** - File-based API route handling
+- **Middleware System** - Request and function middleware support
+- **Error Boundaries** - Comprehensive error handling with custom boundaries
+- **Build Optimization** - Production-ready build with code splitting and tree shaking
+- **Security** - Modern security practices with proper environment variable handling
+
+### Infrastructure
+- **Vite 7** - Fast build tool with modern bundling
+- **Node.js 22.12+** - Minimum Node.js version requirement
+- **PNPM** - Fast package manager with strict dependency resolution
+- **Docker Support** - Containerization ready (docker-compose)
+
+### Documentation
+- **Comprehensive README** - Setup instructions, project structure, and deployment guide
+- **TanStack RC1 Upgrade Guide** - Migration documentation for framework updates
+
+### Dependencies
+- **Core Framework**: `@tanstack/react-start@^1.132.6`, `react@^19.1.0`
+- **Styling**: `tailwindcss@^4.1.8`, `@tailwindcss/vite@^4.1.8`
+- **UI Components**: Multiple Radix UI packages for accessible primitives
+- **Development**: `@browser-echo/vite@^1.1.0`, `unplugin-icons@^22.3.0`, `@biomejs/biome@1.9.4`
+
+### Breaking Changes
+- Requires Node.js >= 22.12
+- Uses TanStack Start RC1 API (may change before stable release)
+- Path aliases changed from `@` to `~` for consistency
+
+### Performance
+- Optimized bundle size with tree shaking
+- Fast development server with Vite HMR
+- Efficient CSS processing with Tailwind v4
+- Icon optimization through unplugin-icons
+
+### Known Issues
+- TanStack Start RC1 is pre-release software - some APIs may change
+- Browser Echo logging requires manual initialization for SSR compatibility
+
+
+## Links discovered
+- [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+- [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+
+--- .ruler/AGENTS.md ---
+# don't fetch or derive app state in useEffect
+
+# core rules
+
+1. Fetch on navigation in route loaders (SSR + streaming); optionally seed via `queryClient.ensureQueryData`. \[1]
+2. Do server work on the server via TanStack Start server functions; after mutations call `router.invalidate()` and/or `queryClient.invalidateQueries()`. \[2]
+3. Keep page/UI state in the URL with typed search params (`validateSearch`, `Route.useSearch`, `navigate`). \[3]
+4. Reserve effects for real external effects only (DOM, subscriptions, analytics). Compute derived state during render; `useMemo` only if expensive. \[4]\[6]
+5. Hydration + Suspense: any update that suspends during hydration replaces SSR content with fallbacks. Wrap sync updates that might suspend in `startTransition` (direct import). Avoid rendering `isPending` during hydration. `useSyncExternalStore` always triggers fallbacks during hydration. \[10]
+6. Data placement:
+
+   * Server-synced domain data → TanStack DB collections (often powered by TanStack Query via `queryCollectionOptions`, or a sync engine). Read with live queries. \[11]\[12]\[14]
+   * Ephemeral UI/session (theme, modals, steppers, optimistic buffers) → zustand or local-only/localStorage collection. Do not mirror server data into zustand. \[16]\[14]
+   * Derived views → compute in render or via live queries. \[12]
+
+# if your useEffect did X → use Y
+
+* Fetch on mount/param change → route loader (+ `ensureQueryData`). \[1]
+* Submit/mutate → server function → then `router.invalidate()`/`qc.invalidateQueries()`. \[2]
+* Sync UI ↔ querystring → typed search params + `navigate`. \[3]
+* Derived state → compute during render (`useMemo` only if expensive). \[4]
+* Subscribe external stores → `useSyncExternalStore` (expect hydration fallbacks). \[5]\[10]
+* DOM/listeners/widgets → small `useEffect`/`useLayoutEffect`. \[6]
+* Synced list + optimistic UI → DB query collection + `onInsert`/`onUpdate`/`onDelete` or server fn + invalidate. \[11]\[13]
+* Realtime websocket/SSE patches → TanStack DB direct writes (`writeInsert/update/delete/upsert/batch`). \[13]
+* Joins/aggregations → live queries. \[12]
+* Local-only prefs/cross-tab → localStorage collection (no effects). \[14]
+
+# idioms (names only)
+
+* Loader: `queryClient.ensureQueryData(queryOptions({ queryKey, queryFn }))` → read via `useSuspenseQuery` hydrated from loader. \[1]
+* DB query collection: `createCollection(queryCollectionOptions({ queryKey, queryFn, queryClient, getKey }))` → read via live query. \[11]\[12]
+* Mutation (server-first): `createServerFn(...).handler(...)` → on success `qc.invalidateQueries`, `router.invalidate`; supports `<form action={serverFn.url}>`. \[2]
+* DB persistence handlers: `onInsert`/`onUpdate`/`onDelete` → return `{ refetch?: boolean }`; pair with direct writes when skipping refetch. \[13]
+* Search params as state: `validateSearch → Route.useSearch → navigate({ search })`. \[3]
+* External store read: `useSyncExternalStore(subscribe, getSnapshot)`. \[5]
+* Hydration-safe: `import { startTransition } from 'react'` for sync updates; avoid `useTransition`/`isPending` during hydration. \[10]
+
+# decision checklist
+
+* Needed at render → loader (defer/stream). \[1]\[7]
+* User changed data → server fn → invalidate; or DB handlers/direct writes. \[2]\[13]
+* Belongs in URL → typed search params. \[3]
+* Purely derived → render/live query. \[4]\[12]
+* External system only → effect. \[6]
+* Hydration sensitive → `startTransition` for sync updates; expect fallbacks from external stores; avoid `isPending` during hydration. \[10]
+* SSR/SEO → loader-based fetching with streaming/deferred; dehydrate/hydrate caches and DB snapshots. \[7]
+
+# React 19 helpers
+
+* `useActionState` for form pending/error/result. \[8]
+* `use` to suspend on promises. \[9]
+
+# hydration + suspense playbook \[10]
+
+* Rule: sync updates that suspend during hydration → fallback replaces SSR.
+* Quick fix: wrap updates with `startTransition` (direct import); re-wrap after `await`.
+* Avoid during hydration: using `useTransition` for the update, rendering `isPending`, `useDeferredValue` unless the suspensey child is memoized, any `useSyncExternalStore` mutation.
+* Safe during hydration: setting same value with `useState`/`useReducer`, `startTransition`-wrapped sync updates, `useDeferredValue` with `React.memo` around the suspensey child.
+* Compiler auto-memoization may help; treat as optimization.
+
+# TanStack DB: when/how \[11]\[12]\[13]\[14]\[15]\[16]
+
+* Use DB for server-synced domain data.
+* Load: `queryCollectionOptions` (simple fetch; optional refetch) or sync collections (Electric/Trailbase/RxDB).
+* Read: live queries (reactive, incremental; joins, `groupBy`, `distinct`, `order`, `limit`). \[12]
+* Writes:
+
+  * Server-first → server fn → `router.invalidate()`/`qc.invalidateQueries()`. \[2]
+  * Client-first → `onInsert`/`onUpdate`/`onDelete` (return `{ refetch: false }` if reconciling via direct writes/realtime). \[13]
+  * Direct writes → `writeInsert/update/delete/upsert/batch` for websocket/SSE deltas, incremental pagination, server-computed fields; bypass optimistic layer and skip refetch. \[13]
+* Behaviors: query collection treats `queryFn` result as full state; empty array deletes all; merge partial fetches before returning. \[13]
+* Transaction merging reduces churn:
+
+  * insert+update → merged insert
+  * insert+delete → cancel
+  * update+delete → delete
+  * update+update → single union
+  * same type back-to-back → keep latest \[15]
+* SSR: per-request store instances; never touch storage during SSR. \[16]\[14]
+
+# SSR/streaming/hydration with router + DB
+
+* In loaders: seed query via `ensureQueryData`; for DB, preload or dehydrate/hydrate snapshots so lists render instantly and stream updates. \[1]\[7]\[12]\[14]
+* After mutations: loader-owned → invalidate router/query; DB-owned → let collection refetch or apply direct writes. \[2]\[13]
+
+# micro-recipes
+
+* Avoid first-click spinner after SSR: wrap clicks with `startTransition`; don't render `isPending` until post-hydration. \[10]
+* External store during hydration: defer interaction or isolate the suspense boundary; expect fallbacks. \[5]\[10]
+* Paginated load-more: fetch next page, then `collection.utils.writeBatch(() => writeInsert(...))` to append without refetching old pages. \[13]
+* Realtime patches: `writeUpsert`/`writeDelete` from socket callback inside `writeBatch`. \[13]
+
+# TanStack Start best practices
+
+## Selective SSR
+
+* Default `ssr: true` (change via `getRouter({ defaultSsr: false })`). SPA mode disables all server loaders/SSR.
+* Per-route `ssr`: `true` | `'data-only'` | `false`.
+* Functional `ssr(props)`: runs only on server initial request; can return `true` | `'data-only'` | `false` based on validated params/search.
+* Inheritance: child can only get less SSR (true → `'data-only'` or false; `'data-only'` → false).
+* Fallback: first route with `ssr: false` or `'data-only'` renders `pendingComponent` (or `defaultPendingComponent`) at least `minPendingMs` (or `defaultPendingMinMs`).
+* Root: you can disable SSR of root route component; `shellComponent` is always SSRed.
+
+## Zustand in TanStack Start
+
+* Use for client/UI/session and push-based domain state (theme, modals, wizards, optimistic UI, websocket buffers). Keep server data in loaders/Query.
+* Per-request store instance to avoid SSR leaks; inject via Router context; dehydrate/hydrate via `router.dehydrate`/`router.hydrate` so snapshots stream with the page.
+* After navigation resolution, clear transient UI with `router.subscribe('onResolved', ...)`.
+* Mutations: do work in server fn → optionally update store optimistically → `router.invalidate` to reconcile with loader data.
+* Persist middleware only for client/session; avoid touching storage during SSR.
+* Use atomic selectors (`useStore(s => slice)`) and equality helpers.
+
+## Project constraints
+
+* Use pnpm.
+* All route files are TypeScript React (`.tsx`).
+* Use alias imports: `~` resolves to root `./src`.
+* Never update `.env`; update `.env.example` instead.
+* Never start the dev server with `pnpm run dev` or `npm run dev`.
+* Never create a local pnpm --store
+
+## docs map
+
+\[1] router data loading · \[2] server functions · \[3] search params · \[4] you might not need an effect · \[5] `useSyncExternalStore` · \[6] synchronizing with effects · \[7] SSR/streaming · \[8] `useActionState` · \[9] `use` · \[10] hydration + suspense guide · \[11] TanStack DB query collection · \[12] live queries · \[13] direct writes + persistence handlers · \[14] collections catalog · \[15] transactions + optimistic actions · \[16] zustand in TanStack Start
+
+
+
+--- AGENTS.md ---
+<!-- Generated by Ruler -->
+
+
+<!-- Source: .ruler/AGENTS.md -->
+
+# don't fetch or derive app state in useEffect
+
+# core rules
+
+1. Fetch on navigation in route loaders (SSR + streaming); optionally seed via `queryClient.ensureQueryData`. \[1]
+2. Do server work on the server via TanStack Start server functions; after mutations call `router.invalidate()` and/or `queryClient.invalidateQueries()`. \[2]
+3. Keep page/UI state in the URL with typed search params (`validateSearch`, `Route.useSearch`, `navigate`). \[3]
+4. Reserve effects for real external effects only (DOM, subscriptions, analytics). Compute derived state during render; `useMemo` only if expensive. \[4]\[6]
+5. Hydration + Suspense: any update that suspends during hydration replaces SSR content with fallbacks. Wrap sync updates that might suspend in `startTransition` (direct import). Avoid rendering `isPending` during hydration. `useSyncExternalStore` always triggers fallbacks during hydration. \[10]
+6. Data placement:
+
+   * Server-synced domain data → TanStack DB collections (often powered by TanStack Query via `queryCollectionOptions`, or a sync engine). Read with live queries. \[11]\[12]\[14]
+   * Ephemeral UI/session (theme, modals, steppers, optimistic buffers) → zustand or local-only/localStorage collection. Do not mirror server data into zustand. \[16]\[14]
+   * Derived views → compute in render or via live queries. \[12]
+
+# if your useEffect did X → use Y
+
+* Fetch on mount/param change → route loader (+ `ensureQueryData`). \[1]
+* Submit/mutate → server function → then `router.invalidate()`/`qc.invalidateQueries()`. \[2]
+* Sync UI ↔ querystring → typed search params + `navigate`. \[3]
+* Derived state → compute during render (`useMemo` only if expensive). \[4]
+* Subscribe external stores → `useSyncExternalStore` (expect hydration fallbacks). \[5]\[10]
+* DOM/listeners/widgets → small `useEffect`/`useLayoutEffect`. \[6]
+* Synced list + optimistic UI → DB query collection + `onInsert`/`onUpdate`/`onDelete` or server fn + invalidate. \[11]\[13]
+* Realtime websocket/SSE patches → TanStack DB direct writes (`writeInsert/update/delete/upsert/batch`). \[13]
+* Joins/aggregations → live queries. \[12]
+* Local-only prefs/cross-tab → localStorage collection (no effects). \[14]
+
+# idioms (names only)
+
+* Loader: `queryClient.ensureQueryData(queryOptions({ queryKey, queryFn }))` → read via `useSuspenseQuery` hydrated from loader. \[1]
+* DB query collection: `createCollection(queryCollectionOptions({ queryKey, queryFn, queryClient, getKey }))` → read via live query. \[11]\[12]
+* Mutation (server-first): `createServerFn(...).handler(...)` → on success `qc.invalidateQueries`, `router.invalidate`; supports `<form action={serverFn.url}>`. \[2]
+* DB persistence handlers: `onInsert`/`onUpdate`/`onDelete` → return `{ refetch?: boolean }`; pair with direct writes when skipping refetch. \[13]
+* Search params as state: `validateSearch → Route.useSearch → navigate({ search })`. \[3]
+* External store read: `useSyncExternalStore(subscribe, getSnapshot)`. \[5]
+* Hydration-safe: `import { startTransition } from 'react'` for sync updates; avoid `useTransition`/`isPending` during hydration. \[10]
+
+# decision checklist
+
+* Needed at render → loader (defer/stream). \[1]\[7]
+* User changed data → server fn → invalidate; or DB handlers/direct writes. \[2]\[13]
+* Belongs in URL → typed search params. \[3]
+* Purely derived → render/live query. \[4]\[12]
+* External system only → effect. \[6]
+* Hydration sensitive → `startTransition` for sync updates; expect fallbacks from external stores; avoid `isPending` during hydration. \[10]
+* SSR/SEO → loader-based fetching with streaming/deferred; dehydrate/hydrate caches and DB snapshots. \[7]
+
+# React 19 helpers
+
+* `useActionState` for form pending/error/result. \[8]
+* `use` to suspend on promises. \[9]
+
+# hydration + suspense playbook \[10]
+
+* Rule: sync updates that suspend during hydration → fallback replaces SSR.
+* Quick fix: wrap updates with `startTransition` (direct import); re-wrap after `await`.
+* Avoid during hydration: using `useTransition` for the update, rendering `isPending`, `useDeferredValue` unless the suspensey child is memoized, any `useSyncExternalStore` mutation.
+* Safe during hydration: setting same value with `useState`/`useReducer`, `startTransition`-wrapped sync updates, `useDeferredValue` with `React.memo` around the suspensey child.
+* Compiler auto-memoization may help; treat as optimization.
+
+# TanStack DB: when/how \[11]\[12]\[13]\[14]\[15]\[16]
+
+* Use DB for server-synced domain data.
+* Load: `queryCollectionOptions` (simple fetch; optional refetch) or sync collections (Electric/Trailbase/RxDB).
+* Read: live queries (reactive, incremental; joins, `groupBy`, `distinct`, `order`, `limit`). \[12]
+* Writes:
+
+  * Server-first → server fn → `router.invalidate()`/`qc.invalidateQueries()`. \[2]
+  * Client-first → `onInsert`/`onUpdate`/`onDelete` (return `{ refetch: false }` if reconciling via direct writes/realtime). \[13]
+  * Direct writes → `writeInsert/update/delete/upsert/batch` for websocket/SSE deltas, incremental pagination, server-computed fields; bypass optimistic layer and skip refetch. \[13]
+* Behaviors: query collection treats `queryFn` result as full state; empty array deletes all; merge partial fetches before returning. \[13]
+* Transaction merging reduces churn:
+
+  * insert+update → merged insert
+  * insert+delete → cancel
+  * update+delete → delete
+  * update+update → single union
+  * same type back-to-back → keep latest \[15]
+* SSR: per-request store instances; never touch storage during SSR. \[16]\[14]
+
+# SSR/streaming/hydration with router + DB
+
+* In loaders: seed query via `ensureQueryData`; for DB, preload or dehydrate/hydrate snapshots so lists render instantly and stream updates. \[1]\[7]\[12]\[14]
+* After mutations: loader-owned → invalidate router/query; DB-owned → let collection refetch or apply direct writes. \[2]\[13]
+
+# micro-recipes
+
+* Avoid first-click spinner after SSR: wrap clicks with `startTransition`; don't render `isPending` until post-hydration. \[10]
+* External store during hydration: defer interaction or isolate the suspense boundary; expect fallbacks. \[5]\[10]
+* Paginated load-more: fetch next page, then `collection.utils.writeBatch(() => writeInsert(...))` to append without refetching old pages. \[13]
+* Realtime patches: `writeUpsert`/`writeDelete` from socket callback inside `writeBatch`. \[13]
+
+# TanStack Start best practices
+
+## Selective SSR
+
+* Default `ssr: true` (change via `getRouter({ defaultSsr: false })`). SPA mode disables all server loaders/SSR.
+* Per-route `ssr`: `true` | `'data-only'` | `false`.
+* Functional `ssr(props)`: runs only on server initial request; can return `true` | `'data-only'` | `false` based on validated params/search.
+* Inheritance: child can only get less SSR (true → `'data-only'` or false; `'data-only'` → false).
+* Fallback: first route with `ssr: false` or `'data-only'` renders `pendingComponent` (or `defaultPendingComponent`) at least `minPendingMs` (or `defaultPendingMinMs`).
+* Root: you can disable SSR of root route component; `shellComponent` is always SSRed.
+
+## Zustand in TanStack Start
+
+* Use for client/UI/session and push-based domain state (theme, modals, wizards, optimistic UI, websocket buffers). Keep server data in loaders/Query.
+* Per-request store instance to avoid SSR leaks; inject via Router context; dehydrate/hydrate via `router.dehydrate`/`router.hydrate` so snapshots stream with the page.
+* After navigation resolution, clear transient UI with `router.subscribe('onResolved', ...)`.
+* Mutations: do work in server fn → optionally update store optimistically → `router.invalidate` to reconcile with loader data.
+* Persist middleware only for client/session; avoid touching storage during SSR.
+* Use atomic selectors (`useStore(s => slice)`) and equality helpers.
+
+## Project constraints
+
+* Use pnpm.
+* All route files are TypeScript React (`.tsx`).
+* Use alias imports: `~` resolves to root `./src`.
+* Never update `.env`; update `.env.example` instead.
+* Never start the dev server with `pnpm run dev` or `npm run dev`.
+* Never create a local pnpm --store
+
+## docs map
+
+\[1] router data loading · \[2] server functions · \[3] search params · \[4] you might not need an effect · \[5] `useSyncExternalStore` · \[6] synchronizing with effects · \[7] SSR/streaming · \[8] `useActionState` · \[9] `use` · \[10] hydration + suspense guide · \[11] TanStack DB query collection · \[12] live queries · \[13] direct writes + persistence handlers · \[14] collections catalog · \[15] transactions + optimistic actions · \[16] zustand in TanStack Start
+
+
+--- README.md ---
+
+<div align="center">
+  <h1>Constructa Starter Min</h1>
+  <p><strong>A modern Web App Starter Kit based on Tanstack Starter using React, shadcn/ui and Tailwind CSS 4</strong></p>
+  
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+  [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+</div>
+
+## ✨ Features
+
+- **[TanStack Start RC1](https://tanstack.com/start)** - Modern full-stack React framework
+- **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful, accessible component library
+- **[Tailwind CSS v4](https://tailwindcss.com/)** - Modern utility-first CSS framework
+- **[TypeScript](https://typescriptlang.org/)** - Full type safety
+- **[TanStack Router](https://tanstack.com/router)** - Type-safe file-based routing
+- **[Browser Echo](https://github.com/browser-echo/browser-echo)** - Advanced client-side logging and debugging
+- **[Unplugin Icons](https://github.com/antfu/unplugin-icons)** - Automatic icon loading and optimization
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Node.js** 18+ 
+- **pnpm** (recommended package manager)
+
+### Download
+
+```bash
+# Clone the starter template (replace with your repo)
+npx gitpick git@github.com:instructa/constructa-starter-min.git my-app
+cd my-app
+```
+
+> **Recommended:** This starter uses [gitpick](https://github.com/nrjdalal/gitpick) for easy cloning without `.git` directory, making it perfect for creating new projects from this template.
+
+### Installation
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+```
+
+### Available Scripts
+
+```bash
+# Development
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm start        # Start production server
+
+# Code Quality
+pnpm biome:check  # Check code formatting and linting
+pnpm biome:fix:unsafe # Fix code issues (unsafe)
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── routes/           # File-based routing
+│   │   ├── __root.tsx   # Root layout
+│   │   ├── index.tsx    # Home page
+│   │   └── api/         # API routes
+│   └── styles/          # Global styles
+├── components/
+│   └── ui/              # shadcn/ui components
+└── utils/               # Utility functions
+```
+
+## 🎯 Core Technologies
+
+| Technology | Purpose | Documentation |
+|------------|---------|---------------|
+| **TanStack Start RC1** | Full-stack framework | [Docs](https://tanstack.com/start) |
+| **shadcn/ui** | Component library | [Docs](https://ui.shadcn.com/) |
+| **Tailwind CSS v4** | Styling framework | [Docs](https://tailwindcss.com/) |
+| **TypeScript** | Type safety | [Docs](https://typescriptlang.org/) |
+| **Browser Echo** | Client-side logging | [Docs](https://github.com/browser-echo/browser-echo) |
+| **Unplugin Icons** | Icon optimization | [Docs](https://github.com/antfu/unplugin-icons) |
+
+## 🔧 Configuration
+
+### Adding shadcn/ui Components
+```bash
+# Add new components
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add input
+```
+
+### Tailwind CSS
+- Uses Tailwind CSS v4 with modern CSS-first configuration
+- Configured in `app.config.ts`
+- Global styles in `src/app/styles/`
+
+### TypeScript
+- **Path aliases**: `@` resolves to the root `./` directory
+- **Route files**: Must use `.tsx` extension
+
+## 🚀 Deployment
+
+### Build for Production
+```bash
+pnpm build
+```
+
+### Start Production Server
+```bash
+pnpm start
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ using modern React tools</p>
+</div>
+
+
+
+
+## Links discovered
+- [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+- [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+- [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+- [TanStack Start RC1](https://tanstack.com/start)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [TypeScript](https://typescriptlang.org/)
+- [TanStack Router](https://tanstack.com/router)
+- [Browser Echo](https://github.com/browser-echo/browser-echo)
+- [Unplugin Icons](https://github.com/antfu/unplugin-icons)
+- [gitpick](https://github.com/nrjdalal/gitpick)
+- [Docs](https://tanstack.com/start)
+- [Docs](https://ui.shadcn.com/)
+- [Docs](https://tailwindcss.com/)
+- [Docs](https://typescriptlang.org/)
+- [Docs](https://github.com/browser-echo/browser-echo)
+- [Docs](https://github.com/antfu/unplugin-icons)
+- [LICENSE](https://raw.githubusercontent.com/instructa/constructa-starter-min/main//LICENSE)
+
+--- tests/setup.ts ---
+import "@testing-library/jest-dom/vitest"
+
+// ensure env vars are loaded before any database import
+import dotenv from "dotenv"
+dotenv.config({ path: ".env.test" })
+
+
+--- vite.config.ts ---
+import browserEcho from '@browser-echo/vite';
+import tailwindcss from '@tailwindcss/vite';
+import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import react from '@vitejs/plugin-react';
+import Icons from 'unplugin-icons/vite';
+import { defineConfig, loadEnv, type ConfigEnv } from 'vite';
+import tsConfigPaths from 'vite-tsconfig-paths';
+import { nitro } from 'nitro/vite';
+
+export default ({ mode }: ConfigEnv) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  Object.assign(process.env, env);
+
+  return defineConfig({
+    server: {
+      port: 3000,
+    },
+    plugins: [
+      tsConfigPaths({
+        projects: ['./tsconfig.json'],
+      }),
+      tanstackStart(),
+      nitro(),
+      react(),
+      Icons({
+        compiler: 'jsx',
+        jsx: 'react',
+      }),
+      browserEcho({
+        include: ['error', 'warn', 'info'],
+        stackMode: 'condensed',
+        tag: 'tanstack-start',
+        showSource: true,
+        fileLog: {
+          enabled: false,
+        },
+      }),
+      tailwindcss(),
+    ],
+  });
+};
+
+
+--- vitest.config.ts ---
+import { defineConfig } from "vitest/config"
+import react from "@vitejs/plugin-react"
+import tsconfigPaths from "vite-tsconfig-paths"
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./tests/setup.ts",
+    coverage: {
+      reporter: ["text", "html"]
+    }
+  }
+})
+
+--- .cursor/commands/problem-analyzer.md ---
+Tasks:
+1) Locate all files/modules affected by the issue. List paths and why each is implicated.
+2) Explain the root cause(s): what changed, how it propagates to the failure, and any environmental factors.
+3) Propose the minimal, safe fix. Include code-level steps, side effects, and tests to add/update.
+4) Flag any missing or outdated documentation/configs/schemas that should be updated or added (especially if code appears outdated vs. current behavior). Specify exact docs/sections to create or amend.
+
+Output format:
+- Affected files:
+  - <path>: <reason>
+- Root cause:
+  - <concise explanation>
+- Proposed fix:
+  - <steps/patch outline>
+  - Tests:
+- Documentation gaps:
+  - <doc/section + what to update/add>
+- Open questions/assumptions:
+  - <items>
+  
+ DON'T WRITE ANY CODE
+
+--- .cursor/commands/token-shortener.md ---
+
+
+--- src/AGENTS.md ---
+<!-- Generated by Ruler -->
+
+
+<!-- Source: .ruler/tanstack-environment-server-client-only-rules.md -->
+
+# ClientOnly
+
+Client-only render to avoid SSR hydration issues. Import from `@tanstack/react-router`:
+
+```typescript
+import { ClientOnly } from '@tanstack/react-router';
+
+<ClientOnly fallback={<span>—</span>}>
+  <ComponentThatUsesClientHooks />
+</ClientOnly>
+```
+
+Alternative: Custom implementation using mounted pattern if needed (see hydration errors below).
+
+# Environment functions
+
+From `@tanstack/react-start`:
+
+## createIsomorphicFn
+
+Adapts to client/server:
+
+```typescript
+import { createIsomorphicFn } from '@tanstack/react-start';
+const getEnv = createIsomorphicFn()
+  .server(() => 'server')
+  .client(() => 'client');
+getEnv(); // 'server' on server, 'client' on client
+```
+
+Partial: `.server()` no-op on client, `.client()` no-op on server.
+
+## createServerOnlyFn / createClientOnlyFn
+
+RC1: `serverOnly` → `createServerOnlyFn`, `clientOnly` → `createClientOnlyFn`
+
+Strict environment execution (throws if called wrong env):
+
+```typescript
+import { createServerOnlyFn, createClientOnlyFn } from '@tanstack/react-start';
+const serverFn = createServerOnlyFn(() => 'bar'); // throws on client
+const clientFn = createClientOnlyFn(() => 'bar'); // throws on server
+```
+
+Tree-shaken: client code removed from server bundle, server code removed from client bundle.
+
+# Hydration errors
+
+Mismatch: Server HTML differs from client render. Common causes: Intl (locale/timezone), Date.now(), random IDs, responsive logic, feature flags, user prefs.
+
+Strategies:
+1. Make server and client match: deterministic locale/timezone on server (cookie or Accept-Language header), compute once and hydrate as initial state.
+2. Let client tell environment: set cookie with client timezone on first visit, SSR uses UTC until then.
+3. Make it client-only: wrap unstable UI in `<ClientOnly>` to avoid SSR mismatches.
+4. Disable/limit SSR: use selective SSR (`ssr: 'data-only'` or `false`) when server HTML cannot be stable.
+5. Last resort: React's `suppressHydrationWarning` for small known-different nodes (use sparingly).
+
+Checklist: Deterministic inputs (locale, timezone, feature flags). Prefer cookies for client context. Use `<ClientOnly>` for dynamic UI. Use selective SSR when server HTML unstable. Avoid blind suppression.
+
+# TanStack Start basics
+
+Depends: @tanstack/react-router, Vite. Router: getRouter() (was createRouter() in beta). routeTree.gen.ts auto-generated on first dev run. Optional: server handler via @tanstack/react-start/server; client hydrate via StartClient from @tanstack/react-start/client. RC1: Import StartClient from @tanstack/react-start/client (not @tanstack/react-start). StartClient no longer requires router prop. Root route head: utf-8, viewport, title; component wraps Outlet in RootDocument. Routes: createFileRoute() code-split + lazy-load; loader runs server/client. Navigation: Link (typed), useNavigate (imperative), useRouter (instance).
+
+# Server functions
+
+createServerFn({ method }) + zod .inputValidator + .handler(ctx). After mutations: router.invalidate(); queryClient.invalidateQueries(['entity', id]).
+
+# Typed Links
+
+Link to="/posts/$postId" with params; activeProps for styling.
+
+
+
+<!-- Source: .ruler/tanstack-query-rules.md -->
+
+# TanStack Query Rules
+
+Server state via TanStack Query + server functions. Type-safe fetching and mutations.
+
+## Query Pattern
+
+Define in `lib/{resource}/queries.ts` using `queryOptions`:
+
+```typescript
+export const todosQueryOptions = () =>
+  queryOptions({
+    queryKey: ['todos'],
+    queryFn: async ({ signal }) => await getTodos({ signal }),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  });
+```
+
+Use: `const { data, isLoading } = useQuery(todosQueryOptions())`. Prefer `useSuspenseQuery` with Suspense.
+
+## Server Functions in Queries
+
+Call server functions directly in `queryFn`. No `useServerFn` hook. TanStack Start proxies. Pass `signal` for cancellation.
+
+## Mutation Pattern
+
+```typescript
+const mutation = useMutation({
+  mutationFn: async (text: string) => await createTodo({ data: { text } }),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: todosQueryOptions().queryKey });
+    toast.success('Success');
+  },
+  onError: (error) => toast.error(error.message || 'Failed'),
+});
+```
+
+Call via `mutation.mutate(data)` or `mutateAsync` for promises.
+
+## Query Invalidation
+
+After mutations: `queryClient.invalidateQueries({ queryKey: ... })`. Use specific keys, not broad.
+
+## Mutation States
+
+Access: `isPending`, `isError`, `isSuccess`, `error`, `data`. Disable UI during `isPending`.
+
+## Error Handling
+
+Handle in `onError`. Toast messages. Access: `error.message || 'Default'`.
+
+## Query Keys
+
+Hierarchical: `['todos']`, `['todo', id]`, `['todos', 'completed']`. Include all affecting variables.
+
+## Stale Time vs GC Time
+
+`staleTime`: freshness duration (no refetch). Default 0. Set for stable data.
+`gcTime`: unused cache duration (was `cacheTime`). Default 5min. Memory management.
+
+## Infinite Queries
+
+`useInfiniteQuery` for pagination. Required: `initialPageParam`, `getNextPageParam`, `fetchNextPage`. Access `data.pages`. Check `hasNextPage` before fetching.
+
+## Optimistic Updates
+
+`onMutate` for optimistic updates. Rollback in `onError`. Update cache via `queryClient.setQueryData`.
+
+## Best Practices
+
+1. Queries in `lib/{resource}/queries.ts` with `queryOptions`
+2. Call server functions directly (no `useServerFn` in callbacks)
+3. Invalidate after mutations
+4. Toast for feedback
+5. Handle loading/error states
+6. Use TypeScript types from query options
+7. Set `staleTime`/`gcTime` appropriately
+8. Prefer `useSuspenseQuery` with Suspense
+
+
+--- src/start.ts ---
+import { createStart } from '@tanstack/react-start';
+export const startInstance = createStart(async () => ({
+  functionMiddleware: [],
+}));
+
+
+--- src/tanstack-start.d.ts ---
+/// <reference types="vite/client" />
+import '../.tanstack-start/server-routes/routeTree.gen'
+
+
+--- src/routes/AGENTS.md ---
+<!-- Generated by Ruler -->
+
+
+<!-- Source: .ruler/tanstack-server-routes.md -->
+
+# Server Routes — TanStack Start
+
+Server HTTP endpoints for requests, forms, auth. Location: ./src/routes. Export Route to create API route. ServerRoute and Route can coexist in same file.
+
+Routing mirrors TanStack Router: dynamic $id, splat $, escaped [.], nested dirs/dotted filenames map to paths. One handler per resolved path (duplicates error). Examples: users.ts → /users; users/$id.ts → /users/$id; api/file/$.ts → /api/file/$; my-script[.]js.ts → /my-script.js.
+
+Middleware: pathless layout routes add group middleware; break-out routes skip parents.
+
+RC1 server entry signature: export default { fetch(req: Request): Promise<Response> { ... } }
+
+Define handlers: use createFileRoute() from @tanstack/react-router with server: { handlers: { ... } }. Methods per HTTP verb, with optional middleware builder. createServerFileRoute removed in RC1; use createFileRoute with server property.
+
+Handler receives { request, params, context }; return Response or Promise<Response>. Helpers from @tanstack/react-start allowed.
+
+Bodies: request.json(), request.text(), request.formData() for POST/PUT/PATCH/DELETE.
+
+JSON/status/headers: return JSON manually or via json(); set status via Response init or setResponseStatus(); set headers via Response init or setHeaders().
+
+Params: /users/$id → params.id; /users/$id/posts/$postId → params.id + params.postId; /file/$ → params._splat.
+
+Unique path rule: one file per resolved path; users.ts vs users.index.ts vs users/index.ts conflicts.
+
+RC1 structure:
+```typescript
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/api/example')({
+  server: {
+    handlers: {
+      GET: ({ request }) => new Response('Hello'),
+      POST: ({ request }) => new Response('Created', { status: 201 })
+    }
+  }
+})
+```
+
+
+--- src/types/browser-echo.d.ts ---
+declare module 'virtual:browser-echo';
+
+
+--- src/env/client.ts ---
+import { createEnv } from '@t3-oss/env-core';
+import * as z from 'zod';
+
+export const env = createEnv({
+  clientPrefix: 'VITE_',
+  client: {
+    VITE_BASE_URL: z.url().default('http://localhost:3000'),
+  },
+  runtimeEnv: import.meta.env,
+});
+
+
+--- src/utils/id-generator.ts ---
+import { randomUUID } from 'node:crypto';
+
+const prefixes = {
+    files: 'file',
+    user: 'user',
+} as const;
+
+export const generateId = (prefix: keyof typeof prefixes | string) => {
+    const resolvedPrefix = (prefix in prefixes) ? prefixes[prefix as keyof typeof prefixes] : prefix;
+    return `${resolvedPrefix}_${randomUUID()}`;
+}
+
+--- src/utils/seo.ts ---
+export const seo = ({
+    title,
+    description,
+    keywords,
+    image
+}: {
+    title: string
+    description?: string
+    image?: string
+    keywords?: string
+}) => {
+    const tags = [
+        { title },
+        { name: "description", content: description },
+        { name: "keywords", content: keywords },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:creator", content: "@tannerlinsley" },
+        { name: "twitter:site", content: "@tannerlinsley" },
+        { name: "og:type", content: "website" },
+        { name: "og:title", content: title },
+        { name: "og:description", content: description },
+        ...(image
+            ? [
+                  { name: "twitter:image", content: image },
+                  { name: "twitter:card", content: "summary_large_image" },
+                  { name: "og:image", content: image }
+              ]
+            : [])
+    ]
+
+    return tags
+}
+
+
+--- src/env/server.ts ---
+import { createEnv } from '@t3-oss/env-core';
+import * as z from 'zod';
+
+export const env = createEnv({
+  server: {
+    MY_SECRET_VAR: z.url(),
+  },
+  runtimeEnv: process.env,
+});
+
+
+--- src/.ruler/tanstack-environment-server-client-only-rules.md ---
+# ClientOnly
+
+Client-only render to avoid SSR hydration issues. Import from `@tanstack/react-router`:
+
+```typescript
+import { ClientOnly } from '@tanstack/react-router';
+
+<ClientOnly fallback={<span>—</span>}>
+  <ComponentThatUsesClientHooks />
+</ClientOnly>
+```
+
+Alternative: Custom implementation using mounted pattern if needed (see hydration errors below).
+
+# Environment functions
+
+From `@tanstack/react-start`:
+
+## createIsomorphicFn
+
+Adapts to client/server:
+
+```typescript
+import { createIsomorphicFn } from '@tanstack/react-start';
+const getEnv = createIsomorphicFn()
+  .server(() => 'server')
+  .client(() => 'client');
+getEnv(); // 'server' on server, 'client' on client
+```
+
+Partial: `.server()` no-op on client, `.client()` no-op on server.
+
+## createServerOnlyFn / createClientOnlyFn
+
+RC1: `serverOnly` → `createServerOnlyFn`, `clientOnly` → `createClientOnlyFn`
+
+Strict environment execution (throws if called wrong env):
+
+```typescript
+import { createServerOnlyFn, createClientOnlyFn } from '@tanstack/react-start';
+const serverFn = createServerOnlyFn(() => 'bar'); // throws on client
+const clientFn = createClientOnlyFn(() => 'bar'); // throws on server
+```
+
+Tree-shaken: client code removed from server bundle, server code removed from client bundle.
+
+# Hydration errors
+
+Mismatch: Server HTML differs from client render. Common causes: Intl (locale/timezone), Date.now(), random IDs, responsive logic, feature flags, user prefs.
+
+Strategies:
+1. Make server and client match: deterministic locale/timezone on server (cookie or Accept-Language header), compute once and hydrate as initial state.
+2. Let client tell environment: set cookie with client timezone on first visit, SSR uses UTC until then.
+3. Make it client-only: wrap unstable UI in `<ClientOnly>` to avoid SSR mismatches.
+4. Disable/limit SSR: use selective SSR (`ssr: 'data-only'` or `false`) when server HTML cannot be stable.
+5. Last resort: React's `suppressHydrationWarning` for small known-different nodes (use sparingly).
+
+Checklist: Deterministic inputs (locale, timezone, feature flags). Prefer cookies for client context. Use `<ClientOnly>` for dynamic UI. Use selective SSR when server HTML unstable. Avoid blind suppression.
+
+# TanStack Start basics
+
+Depends: @tanstack/react-router, Vite. Router: getRouter() (was createRouter() in beta). routeTree.gen.ts auto-generated on first dev run. Optional: server handler via @tanstack/react-start/server; client hydrate via StartClient from @tanstack/react-start/client. RC1: Import StartClient from @tanstack/react-start/client (not @tanstack/react-start). StartClient no longer requires router prop. Root route head: utf-8, viewport, title; component wraps Outlet in RootDocument. Routes: createFileRoute() code-split + lazy-load; loader runs server/client. Navigation: Link (typed), useNavigate (imperative), useRouter (instance).
+
+# Server functions
+
+createServerFn({ method }) + zod .inputValidator + .handler(ctx). After mutations: router.invalidate(); queryClient.invalidateQueries(['entity', id]).
+
+# Typed Links
+
+Link to="/posts/$postId" with params; activeProps for styling.

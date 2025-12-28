@@ -1,0 +1,43 @@
+# Langchain Mcp Adapters
+
+> The purpose of this project is to enable LangChain and LangGraph agents to interact with MCP-compliant tools via lightweight adapters. It facilitates the conversion of MCP tools into LangChain-compatible tools, allowing users to leverage external services (e.g., math or weather APIs) through a unified agent framework. The project also supports advanced use cases like multi-server connections and streaming HTTP transports, making it suitable for both local and distributed agent environments.
+
+**Remember:**
+- Anthropic Model Context Protocol (MCP)
+- LangChain tools
+- LangGraph agents
+- MultiServerMCPClient
+- Streamable HTTP transport
+- ClientSession
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/examples/servers/streamable-http-stateless/README.md): install & quickstart.
+- [Init](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/examples/servers/streamable-http-stateless/mcp_simple_streamablehttp_stateless/__init__.py): worked example.
+- [Main](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/examples/servers/streamable-http-stateless/mcp_simple_streamablehttp_stateless/__main__.py): worked example.
+- [Server](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/examples/servers/streamable-http-stateless/mcp_simple_streamablehttp_stateless/server.py): worked example.
+
+## Optional
+- [Security](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/SECURITY.md): security policy.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/README.md): docs page.
+
+## Langchain Mcp Adapters
+- [Callbacks](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/callbacks.py): docs page.
+- [Client](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/client.py): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/__init__.py): docs page.
+- [Interceptors](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/interceptors.py): docs page.
+- [Prompts](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/prompts.py): docs page.
+- [Resources](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/resources.py): docs page.
+- [Sessions](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/sessions.py): docs page.
+- [Tools](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/langchain_mcp_adapters/tools.py): docs page.
+
+## Tests
+- [Conftest](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/conftest.py): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/__init__.py): docs page.
+- [Test Callbacks](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_callbacks.py): docs page.
+- [Test Client](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_client.py): docs page.
+- [Test Import](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_import.py): docs page.
+- [Test Interceptors](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_interceptors.py): docs page.
+- [Test Prompts](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_prompts.py): docs page.
+- [Test Resources](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_resources.py): docs page.
+- [Test Tools](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/test_tools.py): docs page.
+- [Utils](https://raw.githubusercontent.com/langchain-ai/langchain-mcp-adapters/main/tests/utils.py): docs page.

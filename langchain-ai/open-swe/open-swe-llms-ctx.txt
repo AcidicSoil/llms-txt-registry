@@ -1,0 +1,3143 @@
+<project title="Open Swe" summary="Open SWE aims to empower developers with an autonomous, cloud-based coding assistant that can plan, execute, and manage code changes without constant human intervention. It enables end-to-end task management by automatically creating GitHub issues and pull requests, supports parallel execution for efficiency, and allows real-time human feedback during the process. The project is designed to be extensible and customizable, with support for different LLMs and GitHub workflows, making it suitable for both personal and enterprise use.">**Remember:**
+- LangGraph
+- Asynchronous Coding Agent
+- GitHub Integration
+- Planning and Execution Pipeline
+- Human-in-the-Loop Interaction
+- Sandboxed Execution Environment<docs><doc title="README" desc="install &amp; quickstart."># Open SWE Documentation
+
+The documentation site for Open SWE, built with Mintlify to provide comprehensive guides and API references.
+
+## Development
+
+1. Install dependencies: `yarn install` (from repository root)
+2. Start the development server: `yarn dev` (from apps/docs directory)
+
+This will start a local development server at http://localhost:3000 where you can preview the documentation.</doc><doc title="Install Dependencies" desc="install &amp; quickstart.">import { tool } from "@langchain/core/tools";
+import { GraphState, GraphConfig } from "@openswe/shared/open-swe/types";
+import { getSandboxErrorFields } from "../utils/sandbox-error-fields.js";
+import { createLogger, LogLevel } from "../utils/logger.js";
+import { TIMEOUT_SEC } from "@openswe/shared/constants";
+import { createInstallDependenciesToolFields } from "@openswe/shared/open-swe/tools";
+import { getRepoAbsolutePath } from "@openswe/shared/git";
+import { getSandboxSessionOrThrow } from "./utils/get-sandbox-id.js";
+import { createShellExecutor } from "../utils/shell-executor/index.js";
+import { isLocalMode } from "@openswe/shared/open-swe/local-mode";
+
+const logger = createLogger(LogLevel.INFO, "InstallDependenciesTool");
+
+const DEFAULT_ENV = {
+  // Prevents corepack from showing a y/n download prompt which causes the command to hang
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
+};
+
+export function createInstallDependenciesTool(
+  state: Pick<GraphState, "sandboxSessionId" | "targetRepository">,
+  config: GraphConfig,
+) {
+  const installDependenciesTool = tool(
+    async (input): Promise<{ result: string; status: "success" | "error" }> => {
+      try {
+        const repoRoot = getRepoAbsolutePath(state.targetRepository);
+        const command = input.command.join(" ");
+        const workdir = input.workdir || repoRoot;
+        logger.info("Running install dependencies command", {
+          command,
+          workdir,
+        });
+
+        // Use unified shell executor
+        const executor = createShellExecutor(config);
+        const sandbox = isLocalMode(config)
+          ? undefined
+          : await getSandboxSessionOrThrow(input);
+        const response = await executor.executeCommand({
+          command,
+          workdir: workdir,
+          env: DEFAULT_ENV,
+          timeout: TIMEOUT_SEC * 2.5, // add a 2.5 min timeout
+          sandbox,
+        });
+
+        if (response.exitCode !== 0) {
+          const errorResult = response.result ?? response.artifacts?.stdout;
+          throw new Error(
+            `Failed to install dependencies. Exit code: ${response.exitCode}\nError: ${errorResult}`,
+          );
+        }
+
+        return {
+          result: response.result,
+          status: "success",
+        };
+      } catch (e) {
+        // Unified error handling
+        const errorFields = getSandboxErrorFields(e);
+        if (errorFields) {
+          const errorResult =
+            errorFields.result ?? errorFields.artifacts?.stdout;
+          throw new Error(
+            `Failed to install dependencies. Exit code: ${errorFields.exitCode}\nError: ${errorResult}`,
+          );
+        }
+
+        throw e;
+      }
+    },
+    createInstallDependenciesToolFields(state.targetRepository),
+  );
+
+  return installDependenciesTool;
+}</doc><doc title="Usegithubinstallations" desc="install &amp; quickstart.">import { useState, useEffect, useCallback } from "react";
+import { GITHUB_INSTALLATION_ID_COOKIE } from "@openswe/shared/constants";
+import { getCookie } from "@/lib/utils";
+import { Endpoints } from "@octokit/types";
+
+type GitHubInstallationsResponse =
+  Endpoints["GET /user/installations"]["response"]["data"];
+type GitHubInstallation = GitHubInstallationsResponse["installations"][0];
+
+export interface Installation {
+  id: number;
+  accountName: string;
+  accountType: "User" | "Organization";
+  avatarUrl: string;
+}
+
+interface UseGitHubInstallationsReturn {
+  // Installation data
+  installations: Installation[];
+  currentInstallationId: string | null;
+  currentInstallation: Installation | null;
+
+  // State management
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  refreshInstallations: () => Promise<void>;
+  refreshCurrentInstallation: () => void;
+  switchInstallation: (installationId: string) => Promise<void>;
+}
+
+/**
+ * Transform GitHub API installation data to our simplified format
+ */
+const transformInstallation = (
+  installation: GitHubInstallation,
+): Installation => {
+  if (!installation.account) {
+    throw new Error("Installation account is null");
+  }
+
+  // Handle both User and Organization account types
+  let accountName: string;
+  if ("login" in installation.account && installation.account.login) {
+    accountName = installation.account.login;
+  } else if ("slug" in installation.account && installation.account.slug) {
+    accountName = installation.account.slug;
+  } else if ("name" in installation.account && installation.account.name) {
+    accountName = installation.account.name;
+  } else {
+    accountName = "Unknown";
+  }
+
+  const accountType = installation.target_type as "User" | "Organization";
+
+  return {
+    id: installation.id,
+    accountName,
+    accountType,
+    avatarUrl: installation.account.avatar_url,
+  };
+};
+
+/**
+ * Hook for managing GitHub App installations
+ * Fetches installation data from the API endpoint and reads current installation ID from cookies
+ * Provides functions to switch between installations
+ */
+export function useGitHubInstallations(): UseGitHubInstallationsReturn {
+  const [installations, setInstallations] = useState<Installation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentInstallationId, setCurrentInstallationId] = useState<
+    string | null
+  >(null);
+
+  // Get current installation ID from the cookie
+  const getCurrentInstallationId = useCallback((): string | null => {
+    return getCookie(GITHUB_INSTALLATION_ID_COOKIE);
+  }, []);
+
+  // Fetch installations from API
+  const fetchInstallations = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/github/installations");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const data: GitHubInstallationsResponse = await response.json();
+      const transformedInstallations = data.installations.map(
+        transformInstallation,
+      );
+
+      setInstallations(transformedInstallations);
+
+      // Get the current installation ID from the cookie
+      const currentId = getCurrentInstallationId();
+      setCurrentInstallationId(currentId);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch installations";
+      setError(errorMessage);
+      setInstallations([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getCurrentInstallationId]);
+
+  // Switch installation function - now uses API endpoint
+  const switchInstallation = useCallback(async (installationId: string) => {
+    try {
+      const response = await fetch("/api/github/switch-installation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ installationId }),
+      });
+
+      if (response.ok) {
+        // Update local state immediately for responsive UI
+        setCurrentInstallationId(installationId);
+      } else {
+        console.error("Failed to switch installation");
+      }
+    } catch (error) {
+      console.error("Error switching installation:", error);
+    }
+  }, []);
+
+  // Auto-select default installation when installations are loaded
+  useEffect(() => {
+    if (installations.length > 0 && !isLoading) {
+      // Check if current installation ID is valid
+      const isCurrentInstallationValid =
+        currentInstallationId &&
+        installations.some(
+          (installation) =>
+            installation.id.toString() === currentInstallationId,
+        );
+
+      if (!isCurrentInstallationValid) {
+        // No valid installation selected, auto-select the first one
+        const firstInstallation = installations[0];
+        if (firstInstallation) {
+          switchInstallation(firstInstallation.id.toString());
+        }
+      }
+    }
+  }, [installations, isLoading, currentInstallationId, switchInstallation]);
+
+  // Initialize installation ID from cookie on mount
+  useEffect(() => {
+    const cookieInstallationId = getCurrentInstallationId();
+    setCurrentInstallationId(cookieInstallationId);
+  }, [getCurrentInstallationId]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchInstallations();
+  }, [fetchInstallations]);
+
+  // Refresh installations function
+  const refreshInstallations = useCallback(async () => {
+    await fetchInstallations();
+  }, [fetchInstallations]);
+
+  // Refresh current installation ID from cookie
+  const refreshCurrentInstallation = useCallback(() => {
+    const cookieInstallationId = getCurrentInstallationId();
+    setCurrentInstallationId(cookieInstallationId);
+  }, [getCurrentInstallationId]);
+
+  // Find current installation object
+  const currentInstallation = currentInstallationId
+    ? installations.find(
+        (installation) => installation.id.toString() === currentInstallationId,
+      ) || null
+    : null;
+
+  return {
+    // Installation data
+    installations,
+    currentInstallationId,
+    currentInstallation,
+
+    // State management
+    isLoading,
+    error,
+
+    // Actions
+    refreshInstallations,
+    refreshCurrentInstallation,
+    switchInstallation,
+  };
+}</doc><doc title="Route" desc="install &amp; quickstart.">import { GITHUB_INSTALLATION_ID_COOKIE } from "@openswe/shared/constants";
+import {
+  GITHUB_INSTALLATION_RETURN_TO_COOKIE,
+  GITHUB_INSTALLATION_STATE_COOKIE,
+  getInstallationCookieOptions,
+} from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+
+/**
+ * Handles callbacks from GitHub App installations
+ * This endpoint is called by GitHub after a user installs or configures the GitHub App
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const installationId = searchParams.get("installation_id");
+
+    // Get the return URL from cookies
+    const returnTo =
+      request.cookies.get(GITHUB_INSTALLATION_RETURN_TO_COOKIE)?.value || "/";
+
+    // Verify state parameter to prevent CSRF attacks
+    // GitHub App installation doesn't return the state directly, but we included it in our callback URL
+    const customState = searchParams.get("custom_state");
+    const storedState = request.cookies.get(
+      GITHUB_INSTALLATION_STATE_COOKIE,
+    )?.value;
+
+    // Validate state if it exists
+    if (storedState && customState && storedState !== customState) {
+      console.warn("Invalid installation state detected");
+      // We'll still proceed but log the warning
+    }
+
+    // Create the response that will redirect back to the app
+    const response = NextResponse.redirect(returnTo);
+
+    // Clear cookies as they're no longer needed
+    const expiredCookieOptions = {
+      expires: new Date(0),
+      path: "/",
+    };
+
+    response.cookies.set(
+      GITHUB_INSTALLATION_RETURN_TO_COOKIE,
+      "",
+      expiredCookieOptions,
+    );
+    response.cookies.set(
+      GITHUB_INSTALLATION_STATE_COOKIE,
+      "",
+      expiredCookieOptions,
+    );
+
+    // If we have an installation ID, store it in a cookie
+    if (installationId) {
+      response.cookies.set(
+        GITHUB_INSTALLATION_ID_COOKIE,
+        installationId,
+        getInstallationCookieOptions(),
+      );
+    }
+
+    return response;
+  } catch (error) {
+    console.error("GitHub App installation callback error:", error);
+    return NextResponse.redirect(
+      new URL("/?error=installation_callback_failed", request.url),
+    );
+  }
+}</doc><doc title="Route" desc="install &amp; quickstart.">import {
+  GITHUB_INSTALLATION_RETURN_TO_COOKIE,
+  GITHUB_INSTALLATION_STATE_COOKIE,
+} from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
+import { GITHUB_TOKEN_COOKIE } from "@openswe/shared/constants";
+
+/**
+ * Initiates the GitHub App installation flow
+ * This redirects users to the GitHub App installation page where they can
+ * select which repositories to grant access to
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const accessToken = request.cookies.get(GITHUB_TOKEN_COOKIE)?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "GitHub access token not found" },
+        { status: 401 },
+      );
+    }
+
+    // Get GitHub App name from environment variables
+    const githubAppName = process.env.GITHUB_APP_NAME;
+
+    if (!githubAppName) {
+      return NextResponse.json(
+        { error: "GitHub App name not configured" },
+        { status: 500 },
+      );
+    }
+
+    // Check for existing state or generate a new one
+    let state = request.cookies.get(GITHUB_INSTALLATION_STATE_COOKIE)?.value;
+
+    // If no state exists or we want to ensure a fresh state, generate a new one
+    if (!state) {
+      state = randomBytes(16).toString("hex");
+    }
+
+    // Create a response that will redirect to the GitHub App installation page
+    // Include the callback URL as a parameter to ensure GitHub redirects back to our app
+    // Add the state as a custom parameter in the callback URL
+    const baseCallbackUrl = `${request.nextUrl.origin}/api/github/installation-callback`;
+    const callbackUrl = `${baseCallbackUrl}?custom_state=${encodeURIComponent(state)}`;
+    const response = NextResponse.redirect(
+      `https://github.com/apps/${githubAppName}/installations/new?redirect_uri=${encodeURIComponent(callbackUrl)}`,
+    );
+
+    // Cookie options for security and proper expiration
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+      maxAge: 60 * 10, // 10 minutes
+      path: "/",
+    };
+
+    // Store the state in a cookie for validation when GitHub redirects back
+    response.cookies.set(
+      GITHUB_INSTALLATION_STATE_COOKIE,
+      state,
+      cookieOptions,
+    );
+
+    // Store the current URL as the return_to URL so we can redirect back after installation
+    const returnTo = request.headers.get("referer") || "/";
+    response.cookies.set(
+      GITHUB_INSTALLATION_RETURN_TO_COOKIE,
+      returnTo,
+      cookieOptions,
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error initiating GitHub App installation:", error);
+    return NextResponse.json(
+      { error: "Failed to initiate GitHub App installation" },
+      { status: 500 },
+    );
+  }
+}</doc><doc title="Route" desc="install &amp; quickstart.">import { NextRequest, NextResponse } from "next/server";
+import { getGitHubToken } from "@/lib/auth";
+import { Endpoints } from "@octokit/types";
+
+type GitHubInstallationsResponse =
+  Endpoints["GET /user/installations"]["response"]["data"];
+
+/**
+ * Fetches all GitHub App installations accessible to the current user
+ * Uses the user's access token from GITHUB_TOKEN_COOKIE to call GET /user/installations
+ */
+export async function GET(request: NextRequest) {
+  try {
+    // Get the user's access token from cookies
+    const tokenData = getGitHubToken(request);
+
+    if (!tokenData || !tokenData.access_token) {
+      return NextResponse.json(
+        {
+          error: "GitHub access token not found. Please authenticate first.",
+        },
+        { status: 401 },
+      );
+    }
+
+    // Fetch installations from GitHub API
+    const response = await fetch("https://api.github.com/user/installations", {
+      headers: {
+        Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "OpenSWE-Agent",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        {
+          error: `Failed to fetch installations: ${JSON.stringify(errorData)}`,
+        },
+        { status: response.status },
+      );
+    }
+
+    const data: GitHubInstallationsResponse = await response.json();
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error fetching GitHub installations:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch installations" },
+      { status: 500 },
+    );
+  }
+}</doc><doc title="Route" desc="install &amp; quickstart.">import { NextRequest, NextResponse } from "next/server";
+import { GITHUB_INSTALLATION_ID_COOKIE } from "@openswe/shared/constants";
+import { getInstallationCookieOptions } from "@/lib/auth";
+
+/**
+ * Updates the current GitHub installation ID in the cookie
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { installationId } = body;
+
+    if (!installationId || typeof installationId !== "string") {
+      return NextResponse.json(
+        { error: "Installation ID is required" },
+        { status: 400 },
+      );
+    }
+
+    // Create response and set the new installation ID cookie
+    const response = NextResponse.json({ success: true });
+
+    response.cookies.set(
+      GITHUB_INSTALLATION_ID_COOKIE,
+      installationId,
+      getInstallationCookieOptions(),
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error switching installation ID:", error);
+    return NextResponse.json(
+      { error: "Failed to switch installation ID" },
+      { status: 500 },
+    );
+  }
+}</doc><doc title="Examples" desc="worked example.">---
+title: Examples
+description: A collection of example tasks for Open SWE
+---
+
+If you want to try out Open SWE, but aren't sure where to start, here are a few example tasks you can try out.
+
+<Steps>
+  <Step title="Clone the TypeScript template">
+    The examples below are all for TypeScript tasks. For these, you should clone an empty TypeScript template repository:
+
+    [bracesproul/typescript-template](https://github.com/bracesproul/typescript-template)
+
+    Visit the GitHub UI, and click `Use this template` to create a new repository based on this template.
+
+  </Step>
+
+  <Step title="Give Open SWE access to your repository">
+    If you did not give Open SWE to all of your repositories when setting it up the first time, you'll need to give Open SWE access to this repository.
+
+    1. Visit the settings page on Open SWE: [swe.langchain.com/settings](https://swe.langchain.com/settings)
+    2. To the right of your user inside the `Current User` section, click the `+` button. This will redirect you to GitHub where you can authorize Open SWE to access your repositories.
+    3. Select the new TypeScript template you just created.
+
+    Once done, it will redirect you back to Open SWE. Once here, find the new repository under the repo dropdown above the chat input.
+
+  </Step>
+
+  <Step title="Submit one of the example tasks">
+    After cloning the template and giving Open SWE access to it, you can submit one of the example tasks!
+  </Step>
+</Steps>
+
+Below are a series of examples you can try out:
+
+<Accordion title="RESTful 'Books' micro-service">
+  ```txt
+  Create an Express-based API exposing CRUD endpoints for `/books`.
+  Include request validation with `zod`, proper HTTP status codes, and an
+  in-memory repository layer that can later be swapped for a database. Add Jest
+  tests covering happy-path and a 'missing ISBN' error case.
+  ```
+</Accordion>
+
+<Accordion title="WebSocket live counter">
+  ```txt
+  Add a small WebSocket server (using `ws`) that tracks how many clients
+  are currently connected and broadcasts the updated count every 5 seconds.
+  Expose a health-check HTTP route returning the same value for monitoring
+  tools. Provide a minimal HTML demo page that shows the live number.
+  ```
+</Accordion>
+
+<Accordion title="GitHub issue sync CLI">
+  ```txt
+  Implement a CLI (`src/sync-issues.ts`) that reads a `config.json` with
+  one or more GitHub repos, fetches their open issues via the GitHub REST API,
+  and writes a local `issues.{owner}.{repo}.csv`. Use `yargs` for parsing and
+  include a `--since YYYY-MM-DD` flag to filter by creation date.
+  ```
+</Accordion>
+
+<Accordion title="JWT + refresh-token auth layer">
+  ```txt
+  Build a middleware that issues short-lived access tokens and long-lived
+  refresh tokens. Store refresh tokens in a signed, HttpOnly cookie and expose
+  `/auth/refresh` to rotate them. Protect a sample route (`/profile`) and supply
+  Postman collections for login and refresh flows.
+  ```
+</Accordion>
+
+<Accordion title="Pluggable caching service">
+  ```txt
+  Design a generic cache interface with `get`, `set`, and `invalidate`
+  methods, then provide two adapters: an in-memory `Map` implementation and a
+  Redis adapter (mock Redis with `ioredis-mock` for tests). Demonstrate
+  hot-swapping the adapter via an environment variable without code changes.
+  ```
+</Accordion>
+
+<Accordion title="GraphQL wrapper over REST API">
+  ```txt
+  Stand up an Apollo Server that federates data from the public
+  JSONPlaceholder `/users` and `/posts` endpoints. Expose a `user(id)` query
+  returning the user plus their posts in a single round-trip. Add schema-driven
+  TypeScript types (`codegen.yml`) and example queries in `README.md`.
+  ```
+</Accordion>
+
+<Accordion title="Image upload to S3 with signed URLs">
+  ```txt
+  Create an endpoint that returns a time-limited pre-signed PUT URL for
+  an S3 bucket (use `@aws-sdk/client-s3`). Include a small React demo (Vite)
+  that lets a user pick an image and upload it directly. Validate MIME type on
+  the server before signing.
+  ```
+</Accordion>
+
+<Accordion title="Locale-aware date utility library">
+  ```txt
+  Publish an internal `/src/date` module that formats, parses, and
+  time-zone-converts dates using `luxon`. Support at least 'en-US', 'de-DE', and
+  'ja-JP'. Provide type-safe wrappers, exhaustive unit tests, and a benchmark
+  script comparing it to native `Intl.DateTimeFormat`.
+  ```
+</Accordion></doc><doc title="Docs" desc="docs page.">---
+title: "Introduction"
+description: "An introduction to Open SWE"
+---
+
+Open SWE is an open-source cloud-based coding agent built with [LangGraph](https://docs.langchain.com/oss/javascript/langgraph/overview). It's designed to autonomously understand, plan, and execute code changes across entire repositories.
+
+## How It Works
+
+Open SWE operates through three specialized LangGraph agents:
+
+- **Manager Graph**: Orchestrates user interactions and coordinates between other graphs
+- **Planner Graph**: Analyzes requirements and creates detailed execution plans
+- **Programmer Graph**: Executes code changes based on approved plans
+
+The agent can be used through a web interface or triggered automatically via GitHub webhooks, making it flexible for both interactive development and automated workflows.
+
+![Open SWE UI Screenshot](/images/ui-screenshot.png)
+
+<CardGroup cols={2}>
+  <Card title="Setup" icon="robot" href="/labs/swe/setup/intro">
+    How to set up Open SWE for development
+  </Card>
+  <Card title="Examples" icon="database" href="/labs/swe/usage/examples">
+    Examples of tasks you can try out
+  </Card>
+  <Card title="Usage" icon="database" href="/labs/swe/usage/intro">
+    Open SWE features, and how to use them
+  </Card>
+</CardGroup>
+
+## What's in These Docs
+
+This documentation covers everything you need to know about Open SWE:
+
+- **Usage**: How to interact with Open SWE through the web interface and GitHub webhooks
+- **Setup**: Complete development environment setup including monorepo structure, dependencies, and authentication
+
+<Tip>
+  Try out the [live demo](https://swe.langchain.com) to see Open SWE in action.
+</Tip></doc><doc title="Faq" desc="core concept.">---
+title: FAQ
+description: Frequently Asked Questions
+---
+
+<Accordion title="How much does an end to end Open SWE run cost?">
+  The cost per run varies greatly based on the complexity of the task, the size of the repository, and the number of files that need to be changed.
+
+  For most tasks, you can expect to pay between `$0.50` -> `$3.00` when using Claude Sonnet 4.
+  For the same tasks running on Claude Opus 4/4.1, you can expect to pay between `$1.50` -> `$9.00`.
+
+  Always remember to monitor your runs if you're cost conscious. The most expensive run I've seen Open SWE complete was ~50M Opus 4 tokens, costing `$25.00`.
+</Accordion>
+
+<Accordion title="Does Open SWE automatically cache tokens?">
+  Yes. When using Anthropic models, all input tokens are cached on Anthropic's servers.
+</Accordion>
+
+<Accordion title="Can I disable Open SWE from creating an issue when I submit a request?">
+  Yes. There's two ways to disable Open SWE from creating an issue when you submit a request:
+
+  1. Toggle the 'eye' icon in the main chat area when submitting a request.
+  2. In the configuration tab in settings, toggle the 'Should Create Issue' switch.
+
+  By default, it's set to `true`. By modifying this setting in the configuration tab, all runs will default to that setting. You may override this setting on a per-run basis by toggling the 'eye' icon in the main chat area.
+
+  ![Should Create Issue Toggle](/images/dont_create_issue_eye_screenshot.png)
+  ![Global Should Create Issue Toggle](/images/dont_create_issue_global_toggle_screenshot.png)
+</Accordion>
+
+<Accordion title="My run failed midway through. What now?">
+  We're sorry you're experiencing this! Open SWE will automatically commit any changes it makes to a draft pull request. This means all of your progress is saved, and you can restart the run from the last checkpoint.
+
+  To restart the run, click the `Restart from last checkpoint` button. This will create a new thread and will resume from where it left off.
+
+  ![Restart Run Screenshot](/images/restart_run_screenshot.png)
+</Accordion>
+
+<Accordion title="Can I use Open SWE in a production environment?">
+  Yes! We've been using Open SWE internally at LangChain for a while now, and it's been giving us great results.
+
+  We recommend forking and deploying Open SWE yourself if you plan on using it in a production environment. For checking out the product, the [demo application](https://swe.langchain.com) will work fine.
+</Accordion>
+
+<Accordion title="I installed Open SWE on a repository in my organization, but it doesn't show up in the UI. Why?">
+  Some GitHub organizations require administrator approval to install GitHub apps. Please reach out to an administrator in your organization to approve the installation request.  
+</Accordion>
+
+<Accordion title="What sandbox environment is Open SWE running in?">
+  Open SWE's sandbox environment is powered by [Daytona.io](https://daytona.io).
+</Accordion>
+
+<Accordion title="Can I contribute to Open SWE?">
+  Yes! We're always looking for contributors to help us improve Open SWE. Feel free to pick up an [open issue](https://github.com/langchain-ai/open-swe/issues) or submit a pull request with a new feature or bug fix.
+</Accordion></doc></docs><api><doc title="Api Keys" desc="API reference.">export function hasApiKeySet(config: Record<string, any>) {
+  const modelNameKeys = Object.keys(config).filter((key) =>
+    key.endsWith("ModelName"),
+  );
+  const enabledProviders = modelNameKeys
+    .map((key) => config[key])
+    .map((p) => p.split(":")[0]);
+
+  const apiKeys = config.apiKeys || {};
+
+  // No providers enabled means user is using default model: anthropic
+  if (enabledProviders.length === 0 && !apiKeys.anthropicApiKey) {
+    return false;
+  }
+
+  if (
+    (enabledProviders.includes("anthropic") && !apiKeys.anthropicApiKey) ||
+    (enabledProviders.includes("openai") && !apiKeys.openaiApiKey) ||
+    (enabledProviders.includes("google-genai") && !apiKeys.googleApiKey)
+  ) {
+    return false;
+  }
+
+  return true;
+}</doc><doc title="Api" desc="API reference.">import { Octokit } from "@octokit/rest";
+import { createLogger, LogLevel } from "../logger.js";
+import {
+  GitHubBranch,
+  GitHubIssue,
+  GitHubIssueComment,
+  GitHubPullRequest,
+  GitHubPullRequestList,
+  GitHubPullRequestUpdate,
+  GitHubReviewComment,
+} from "./types.js";
+import { getOpenSWELabel } from "./label.js";
+import { getInstallationToken } from "@openswe/shared/github/auth";
+import { getConfig } from "@langchain/langgraph";
+import { GITHUB_INSTALLATION_ID } from "@openswe/shared/constants";
+import { updateConfig } from "../update-config.js";
+import { encryptSecret } from "@openswe/shared/crypto";
+
+const logger = createLogger(LogLevel.INFO, "GitHub-API");
+
+async function getInstallationTokenAndUpdateConfig() {
+  try {
+    logger.info("Fetching a new GitHub installation token.");
+    const config = getConfig();
+    const encryptionSecret = process.env.SECRETS_ENCRYPTION_KEY;
+    if (!encryptionSecret) {
+      throw new Error("Secrets encryption key not found");
+    }
+
+    const installationId = config.configurable?.[GITHUB_INSTALLATION_ID];
+    const appId = process.env.GITHUB_APP_ID;
+    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY;
+    if (!installationId || !appId || !privateKey) {
+      throw new Error(
+        "GitHub installation ID, app ID, or private key not found",
+      );
+    }
+
+    const token = await getInstallationToken(installationId, appId, privateKey);
+    const encryptedToken = encryptSecret(token, encryptionSecret);
+    updateConfig(GITHUB_INSTALLATION_ID, encryptedToken);
+    logger.info("Successfully fetched a new GitHub installation token.");
+    return token;
+  } catch (e) {
+    logger.error("Failed to get installation token and update config", {
+      error: e,
+    });
+    return null;
+  }
+}
+
+/**
+ * Generic utility for handling GitHub API calls with automatic retry on 401 errors
+ */
+async function withGitHubRetry<T>(
+  operation: (token: string) => Promise<T>,
+  initialToken: string,
+  errorMessage: string,
+  additionalLogFields?: Record<string, any>,
+  numRetries = 1,
+): Promise<T | null> {
+  try {
+    return await operation(initialToken);
+  } catch (error) {
+    const errorFields =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : {};
+
+    // Retry with a max retries of 2
+    if (errorFields && errorFields.message?.includes("401") && numRetries < 2) {
+      const token = await getInstallationTokenAndUpdateConfig();
+      if (!token) {
+        return null;
+      }
+      return withGitHubRetry(
+        operation,
+        token,
+        errorMessage,
+        additionalLogFields,
+        numRetries + 1,
+      );
+    }
+
+    logger.error(errorMessage, {
+      numRetries,
+      ...additionalLogFields,
+      ...(errorFields ?? { error }),
+    });
+    return null;
+  }
+}
+
+async function getExistingPullRequest(
+  owner: string,
+  repo: string,
+  branchName: string,
+  githubToken: string,
+  numRetries = 1,
+): Promise<GitHubPullRequestList[number] | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: pullRequests } = await octokit.pulls.list({
+        owner,
+        repo,
+        head: branchName,
+      });
+
+      return pullRequests?.[0] || null;
+    },
+    githubToken,
+    "Failed to get existing pull request",
+    { branch: branchName, owner, repo },
+    numRetries,
+  );
+}
+
+export async function createPullRequest({
+  owner,
+  repo,
+  headBranch,
+  title,
+  body = "",
+  githubInstallationToken,
+  baseBranch,
+  draft = false,
+  nullOnError = false,
+}: {
+  owner: string;
+  repo: string;
+  headBranch: string;
+  title: string;
+  body?: string;
+  githubInstallationToken: string;
+  baseBranch?: string;
+  draft?: boolean;
+  nullOnError?: boolean;
+}): Promise<GitHubPullRequest | GitHubPullRequestList[number] | null> {
+  const octokit = new Octokit({
+    auth: githubInstallationToken,
+  });
+
+  let repoBaseBranch = baseBranch;
+  if (!repoBaseBranch) {
+    try {
+      logger.info("Fetching default branch from repo", {
+        owner,
+        repo,
+      });
+      const { data: repository } = await octokit.repos.get({
+        owner,
+        repo,
+      });
+
+      repoBaseBranch = repository.default_branch;
+      if (!repoBaseBranch) {
+        throw new Error("No base branch returned after fetching repo");
+      }
+      logger.info("Fetched default branch from repo", {
+        owner,
+        repo,
+        baseBranch: repoBaseBranch,
+      });
+    } catch (e) {
+      logger.error("Failed to fetch base branch from repo", {
+        owner,
+        repo,
+        ...(e instanceof Error && {
+          name: e.name,
+          message: e.message,
+          stack: e.stack,
+        }),
+      });
+      return null;
+    }
+  }
+
+  let pullRequest: GitHubPullRequest | null = null;
+  try {
+    logger.info(
+      `Creating pull request against default branch: ${repoBaseBranch}`,
+      { nullOnError },
+    );
+
+    // Step 2: Create the pull request
+    const { data: pullRequestData } = await octokit.pulls.create({
+      draft,
+      owner,
+      repo,
+      title,
+      body,
+      head: headBranch,
+      base: repoBaseBranch,
+    });
+
+    pullRequest = pullRequestData;
+    logger.info(`🐙 Pull request created: ${pullRequest.html_url}`);
+  } catch (error) {
+    if (nullOnError) {
+      return null;
+    }
+
+    if (error instanceof Error && error.message.includes("already exists")) {
+      logger.info(
+        "Pull request already exists. Getting existing pull request...",
+        {
+          nullOnError,
+        },
+      );
+      return getExistingPullRequest(
+        owner,
+        repo,
+        headBranch,
+        githubInstallationToken,
+      );
+    }
+
+    logger.error(`Failed to create pull request`, {
+      error,
+    });
+    return null;
+  }
+
+  try {
+    logger.info("Adding 'open-swe' label to pull request", {
+      pullRequestNumber: pullRequest.number,
+    });
+    await octokit.issues.addLabels({
+      owner,
+      repo,
+      issue_number: pullRequest.number,
+      labels: [getOpenSWELabel()],
+    });
+    logger.info("Added 'open-swe' label to pull request", {
+      pullRequestNumber: pullRequest.number,
+    });
+  } catch (labelError) {
+    logger.warn("Failed to add 'open-swe' label to pull request", {
+      pullRequestNumber: pullRequest.number,
+      labelError,
+    });
+  }
+
+  return pullRequest;
+}
+
+export async function markPullRequestReadyForReview({
+  owner,
+  repo,
+  pullNumber,
+  title,
+  body,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  pullNumber: number;
+  title: string;
+  body: string;
+  githubInstallationToken: string;
+}): Promise<GitHubPullRequestUpdate | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      // Fetch the PR, as the markReadyForReview mutation requires the PR's node ID, not the pull number
+      const { data: pr } = await octokit.pulls.get({
+        owner,
+        repo,
+        pull_number: pullNumber,
+      });
+
+      await octokit.graphql(
+        `
+        mutation MarkPullRequestReadyForReview($pullRequestId: ID!) {
+          markPullRequestReadyForReview(input: {
+            pullRequestId: $pullRequestId
+          }) {
+            clientMutationId
+            pullRequest {
+              id
+              number
+              isDraft
+            }
+          }
+        }
+      `,
+        {
+          pullRequestId: pr.node_id,
+        },
+      );
+
+      const { data: updatedPR } = await octokit.pulls.update({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        title,
+        body,
+      });
+
+      logger.info(`Pull request #${pullNumber} marked as ready for review.`);
+      return updatedPR;
+    },
+    githubInstallationToken,
+    "Failed to mark pull request as ready for review",
+    { pullNumber, owner, repo },
+    1,
+  );
+}
+
+export async function updatePullRequest({
+  owner,
+  repo,
+  pullNumber,
+  title,
+  body,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  pullNumber: number;
+  title?: string;
+  body?: string;
+  githubInstallationToken: string;
+}) {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: pullRequest } = await octokit.pulls.update({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        ...(title && { title }),
+        ...(body && { body }),
+      });
+
+      return pullRequest;
+    },
+    githubInstallationToken,
+    "Failed to update pull request",
+    { pullNumber, owner, repo },
+    1,
+  );
+}
+
+export async function getIssue({
+  owner,
+  repo,
+  issueNumber,
+  githubInstallationToken,
+  numRetries = 1,
+}: {
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  githubInstallationToken: string;
+  numRetries?: number;
+}): Promise<GitHubIssue | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: issue } = await octokit.issues.get({
+        owner,
+        repo,
+        issue_number: issueNumber,
+      });
+
+      return issue;
+    },
+    githubInstallationToken,
+    "Failed to get issue",
+    undefined,
+    numRetries,
+  );
+}
+
+export async function getIssueComments({
+  owner,
+  repo,
+  issueNumber,
+  githubInstallationToken,
+  filterBotComments,
+  numRetries = 1,
+}: {
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  githubInstallationToken: string;
+  filterBotComments: boolean;
+  numRetries?: number;
+}): Promise<GitHubIssueComment[] | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: comments } = await octokit.issues.listComments({
+        owner,
+        repo,
+        issue_number: issueNumber,
+      });
+
+      if (!filterBotComments) {
+        return comments;
+      }
+
+      return comments.filter(
+        (comment) =>
+          comment.user?.type !== "Bot" &&
+          !comment.user?.login?.includes("[bot]"),
+      );
+    },
+    githubInstallationToken,
+    "Failed to get issue comments",
+    undefined,
+    numRetries,
+  );
+}
+
+export async function createIssue({
+  owner,
+  repo,
+  title,
+  body,
+  githubAccessToken,
+}: {
+  owner: string;
+  repo: string;
+  title: string;
+  body: string;
+  githubAccessToken: string;
+}): Promise<GitHubIssue | null> {
+  const octokit = new Octokit({
+    auth: githubAccessToken,
+  });
+
+  try {
+    const { data: issue } = await octokit.issues.create({
+      owner,
+      repo,
+      title,
+      body,
+    });
+
+    return issue;
+  } catch (error) {
+    const errorFields =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : { error };
+    logger.error(`Failed to create issue`, errorFields);
+    return null;
+  }
+}
+
+export async function updateIssue({
+  owner,
+  repo,
+  issueNumber,
+  githubInstallationToken,
+  body,
+  title,
+  numRetries = 1,
+}: {
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  githubInstallationToken: string;
+  body?: string;
+  title?: string;
+  numRetries?: number;
+}) {
+  if (!body && !title) {
+    throw new Error("Must provide either body or title to update issue");
+  }
+
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: issue } = await octokit.issues.update({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        ...(body && { body }),
+        ...(title && { title }),
+      });
+
+      return issue;
+    },
+    githubInstallationToken,
+    "Failed to update issue",
+    undefined,
+    numRetries,
+  );
+}
+
+export async function createIssueComment({
+  owner,
+  repo,
+  issueNumber,
+  body,
+  githubToken,
+  numRetries = 1,
+}: {
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  body: string;
+  /**
+   * Can be either the installation token if creating a bot comment,
+   * or an access token if creating a user comment.
+   */
+  githubToken: string;
+  numRetries?: number;
+}): Promise<GitHubIssueComment | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: comment } = await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        body,
+      });
+
+      return comment;
+    },
+    githubToken,
+    "Failed to create issue comment",
+    undefined,
+    numRetries,
+  );
+}
+
+export async function updateIssueComment({
+  owner,
+  repo,
+  commentId,
+  body,
+  githubInstallationToken,
+  numRetries = 1,
+}: {
+  owner: string;
+  repo: string;
+  commentId: number;
+  body: string;
+  githubInstallationToken: string;
+  numRetries?: number;
+}): Promise<GitHubIssueComment | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: comment } = await octokit.issues.updateComment({
+        owner,
+        repo,
+        comment_id: commentId,
+        body,
+      });
+
+      return comment;
+    },
+    githubInstallationToken,
+    "Failed to update issue comment",
+    undefined,
+    numRetries,
+  );
+}
+
+export async function getBranch({
+  owner,
+  repo,
+  branchName,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  branchName: string;
+  githubInstallationToken: string;
+}): Promise<GitHubBranch | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: branch } = await octokit.repos.getBranch({
+        owner,
+        repo,
+        branch: branchName,
+      });
+
+      return branch;
+    },
+    githubInstallationToken,
+    "Failed to get branch",
+    undefined,
+    1,
+  );
+}
+
+export async function replyToReviewComment({
+  owner,
+  repo,
+  commentId,
+  body,
+  pullNumber,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  commentId: number;
+  body: string;
+  pullNumber: number;
+  githubInstallationToken: string;
+}): Promise<GitHubReviewComment | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const { data: comment } = await octokit.pulls.createReplyForReviewComment(
+        {
+          owner,
+          repo,
+          comment_id: commentId,
+          pull_number: pullNumber,
+          body,
+        },
+      );
+
+      return comment;
+    },
+    githubInstallationToken,
+    "Failed to reply to review comment",
+    undefined,
+    1,
+  );
+}
+
+export async function quoteReplyToPullRequestComment({
+  owner,
+  repo,
+  commentId,
+  body,
+  pullNumber,
+  originalCommentUserLogin,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  commentId: number;
+  body: string;
+  pullNumber: number;
+  originalCommentUserLogin: string;
+  githubInstallationToken: string;
+}): Promise<GitHubIssueComment | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const originalComment = await octokit.issues.getComment({
+        owner,
+        repo,
+        comment_id: commentId,
+      });
+
+      const quoteReply = `${originalComment.data.body ? `> ${originalComment.data.body}` : ""}
+      
+@${originalCommentUserLogin} ${body}`;
+
+      const { data: comment } = await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: pullNumber,
+        body: quoteReply,
+      });
+
+      return comment;
+    },
+    githubInstallationToken,
+    "Failed to quote reply to pull request comment",
+    undefined,
+    1,
+  );
+}
+
+export async function quoteReplyToReview({
+  owner,
+  repo,
+  reviewCommentId,
+  body,
+  pullNumber,
+  originalCommentUserLogin,
+  githubInstallationToken,
+}: {
+  owner: string;
+  repo: string;
+  reviewCommentId: number;
+  body: string;
+  pullNumber: number;
+  originalCommentUserLogin: string;
+  githubInstallationToken: string;
+}): Promise<GitHubIssueComment | null> {
+  return withGitHubRetry(
+    async (token: string) => {
+      const octokit = new Octokit({
+        auth: token,
+      });
+
+      const originalComment = await octokit.pulls.getReview({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        review_id: reviewCommentId,
+      });
+
+      const quoteReply = `${originalComment.data.body ? `> ${originalComment.data.body}` : ""}
+      
+@${originalCommentUserLogin} ${body}`;
+
+      const { data: comment } = await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: pullNumber,
+        body: quoteReply,
+      });
+
+      return comment;
+    },
+    githubInstallationToken,
+    "Failed to quote reply to pull request review",
+    undefined,
+    1,
+  );
+}</doc><doc title="Route" desc="API reference.">import { initApiPassthrough } from "langgraph-nextjs-api-passthrough";
+import {
+  GITHUB_TOKEN_COOKIE,
+  GITHUB_INSTALLATION_ID_COOKIE,
+  GITHUB_INSTALLATION_TOKEN_COOKIE,
+  GITHUB_INSTALLATION_NAME,
+  GITHUB_INSTALLATION_ID,
+} from "@openswe/shared/constants";
+import {
+  getGitHubInstallationTokenOrThrow,
+  getInstallationNameFromReq,
+  getGitHubAccessTokenOrThrow,
+} from "./utils";
+import { encryptSecret } from "@openswe/shared/crypto";
+
+// This file acts as a proxy for requests to your LangGraph server.
+// Read the [Going to Production](https://github.com/langchain-ai/agent-chat-ui?tab=readme-ov-file#going-to-production) section for more information.
+
+export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, runtime } =
+  initApiPassthrough({
+    apiUrl: process.env.LANGGRAPH_API_URL ?? "http://localhost:2024",
+    runtime: "edge", // default
+    disableWarningLog: true,
+    bodyParameters: (req, body) => {
+      if (body.config?.configurable && "apiKeys" in body.config.configurable) {
+        const encryptionKey = process.env.SECRETS_ENCRYPTION_KEY;
+        if (!encryptionKey) {
+          throw new Error(
+            "SECRETS_ENCRYPTION_KEY environment variable is required",
+          );
+        }
+
+        const apiKeys = body.config.configurable.apiKeys;
+        const encryptedApiKeys: Record<string, unknown> = {};
+
+        // Encrypt each field in the apiKeys object
+        for (const [key, value] of Object.entries(apiKeys)) {
+          if (typeof value === "string" && value.trim() !== "") {
+            encryptedApiKeys[key] = encryptSecret(value, encryptionKey);
+          } else {
+            encryptedApiKeys[key] = value;
+          }
+        }
+
+        // Update the body with encrypted apiKeys
+        body.config.configurable.apiKeys = encryptedApiKeys;
+        return body;
+      }
+      return body;
+    },
+    headers: async (req) => {
+      const encryptionKey = process.env.SECRETS_ENCRYPTION_KEY;
+      if (!encryptionKey) {
+        throw new Error(
+          "SECRETS_ENCRYPTION_KEY environment variable is required",
+        );
+      }
+      const installationIdCookie = req.cookies.get(
+        GITHUB_INSTALLATION_ID_COOKIE,
+      )?.value;
+
+      if (!installationIdCookie) {
+        throw new Error(
+          "No GitHub installation ID found. GitHub App must be installed first.",
+        );
+      }
+      const [installationToken, installationName] = await Promise.all([
+        getGitHubInstallationTokenOrThrow(installationIdCookie, encryptionKey),
+        getInstallationNameFromReq(req.clone(), installationIdCookie),
+      ]);
+
+      return {
+        [GITHUB_TOKEN_COOKIE]: getGitHubAccessTokenOrThrow(req, encryptionKey),
+        [GITHUB_INSTALLATION_TOKEN_COOKIE]: installationToken,
+        [GITHUB_INSTALLATION_NAME]: installationName,
+        [GITHUB_INSTALLATION_ID]: installationIdCookie,
+      };
+    },
+  });</doc><doc title="Route" desc="API reference.">/* eslint-disable no-console */
+import { v4 as uuidv4 } from "uuid";
+import {
+  GITHUB_TOKEN_COOKIE,
+  GITHUB_INSTALLATION_ID_COOKIE,
+  GITHUB_INSTALLATION_TOKEN_COOKIE,
+  GITHUB_INSTALLATION_NAME,
+  GITHUB_INSTALLATION_ID,
+  PROGRAMMER_GRAPH_ID,
+  PLANNER_GRAPH_ID,
+  OPEN_SWE_STREAM_MODE,
+  MANAGER_GRAPH_ID,
+} from "@openswe/shared/constants";
+import {
+  getGitHubInstallationTokenOrThrow,
+  getInstallationNameFromReq,
+  getGitHubAccessTokenOrThrow,
+} from "../[..._path]/utils";
+import { NextRequest, NextResponse } from "next/server";
+import { RestartRunRequest } from "./types";
+import { Client, StreamMode, ThreadState } from "@langchain/langgraph-sdk";
+import { ManagerGraphState } from "@openswe/shared/open-swe/manager/types";
+import { PlannerGraphState } from "@openswe/shared/open-swe/planner/types";
+import {
+  AgentSession,
+  GraphConfig,
+  GraphState,
+} from "@openswe/shared/open-swe/types";
+import { END } from "@langchain/langgraph/web";
+import { getCustomConfigurableFields } from "@openswe/shared/open-swe/utils/config";
+
+async function getRequestHeaders(
+  req: NextRequest,
+): Promise<Record<string, string>> {
+  const encryptionKey = process.env.SECRETS_ENCRYPTION_KEY;
+  if (!encryptionKey) {
+    throw new Error("SECRETS_ENCRYPTION_KEY environment variable is required");
+  }
+  const installationIdCookie = req.cookies.get(
+    GITHUB_INSTALLATION_ID_COOKIE,
+  )?.value;
+
+  if (!installationIdCookie) {
+    throw new Error(
+      "No GitHub installation ID found. GitHub App must be installed first.",
+    );
+  }
+  const [installationToken, installationName] = await Promise.all([
+    getGitHubInstallationTokenOrThrow(installationIdCookie, encryptionKey),
+    getInstallationNameFromReq(req, installationIdCookie),
+  ]);
+
+  return {
+    [GITHUB_TOKEN_COOKIE]: getGitHubAccessTokenOrThrow(req, encryptionKey),
+    [GITHUB_INSTALLATION_TOKEN_COOKIE]: installationToken,
+    [GITHUB_INSTALLATION_NAME]: installationName,
+    [GITHUB_INSTALLATION_ID]: installationIdCookie,
+  };
+}
+
+async function createNewSession(
+  client: Client,
+  inputs: {
+    graphId: string;
+    threadState: ThreadState<
+      ManagerGraphState | PlannerGraphState | GraphState
+    >;
+    threadConfig: GraphConfig;
+  },
+): Promise<AgentSession> {
+  const newThreadId = uuidv4();
+  const hasNext = inputs.threadState.next.length > 0;
+
+  console.log("\n\nCONFIG");
+  console.dir(getCustomConfigurableFields(inputs.threadConfig), {
+    depth: null,
+  });
+  console.log("\n\nCONFIGURABLE");
+  console.dir(inputs.threadConfig.configurable, { depth: null });
+
+  const run = await client.runs.create(newThreadId, inputs.graphId, {
+    command: {
+      update: inputs.threadState.values,
+      ...(hasNext ? { goto: inputs.threadState.next[0] } : { goto: END }),
+    },
+    ifNotExists: "create",
+    streamMode: OPEN_SWE_STREAM_MODE as StreamMode[],
+    streamResumable: true,
+    config: {
+      recursion_limit: 400,
+      configurable: getCustomConfigurableFields(inputs.threadConfig),
+    },
+  });
+  return {
+    threadId: newThreadId,
+    runId: run.run_id,
+  };
+}
+
+/**
+ * Restart a run. This function isn't actually restarting a run,
+ * but rather it's creating fresh new threads & runs for all existing
+ * threads. Whichever thread was the one to fail will be restarted and
+ * resumed where it was failed.
+ */
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const reqCopy = request.clone();
+    const body: RestartRunRequest = await reqCopy.json();
+    const { managerThreadId, plannerThreadId, programmerThreadId } = body;
+
+    const langGraphClient = new Client({
+      apiUrl: process.env.LANGGRAPH_API_URL ?? "http://localhost:2024",
+      defaultHeaders: await getRequestHeaders(request),
+    });
+
+    const [
+      managerThread,
+      managerThreadState,
+      plannerThread,
+      plannerThreadState,
+      programmerThread,
+      programmerThreadState,
+    ] = await Promise.all([
+      langGraphClient.threads.get<ManagerGraphState>(managerThreadId),
+      langGraphClient.threads.getState<ManagerGraphState>(managerThreadId),
+      langGraphClient.threads.get<PlannerGraphState>(plannerThreadId),
+      langGraphClient.threads.getState<PlannerGraphState>(plannerThreadId),
+      programmerThreadId
+        ? langGraphClient.threads.get<GraphState>(programmerThreadId)
+        : null,
+      programmerThreadId
+        ? langGraphClient.threads.getState<GraphState>(programmerThreadId)
+        : null,
+    ]);
+    if (!managerThreadState || !plannerThreadState) {
+      return NextResponse.json(
+        {
+          error:
+            "Failed to restart run. Must have existing planner and manager threads.",
+        },
+        { status: 500 },
+      );
+    }
+
+    if (!("config" in managerThread)) {
+      console.error("Manager thread must have a config.");
+      console.dir(managerThread, { depth: null });
+      return NextResponse.json(
+        {
+          error: "Failed to restart run. Manager thread must have a config.",
+        },
+        { status: 500 },
+      );
+    }
+    if (!("config" in plannerThread)) {
+      console.error("Planner thread must have a config.");
+      console.dir(plannerThread, { depth: null });
+      return NextResponse.json(
+        {
+          error: "Failed to restart run. Planner thread must have a config.",
+        },
+        { status: 500 },
+      );
+    }
+    if (programmerThread && !("config" in programmerThread)) {
+      console.error("Programmer thread must have a config.");
+      console.dir(programmerThread, { depth: null });
+      return NextResponse.json(
+        {
+          error: "Failed to restart run. Programmer thread must have a config.",
+        },
+        { status: 500 },
+      );
+    }
+
+    const newProgrammerSession = programmerThreadState
+      ? await createNewSession(langGraphClient, {
+          graphId: PROGRAMMER_GRAPH_ID,
+          threadState: programmerThreadState,
+          threadConfig: (programmerThread as Record<string, any>)?.config,
+        })
+      : undefined;
+
+    const newPlannerState: PlannerGraphState = {
+      ...plannerThreadState.values,
+      ...(newProgrammerSession
+        ? {
+            programmerSession: newProgrammerSession,
+          }
+        : {}),
+    };
+    const newPlannerSession = await createNewSession(langGraphClient, {
+      graphId: PLANNER_GRAPH_ID,
+      threadState: {
+        ...plannerThreadState,
+        values: newPlannerState,
+      },
+      threadConfig: (plannerThread as Record<string, any>)?.config,
+    });
+
+    const newManagerState: ManagerGraphState = {
+      ...managerThreadState.values,
+      plannerSession: newPlannerSession,
+    };
+    const newManagerSession = await createNewSession(langGraphClient, {
+      graphId: MANAGER_GRAPH_ID,
+      threadState: {
+        ...managerThreadState,
+        values: newManagerState,
+      },
+      threadConfig: (managerThread as Record<string, any>)?.config,
+    });
+
+    return NextResponse.json({
+      managerSession: newManagerSession,
+      plannerSession: newPlannerSession,
+      programmerSession: newProgrammerSession,
+    });
+  } catch (error) {
+    console.error("Failed to restart run", error);
+    return NextResponse.json(
+      { error: "Failed to restart run" },
+      { status: 500 },
+    );
+  }
+}</doc><doc title="Types" desc="API reference.">import { AgentSession } from "@openswe/shared/open-swe/types";
+
+export interface RestartRunRequest {
+  managerThreadId: string;
+  plannerThreadId: string;
+  // Programmer thread ID can be undefined if the error occurred in the planner graph
+  programmerThreadId?: string;
+}
+
+export interface RestartRunResponse {
+  managerSession: AgentSession;
+  plannerSession: AgentSession;
+  programmerSession: AgentSession;
+}</doc><doc title="Utils" desc="API reference.">import { getInstallationToken } from "@openswe/shared/github/auth";
+import { App } from "@octokit/app";
+import { GITHUB_TOKEN_COOKIE } from "@openswe/shared/constants";
+import { encryptSecret } from "@openswe/shared/crypto";
+import { NextRequest } from "next/server";
+
+export function getGitHubAccessTokenOrThrow(
+  req: NextRequest,
+  encryptionKey: string,
+): string {
+  const token = req.cookies.get(GITHUB_TOKEN_COOKIE)?.value ?? "";
+
+  if (!token) {
+    throw new Error(
+      "No GitHub access token found. User must authenticate first.",
+    );
+  }
+
+  return encryptSecret(token, encryptionKey);
+}
+
+export async function getGitHubInstallationTokenOrThrow(
+  installationIdCookie: string,
+  encryptionKey: string,
+): Promise<string> {
+  const appId = process.env.GITHUB_APP_ID;
+  const privateAppKey = process.env.GITHUB_APP_PRIVATE_KEY;
+
+  if (!appId || !privateAppKey) {
+    throw new Error("GitHub App ID or Private App Key is not configured.");
+  }
+
+  const token = await getInstallationToken(
+    installationIdCookie,
+    appId,
+    privateAppKey,
+  );
+  return encryptSecret(token, encryptionKey);
+}
+
+async function getInstallationName(installationId: string) {
+  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_APP_PRIVATE_KEY) {
+    throw new Error("GitHub App ID or Private App Key is not configured.");
+  }
+  const app = new App({
+    appId: process.env.GITHUB_APP_ID,
+    privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
+  });
+
+  // Get installation details
+  const { data } = await app.octokit.request(
+    "GET /app/installations/{installation_id}",
+    {
+      installation_id: Number(installationId),
+    },
+  );
+
+  const installationName =
+    data.account && "name" in data.account
+      ? data.account.name
+      : data.account?.login;
+
+  return installationName ?? "";
+}
+
+export async function getInstallationNameFromReq(
+  req: Request,
+  installationId: string,
+): Promise<string> {
+  try {
+    const reqCopy = req.clone();
+    const requestJson = await reqCopy.json();
+    const installationName = requestJson?.input?.targetRepository?.owner;
+    if (installationName) {
+      return installationName;
+    }
+  } catch {
+    // no-op
+  }
+
+  try {
+    return await getInstallationName(installationId);
+  } catch (error) {
+    console.error("Failed to get installation name:", error);
+    return "";
+  }
+}</doc><doc title="Index" desc="docs page.">import { GraphConfig } from "@openswe/shared/open-swe/types";
+import {
+  ManagerGraphState,
+  ManagerGraphUpdate,
+} from "@openswe/shared/open-swe/manager/types";
+import { createLangGraphClient } from "../../../../utils/langgraph-client.js";
+import {
+  BaseMessage,
+  HumanMessage,
+  isHumanMessage,
+  RemoveMessage,
+} from "@langchain/core/messages";
+import { z } from "zod";
+import {
+  loadModel,
+  supportsParallelToolCallsParam,
+} from "../../../../utils/llms/index.js";
+import { LLMTask } from "@openswe/shared/open-swe/llm-task";
+import { Command, END } from "@langchain/langgraph";
+import { getMessageContentString } from "@openswe/shared/messages";
+import {
+  createIssue,
+  createIssueComment,
+} from "../../../../utils/github/api.js";
+import { getGitHubTokensFromConfig } from "../../../../utils/github-tokens.js";
+import { createIssueFieldsFromMessages } from "../../utils/generate-issue-fields.js";
+import {
+  extractContentWithoutDetailsFromIssueBody,
+  extractIssueTitleAndContentFromMessage,
+  formatContentForIssueBody,
+} from "../../../../utils/github/issue-messages.js";
+import { getDefaultHeaders } from "../../../../utils/default-headers.js";
+import { BASE_CLASSIFICATION_SCHEMA } from "./schemas.js";
+import { getPlansFromIssue } from "../../../../utils/github/issue-task.js";
+import { HumanResponse } from "@langchain/langgraph/prebuilt";
+import {
+  OPEN_SWE_STREAM_MODE,
+  PLANNER_GRAPH_ID,
+} from "@openswe/shared/constants";
+import { createLogger, LogLevel } from "../../../../utils/logger.js";
+import { createClassificationPromptAndToolSchema } from "./utils.js";
+import { RequestSource } from "../../../../constants.js";
+import { StreamMode, Thread } from "@langchain/langgraph-sdk";
+import { isLocalMode } from "@openswe/shared/open-swe/local-mode";
+import { PlannerGraphState } from "@openswe/shared/open-swe/planner/types";
+import { GraphState } from "@openswe/shared/open-swe/types";
+import { Client } from "@langchain/langgraph-sdk";
+import { shouldCreateIssue } from "../../../../utils/should-create-issue.js";
+const logger = createLogger(LogLevel.INFO, "ClassifyMessage");
+
+/**
+ * Classify the latest human message to determine how to route the request.
+ * Requests can be routed to:
+ * 1. reply - dont need to plan, just reply. This could be if the user sends a message which is not classified as a request, or if the programmer/planner is already running.
+ *   a. if the planner/programmer is already running, we'll simply reply with
+ */
+export async function classifyMessage(
+  state: ManagerGraphState,
+  config: GraphConfig,
+): Promise<Command> {
+  const userMessage = state.messages.findLast(isHumanMessage);
+  if (!userMessage) {
+    throw new Error("No human message found.");
+  }
+
+  let plannerThread: Thread<PlannerGraphState> | undefined;
+  let programmerThread: Thread<GraphState> | undefined;
+  let langGraphClient: Client | undefined;
+
+  if (!isLocalMode(config)) {
+    // Only create LangGraph client if not in local mode
+    langGraphClient = createLangGraphClient({
+      defaultHeaders: getDefaultHeaders(config),
+    });
+
+    plannerThread = state.plannerSession?.threadId
+      ? await langGraphClient.threads.get(state.plannerSession.threadId)
+      : undefined;
+    const plannerThreadValues = plannerThread?.values;
+    programmerThread = plannerThreadValues?.programmerSession?.threadId
+      ? await langGraphClient.threads.get(
+          plannerThreadValues.programmerSession.threadId,
+        )
+      : undefined;
+  }
+
+  const programmerStatus = programmerThread?.status ?? "not_started";
+  const plannerStatus = plannerThread?.status ?? "not_started";
+
+  // If the githubIssueId is defined, fetch the most recent task plan (if exists). Otherwise fallback to state task plan
+  const issuePlans = state.githubIssueId
+    ? await getPlansFromIssue(state, config)
+    : null;
+  const taskPlan = issuePlans?.taskPlan ?? state.taskPlan;
+
+  const { prompt, schema } = createClassificationPromptAndToolSchema({
+    programmerStatus,
+    plannerStatus,
+    messages: state.messages,
+    taskPlan,
+    proposedPlan: issuePlans?.proposedPlan ?? undefined,
+    requestSource: userMessage.additional_kwargs?.requestSource as
+      | RequestSource
+      | undefined,
+  });
+  const respondAndRouteTool = {
+    name: "respond_and_route",
+    description: "Respond to the user's message and determine how to route it.",
+    schema,
+  };
+  const model = await loadModel(config, LLMTask.ROUTER);
+  const modelSupportsParallelToolCallsParam = supportsParallelToolCallsParam(
+    config,
+    LLMTask.ROUTER,
+  );
+  const modelWithTools = model.bindTools([respondAndRouteTool], {
+    tool_choice: respondAndRouteTool.name,
+    ...(modelSupportsParallelToolCallsParam
+      ? {
+          parallel_tool_calls: false,
+        }
+      : {}),
+  });
+
+  const response = await modelWithTools.invoke([
+    {
+      role: "system",
+      content: prompt,
+    },
+    {
+      role: "user",
+      content: extractContentWithoutDetailsFromIssueBody(
+        getMessageContentString(userMessage.content),
+      ),
+    },
+  ]);
+
+  const toolCall = response.tool_calls?.[0];
+  if (!toolCall) {
+    throw new Error("No tool call found.");
+  }
+  const toolCallArgs = toolCall.args as z.infer<
+    typeof BASE_CLASSIFICATION_SCHEMA
+  >;
+
+  if (toolCallArgs.route === "no_op") {
+    // If it's a no_op, just add the message to the state and return.
+    const commandUpdate: ManagerGraphUpdate = {
+      messages: [response],
+    };
+    return new Command({
+      update: commandUpdate,
+      goto: END,
+    });
+  }
+
+  if ((toolCallArgs.route as string) === "create_new_issue") {
+    // Route to node which kicks off new manager run, passing in the full conversation history.
+    const commandUpdate: ManagerGraphUpdate = {
+      messages: [response],
+    };
+    return new Command({
+      update: commandUpdate,
+      goto: "create-new-session",
+    });
+  }
+
+  if (isLocalMode(config)) {
+    // In local mode, just route to planner without GitHub issue creation
+    const newMessages: BaseMessage[] = [response];
+    const commandUpdate: ManagerGraphUpdate = {
+      messages: newMessages,
+    };
+
+    if (
+      toolCallArgs.route === "start_planner" ||
+      toolCallArgs.route === "start_planner_for_followup"
+    ) {
+      return new Command({
+        update: commandUpdate,
+        goto: "start-planner",
+      });
+    }
+
+    throw new Error(
+      `Unsupported route for local mode received: ${toolCallArgs.route}`,
+    );
+  }
+
+  if (!shouldCreateIssue(config)) {
+    const commandUpdate: ManagerGraphUpdate = {
+      messages: [response],
+    };
+    if (
+      toolCallArgs.route === "start_planner" ||
+      toolCallArgs.route === "start_planner_for_followup"
+    ) {
+      return new Command({
+        update: commandUpdate,
+        goto: "start-planner",
+      });
+    }
+
+    if (toolCallArgs.route === "create_new_issue") {
+      return new Command({
+        update: commandUpdate,
+        goto: "create-new-session",
+      });
+    }
+
+    if (toolCallArgs.route === "no_op") {
+      return new Command({
+        update: commandUpdate,
+        goto: END,
+      });
+    }
+
+    throw new Error(
+      `Unsupported route received: ${toolCallArgs.route}\nUnable to route message there when not creating GitHub issues for request.`,
+    );
+  }
+
+  const { githubAccessToken } = getGitHubTokensFromConfig(config);
+  let githubIssueId = state.githubIssueId;
+
+  const newMessages: BaseMessage[] = [response];
+
+  // If it's not a no_op, ensure there is a GitHub issue with the user's request.
+  if (!githubIssueId) {
+    const { title } = await createIssueFieldsFromMessages(
+      state.messages,
+      config.configurable,
+    );
+    const { content: body } = extractIssueTitleAndContentFromMessage(
+      getMessageContentString(userMessage.content),
+    );
+
+    const newIssue = await createIssue({
+      owner: state.targetRepository.owner,
+      repo: state.targetRepository.repo,
+      title,
+      body: formatContentForIssueBody(body),
+      githubAccessToken,
+    });
+    if (!newIssue) {
+      throw new Error("Failed to create issue.");
+    }
+    githubIssueId = newIssue.number;
+    // Ensure we remove the old message, and replace it with an exact copy,
+    // but with the issue ID & isOriginalIssue set in additional_kwargs.
+    newMessages.push(
+      ...[
+        new RemoveMessage({
+          id: userMessage.id ?? "",
+        }),
+        new HumanMessage({
+          ...userMessage,
+          additional_kwargs: {
+            githubIssueId: githubIssueId,
+            isOriginalIssue: true,
+          },
+        }),
+      ],
+    );
+  } else if (
+    githubIssueId &&
+    state.messages.filter(isHumanMessage).length > 1
+  ) {
+    // If there already is a GitHub issue ID in state, and multiple human messages, add any
+    // human messages to the issue which weren't already added.
+    const messagesNotInIssue = state.messages
+      .filter(isHumanMessage)
+      .filter((message) => {
+        // If the message doesn't contain `githubIssueId` in additional kwargs, it hasn't been added to the issue.
+        return !message.additional_kwargs?.githubIssueId;
+      });
+
+    const createCommentsPromise = messagesNotInIssue.map(async (message) => {
+      const createdIssue = await createIssueComment({
+        owner: state.targetRepository.owner,
+        repo: state.targetRepository.repo,
+        issueNumber: githubIssueId,
+        body: getMessageContentString(message.content),
+        githubToken: githubAccessToken,
+      });
+      if (!createdIssue?.id) {
+        throw new Error("Failed to create issue comment");
+      }
+      newMessages.push(
+        ...[
+          new RemoveMessage({
+            id: message.id ?? "",
+          }),
+          new HumanMessage({
+            ...message,
+            additional_kwargs: {
+              githubIssueId,
+              githubIssueCommentId: createdIssue.id,
+              ...((toolCallArgs.route as string) ===
+              "start_planner_for_followup"
+                ? {
+                    isFollowup: true,
+                  }
+                : {}),
+            },
+          }),
+        ],
+      );
+    });
+
+    await Promise.all(createCommentsPromise);
+
+    let newPlannerId: string | undefined;
+    let goto = END;
+
+    if (plannerStatus === "interrupted") {
+      if (!state.plannerSession?.threadId) {
+        throw new Error("No planner session found. Unable to resume planner.");
+      }
+      // We need to resume the planner session via a 'response' so that it can re-plan
+      const plannerResume: HumanResponse = {
+        type: "response",
+        args: "resume planner",
+      };
+      logger.info("Resuming planner session");
+      if (!langGraphClient) {
+        throw new Error("LangGraph client not initialized");
+      }
+      const newPlannerRun = await langGraphClient.runs.create(
+        state.plannerSession?.threadId,
+        PLANNER_GRAPH_ID,
+        {
+          command: {
+            resume: plannerResume,
+          },
+          streamMode: OPEN_SWE_STREAM_MODE as StreamMode[],
+        },
+      );
+      newPlannerId = newPlannerRun.run_id;
+      logger.info("Planner session resumed", {
+        runId: newPlannerRun.run_id,
+        threadId: state.plannerSession.threadId,
+      });
+    }
+
+    if (toolCallArgs.route === "start_planner_for_followup") {
+      goto = "start-planner";
+    }
+
+    // After creating the new comment, we can add the message to state and end.
+    const commandUpdate: ManagerGraphUpdate = {
+      messages: newMessages,
+      ...(newPlannerId && state.plannerSession?.threadId
+        ? {
+            plannerSession: {
+              threadId: state.plannerSession.threadId,
+              runId: newPlannerId,
+            },
+          }
+        : {}),
+    };
+    return new Command({
+      update: commandUpdate,
+      goto,
+    });
+  }
+
+  // Issue has been created, and any missing human messages have been added to it.
+
+  const commandUpdate: ManagerGraphUpdate = {
+    messages: newMessages,
+    ...(githubIssueId ? { githubIssueId } : {}),
+  };
+
+  if (
+    (toolCallArgs.route as any) === "update_programmer" ||
+    (toolCallArgs.route as any) === "update_planner" ||
+    (toolCallArgs.route as any) === "resume_and_update_planner"
+  ) {
+    // If the route is one of the above, we don't need to do anything since the issue now contains
+    // the new messages, and the coding agent will handle pulling them in. This should never be
+    // reachable since we should return early after adding the Github comment, but include anyways...
+    return new Command({
+      update: commandUpdate,
+      goto: END,
+    });
+  }
+
+  if (
+    toolCallArgs.route === "start_planner" ||
+    toolCallArgs.route === "start_planner_for_followup"
+  ) {
+    // Always kickoff a new start planner node. This will enqueue new runs on the planner graph.
+    return new Command({
+      update: commandUpdate,
+      goto: "start-planner",
+    });
+  }
+
+  throw new Error(`Invalid route: ${toolCallArgs.route}`);
+}</doc><doc title="Prompts" desc="docs page.">import { RequestSource } from "../../../../constants.js";
+
+export const UPDATE_PROGRAMMER_ROUTING_OPTION = `- update_programmer: You should call this route if the user's message should be added to the programmer's currently running session. This should be called if you determine the user is trying to provide extra context to the programmer's current session.\n`;
+
+export const START_PLANNER_ROUTING_OPTION = `- start_planner: You should call this route if the user's message is a complete request you can send to the planner, which it can use to generate a plan. This route may be called when the planner has not started yet.\n`;
+
+export const START_PLANNER_FOR_FOLLOWUP_ROUTING_OPTION = `- start_planner_for_followup: You should call this route if the user's message is a followup request you can send to the planner, which it can use to generate a plan new plan to address the user's feedback/followup request. This route may be called when the planner and programmer are no longer running (e.g. after the user's initial request has been completed).\n`;
+
+export const UPDATE_PLANNER_ROUTING_OPTION = `- update_planner: You should call this route if the user sends a new message containing anything from a related request that the planner should plan for, additional context about their previous request/the codebase, or something which the planner should be aware of.\n`;
+
+export const RESUME_AND_UPDATE_PLANNER_ROUTING_OPTION = `- resume_and_update_planner: You should call this route if the planner is currently interrupted, and the user's message includes additional context/related requests the which require updates to the plan. This will resume the planner so that it can handle the user's new request.\n`;
+
+export const CREATE_NEW_ISSUE_ROUTING_OPTION = `- create_new_issue: Call this route if the user's request should create a new GitHub issue, and should be executed independently from the current request. This should only be called if the new request does not depend on the current request.\n`;
+
+// This should only be included if the task plan exists.
+export const TASK_PLAN_PROMPT = `# Task Plan
+The following is the current state of the task plan generated by the planner. You should use this as context when determining where to route the user's message, and how to reply to them.
+{TASK_PLAN}
+\n\n`;
+
+// This should only be included if the proposed plan exists, and the task plan does NOT exist.
+export const PROPOSED_PLAN_PROMPT = `# Proposed Plan
+The following is the proposed plan the planner agent generated, and the user has yet to accept. You should use this as context when determining where to route the user's message, and how to reply to them.
+{PROPOSED_PLAN}
+\n\n`;
+
+export const CONVERSATION_HISTORY_PROMPT = `# Conversation History
+The following is the conversation history between the user and you. This does not include their most recent message, which is the one you are currently classifying. You should use this as context when determining where to route the user's message, and how to reply to them.
+{CONVERSATION_HISTORY}
+\n\n`;
+
+// This prompt does not generate the route, it only generates the response.
+export const CLASSIFICATION_SYSTEM_PROMPT = `# Identity
+You're "Open SWE", a highly intelligent AI software engineering manager, tasked with identifying the user's intent, and responding to their message, and determining how you'll route it to the proper AI assistant.
+You're an AI coding agent built by LangChain. You're acting as the manager in a larger AI coding agent system, tasked with responding, routing and taking management actions based on the user's requests.
+
+# Instructions
+Carefully examine the user's message, along with the conversation history provided (or none, if it's the first message they sent) to you in this system message below.
+Using their most recent request, the conversation history, and the current status of your two AI assistants (programmer and planner), generate a response to send to the user, and a route to take.
+
+Below you're provided with routes you may take given the user's request. Your response should not explicitly mention the route you want to take, but it should be able to be inferred by your response.
+Ensure your response is clear, and concise.
+
+Although you're only supposed to classify & respond to the latest message, this does not mean you should look at it in isolation. You should consider the conversation history as a whole, and the current status of your two AI assistants (programmer and planner) to determine how to respond & route the user's new message.
+
+If the source is from a '${RequestSource.GITHUB_ISSUE_WEBHOOK}', '${RequestSource.GITHUB_PULL_REQUEST_WEBHOOK}', you should ALWAYS classify it as a full request which should be routed to the planner.
+The instances where the source will be a GitHub webhook are when the user takes some action in GitHub which triggers a webhook, such as labeling an issue or pull request, or tagging you to review a pull request.
+
+# Context
+Although it's not shown here, you do have access to the full repository contents the user is referencing. Because of this, you should always assume you'll have access to any/all files or folders the user is referencing.
+
+# Assistant Statuses
+The planner's current status is: {PLANNER_STATUS}
+The programmer's current status is: {PROGRAMMER_STATUS}
+
+# Source
+The source of the request is: {REQUEST_SOURCE}
+
+{TASK_PLAN_PROMPT}
+{CONVERSATION_HISTORY_PROMPT}
+
+# Routing Options
+Based on all of the context provided above, generate a response to send to the user, including messaging about the route you'll select from the below options in your next step.
+Your routing options are:
+{UPDATE_PROGRAMMER_ROUTING_OPTION}{START_PLANNER_ROUTING_OPTION}{UPDATE_PLANNER_ROUTING_OPTION}{RESUME_AND_UPDATE_PLANNER_ROUTING_OPTION}{CREATE_NEW_ISSUE_ROUTING_OPTION}{START_PLANNER_FOR_FOLLOWUP_ROUTING_OPTION}
+- no_op: This should be called when the user's message is not a new request, additional context, or a new issue to create. This should only be called when none of the routing options are appropriate.
+
+# Additional Context
+You're an open source AI coding agent built by LangChain.
+Your source code is available in the GitHub repository: https://github.com/langchain-ai/open-swe
+The website you're accessible through is: https://swe.langchain.com
+Your documentation is available at: https://docs.langchain.com/labs/swe
+You can be invoked by both the web app, or by adding a label to a GitHub issue. These label options are:
+- \`open-swe\` - trigger a standard Open SWE task. It will interrupt after generating a plan, and the user must approve it before it can continue. Uses Claude Sonnet 4 for all LLM requests.
+- \`open-swe-auto\` - trigger an 'auto' Open SWE task. It will not interrupt after generating a plan, and instead it will auto-approve the plan, and continue to the programming step without user approval. Uses Claude Sonnet 4 for all LLM requests.
+- \`open-swe-max\` - this label acts the same as \`open-swe\`, except it uses a larger, more powerful model for the planning and programming steps: Claude Opus 4.1. It still uses Claude Sonnet 4 for the reviewer step.
+- \`open-swe-max-auto\` - this label acts the same as \`open-swe-auto\`, except it uses a larger, more powerful model for the planning and programming steps: Claude Opus 4.1. It still uses Claude Sonnet 4 for the reviewer step.
+
+Only provide this information if requested by the user.
+For example, if the user asks what you can do, you should provide the above information in your response.
+
+# Response
+Your response should be clear, concise and straight to the point. Do NOT include any additional context, such as an idea for how to implement their request.
+
+**IMPORTANT**:
+Remember, you are ONLY allowed to route to one of: {ROUTING_OPTIONS}
+You should NEVER try to route to an option which is not listed above, even if the conversation history shows you calling a route that's not shown above.
+Routes are not always available to be called, so ensure you only call one of the options shown above.
+
+You're only acting as a manager, and thus your response to the user's message should be a short message about which route you'll take, WITHOUT actually referencing the route you'll take.
+Additionally, you should not mention a "team", and instead always respond in the first person.
+You may reference planning or coding activities in first person ("I'll start planning...", "I'll write the code..."), but never mention "planner" or "programmer" as separate entities. Present yourself as a unified agent with multiple capabilities.
+Your manager will be very happy with you if you're able to articulate the route you plan to take, without actually mentioning the route! Ensure each response to the user is slightly different too. You should never repeat responses.
+Always respond with proper markdown formatting. Avoid large headings, and instead use bold, italics, code blocks/inline code, and lists to make your response more readable. Do not use excessive formatting. Only use markdown formatting when it's necessary.
+
+You do not need to explain why you're taking that route to the user.
+Your response will not exceed two sentences. You will be rewarded for being concise.
+`;</doc><doc title="Route" desc="API reference.">import { NextRequest, NextResponse } from "next/server";
+import { clearGitHubToken } from "@/lib/auth";
+
+/**
+ * API route to handle GitHub logout
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const response = NextResponse.json({ success: true });
+    clearGitHubToken(response);
+    return response;
+  } catch (error) {
+    console.error("Error during logout:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to logout" },
+      { status: 500 },
+    );
+  }
+}</doc><doc title="Route" desc="API reference.">import { NextRequest, NextResponse } from "next/server";
+import { isAuthenticated } from "@/lib/auth";
+
+/**
+ * API route to check GitHub authentication status
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const authenticated = isAuthenticated(request);
+    return NextResponse.json({ authenticated });
+  } catch (error) {
+    console.error("Error checking auth status:", error);
+    return NextResponse.json(
+      { authenticated: false, error: "Failed to check authentication status" },
+      { status: 500 },
+    );
+  }
+}</doc></api><apps><doc title="README" desc="install &amp; quickstart."># Open SWE CLI
+
+> **⚠️ Under Development**  
+> This CLI is currently under active development and may contain bugs or incomplete features.
+
+A command-line interface for Open SWE that provides a terminal-based chat experience to interact with the autonomous coding agent. Built with React and Ink, it offers real-time streaming of agent logs and works directly on your local codebase without requiring GitHub authentication.
+
+## Documentation
+
+## Development
+
+1. Install dependencies: `yarn install`
+2. Create a `.env` file and set `OPEN_SWE_LOCAL_PROJECT_PATH` to point to an existing git repository:
+   ```bash
+   echo "OPEN_SWE_LOCAL_PROJECT_PATH=/path/to/your/git/repository" > .env
+   ```
+3. Build the CLI: `yarn build`
+4. Run the CLI: `yarn cli`
+
+## Usage
+
+Run the CLI and start chatting with the agent about your local codebase:
+
+```bash
+yarn cli
+```
+
+The CLI will:
+
+1. Start in local mode (no authentication required)
+2. Work directly on files in your current directory
+3. Provide interactive chat with the Open SWE agent
+4. Stream real-time logs and responses
+
+## Prerequisites
+
+- An existing git repository that you want to work on
+- The repository must be initialized with git and have at least one commit
+
+## Features
+
+- **Local Mode Only**: Works directly on your local codebase without GitHub integration
+- **Real-time Streaming**: See agent logs and responses as they happen
+- **Interactive Chat**: Type your requests and get immediate feedback
+- **Plan Approval**: Review and approve/deny proposed plans before execution</doc><doc title="README" desc="install &amp; quickstart."># Open SWE Agent V2
+
+The core LangGraph agent application that powers Open SWE's autonomous code understanding, planning, and execution capabilities.
+
+## Documentation
+
+For detailed setup and usage information, see the [development setup documentation](https://docs.langchain.com/labs/swe/setup/development).
+
+## Development
+
+1. Copy the environment file: `cp .env.example .env` and fill in the required values
+2. Install dependencies: `yarn install`
+3. Start the development server: `yarn dev`</doc><doc title="README" desc="install &amp; quickstart."># Open SWE Agent
+
+The core LangGraph agent application that powers Open SWE's autonomous code understanding, planning, and execution capabilities.
+
+## Documentation
+
+For detailed setup and usage information, see the [development setup documentation](https://docs.langchain.com/labs/swe/setup/development).
+
+## Development
+
+1. Copy the environment file: `cp .env.example .env` and fill in the required values
+2. Install dependencies: `yarn install`
+3. Start the development server: `yarn dev`</doc><doc title="README" desc="install &amp; quickstart."># Open SWE Web
+
+The Next.js web interface for Open SWE, providing a user-friendly chat interface to interact with the LangGraph agent.
+
+## Documentation
+
+For detailed usage information, see the [UI documentation](https://docs.langchain.com/labs/swe/usage/ui).
+
+## Development
+
+1. Copy the environment file: `cp .env.example .env` and fill in the required values
+2. Install dependencies: `yarn install`
+3. Start the development server: `yarn dev`</doc><doc title="Eslint.Config" desc="docs page.">import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+
+export default [
+  js.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { args: "none", varsIgnorePattern: "^_" },
+      ],
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+    },
+  },
+  {
+    ignores: ["dist"],
+  },
+];</doc><doc title="Eslint.Config" desc="docs page.">import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "none",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "no-console": ["error"],
+    },
+  },
+);</doc><doc title="Eslint.Config" desc="docs page.">import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "none",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "no-console": ["error"],
+    },
+  },
+);</doc><doc title="Eslint.Config" desc="docs page.">import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { args: "none", argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+    },
+  },
+);</doc><doc title="Jest.Config" desc="docs page.">export default {
+  preset: "ts-jest/presets/default-esm",
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^@open-swe/shared$": "<rootDir>/../../packages/shared/src/index.ts",
+    "^@open-swe/shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
+  },
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        useESM: true,
+      },
+    ],
+  },
+  extensionsToTreatAsEsm: [".ts"],
+  setupFiles: ["dotenv/config"],
+  passWithNoTests: true,
+  testTimeout: 20_000,
+  testMatch: ["<rootDir>/src/**/*.test.ts"],
+};</doc><doc title="Jest.Config" desc="docs page.">export default {
+  preset: "ts-jest/presets/default-esm",
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^@open-swe/shared$": "<rootDir>/../../packages/shared/src/index.ts",
+    "^@open-swe/shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
+  },
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        useESM: true,
+      },
+    ],
+  },
+  extensionsToTreatAsEsm: [".ts"],
+  setupFiles: ["dotenv/config"],
+  passWithNoTests: true,
+  testTimeout: 20_000,
+  testMatch: ["<rootDir>/src/**/*.test.ts"],
+};</doc></apps><packages><doc title="README" desc="install &amp; quickstart."># Open SWE Shared
+
+Shared utilities and types package for Open SWE, providing common functionality used across the monorepo applications.
+
+## Documentation
+
+For information about the monorepo structure and shared packages, see the [monorepo documentation](https://docs.langchain.com/labs/swe/setup/monorepo).
+
+## Development
+
+1. Install dependencies: `yarn install`
+2. Build the shared package: `yarn build`
+
+The shared package must be built before other packages can import from it.</doc><doc title="Eslint.Config" desc="docs page.">import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "none",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "no-console": ["error"],
+    },
+  },
+);</doc><doc title="Jest.Config" desc="docs page.">export default {
+  preset: "ts-jest/presets/default-esm",
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        useESM: true,
+      },
+    ],
+  },
+  extensionsToTreatAsEsm: [".ts"],
+  setupFiles: ["dotenv/config"],
+  passWithNoTests: true,
+  testTimeout: 20_000,
+  testMatch: ["<rootDir>/src/**/*.test.ts"],
+};</doc><doc title="Agent Inbox Interrupt" desc="docs page.">import { HumanInterrupt } from "@langchain/langgraph/prebuilt";
+
+export function isAgentInboxInterruptSchema(
+  value: unknown,
+): value is HumanInterrupt | HumanInterrupt[] {
+  const valueAsObject = Array.isArray(value) ? value[0] : value;
+  return (
+    valueAsObject &&
+    typeof valueAsObject === "object" &&
+    "action_request" in valueAsObject &&
+    typeof valueAsObject.action_request === "object" &&
+    "config" in valueAsObject &&
+    typeof valueAsObject.config === "object" &&
+    "allow_respond" in valueAsObject.config &&
+    "allow_accept" in valueAsObject.config &&
+    "allow_edit" in valueAsObject.config &&
+    "allow_ignore" in valueAsObject.config
+  );
+}</doc><doc title="Caching" desc="docs page.">import { CacheMetrics, ModelTokenData } from "./open-swe/types.js";
+
+export function calculateCostSavings(metrics: CacheMetrics): {
+  totalSavings: number;
+  totalCost: number;
+  totalTokens: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalOutputTokensCost: number;
+} {
+  const SONNET_4_BASE_RATE = 3.0 / 1_000_000; // $3 per MTok
+  const SONNET_4_OUTPUT_RATE = 15.0 / 1_000_000; // $15 per MTok
+
+  const CACHE_WRITE_MULTIPLIER = 1.25;
+  const CACHE_READ_MULTIPLIER = 0.1;
+
+  const cacheWriteCost =
+    metrics.cacheCreationInputTokens *
+    SONNET_4_BASE_RATE *
+    CACHE_WRITE_MULTIPLIER;
+
+  const cacheReadCost =
+    metrics.cacheReadInputTokens * SONNET_4_BASE_RATE * CACHE_READ_MULTIPLIER;
+
+  const regularInputCost = metrics.inputTokens * SONNET_4_BASE_RATE;
+
+  const totalOutputTokensCost = metrics.outputTokens * SONNET_4_OUTPUT_RATE;
+
+  // Cost without caching (all tokens at base rate)
+  const totalInputTokens =
+    metrics.cacheCreationInputTokens +
+    metrics.cacheReadInputTokens +
+    metrics.inputTokens;
+  const totalTokens = totalInputTokens + metrics.outputTokens;
+  const costWithoutCaching = totalInputTokens * SONNET_4_BASE_RATE;
+
+  // Actual cost with caching
+  const actualCost = cacheWriteCost + cacheReadCost + regularInputCost;
+
+  return {
+    totalSavings: costWithoutCaching - actualCost,
+    totalCost: actualCost,
+    totalTokens,
+    totalInputTokens,
+    totalOutputTokens: metrics.outputTokens,
+    totalOutputTokensCost,
+  };
+}
+
+export function tokenDataReducer(
+  state: ModelTokenData[] | undefined,
+  update: ModelTokenData[],
+): ModelTokenData[] {
+  if (!state) {
+    return update;
+  }
+
+  // Create a map to merge data by model
+  const modelMap = new Map<string, ModelTokenData>();
+
+  // Add existing state data to the map
+  for (const data of state) {
+    modelMap.set(data.model, { ...data });
+  }
+
+  // Merge update data with existing data
+  for (const data of update) {
+    const existing = modelMap.get(data.model);
+    if (existing) {
+      // Merge the metrics for the same model
+      modelMap.set(data.model, {
+        model: data.model,
+        cacheCreationInputTokens:
+          existing.cacheCreationInputTokens + data.cacheCreationInputTokens,
+        cacheReadInputTokens:
+          existing.cacheReadInputTokens + data.cacheReadInputTokens,
+        inputTokens: existing.inputTokens + data.inputTokens,
+        outputTokens: existing.outputTokens + data.outputTokens,
+      });
+    } else {
+      // Add new model data
+      modelMap.set(data.model, { ...data });
+    }
+  }
+
+  // Convert map back to array
+  return Array.from(modelMap.values());
+}</doc><doc title="Configurable Metadata" desc="docs page.">// The type interface for configuration fields
+
+export type ConfigurableFieldUIType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "boolean"
+  | "slider"
+  | "select"
+  | "json";
+
+/**
+ * The type interface for options in a select field.
+ */
+export interface ConfigurableFieldOption {
+  label: string;
+  value: string;
+}
+
+/**
+ * The UI configuration for a field in the configurable object.
+ */
+export type ConfigurableFieldUIMetadata = {
+  /**
+   * The label of the field. This will be what is rendered in the UI.
+   */
+  label: string;
+  /**
+   * The default value to render in the UI component.
+   *
+   * @default undefined
+   */
+  default?: unknown;
+  /**
+   * The type of the field.
+   * @default "text"
+   */
+  type?: ConfigurableFieldUIType;
+  /**
+   * The description of the field. This will be rendered below the UI component.
+   */
+  description?: string;
+  /**
+   * The placeholder of the field. This will be rendered inside the UI component.
+   * This is only applicable for text, textarea, number, json, and select fields.
+   */
+  placeholder?: string;
+  /**
+   * The options of the field. These will be the options rendered in the select UI component.
+   * This is only applicable for select fields.
+   */
+  options?: ConfigurableFieldOption[];
+  /**
+   * The minimum value of the field.
+   * This is only applicable for number fields.
+   */
+  min?: number;
+  /**
+   * The maximum value of the field.
+   * This is only applicable for number fields.
+   */
+  max?: number;
+  /**
+   * The step value of the field. E.g if using a slider, where you want
+   * people to be able to increment by 0.1, you would set this field to 0.1
+   * This is only applicable for number fields.
+   */
+  step?: number;
+};</doc><doc title="Constants" desc="docs page.">export const TIMEOUT_SEC = 60; // 1 minute
+export const SANDBOX_ROOT_DIR = "/home/daytona";
+export const DAYTONA_IMAGE_NAME = "daytonaio/langchain-open-swe:0.1.0";
+export const DAYTONA_SNAPSHOT_NAME = "open-swe-vcpu2-mem4-disk5";
+export const PLAN_INTERRUPT_DELIMITER = ":::";
+export const PLAN_INTERRUPT_ACTION_TITLE = "Approve/Edit Plan";
+
+// Prefix the access token with `x-` so that it's included in requests to the LangGraph server.
+export const GITHUB_TOKEN_COOKIE = "x-github-access-token";
+export const GITHUB_INSTALLATION_TOKEN_COOKIE = "x-github-installation-token";
+export const GITHUB_INSTALLATION_NAME = "x-github-installation-name";
+export const GITHUB_PAT = "x-github-pat";
+export const GITHUB_INSTALLATION_ID = "x-github-installation-id";
+export const LOCAL_MODE_HEADER = "x-local-mode";
+export const DO_NOT_RENDER_ID_PREFIX = "do-not-render-";
+export const GITHUB_AUTH_STATE_COOKIE = "github_auth_state";
+export const GITHUB_INSTALLATION_ID_COOKIE = "github_installation_id";
+export const GITHUB_TOKEN_TYPE_COOKIE = "github_token_type";
+
+export const OPEN_SWE_V2_GRAPH_ID = "open-swe-v2";
+export const MANAGER_GRAPH_ID = "manager";
+export const PLANNER_GRAPH_ID = "planner";
+export const PROGRAMMER_GRAPH_ID = "programmer";
+
+export const GITHUB_USER_ID_HEADER = "x-github-user-id";
+export const GITHUB_USER_LOGIN_HEADER = "x-github-user-login";
+
+export const DEFAULT_MCP_SERVERS = {
+  "langgraph-docs-mcp": {
+    command: "uvx",
+    args: [
+      "--from",
+      "mcpdoc",
+      "mcpdoc",
+      "--urls",
+      "LangGraphPY:https://langchain-ai.github.io/langgraph/llms.txt LangGraphJS:https://langchain-ai.github.io/langgraphjs/llms.txt",
+      "--transport",
+      "stdio",
+    ],
+    stderr: "inherit" as const,
+  },
+};
+
+export const API_KEY_REQUIRED_MESSAGE =
+  "Unknown users must provide API keys to use the Open SWE demo application";
+
+export const OPEN_SWE_STREAM_MODE = [
+  "values",
+  "updates",
+  "messages",
+  "messages-tuple",
+  "custom",
+];</doc><doc title="Crypto" desc="docs page.">import * as crypto from "node:crypto";
+
+/**
+ * Encryption utility for GitHub tokens using AES-256-GCM
+ *
+ * This module provides secure encryption and decryption of GitHub access tokens
+ * using AES-256-GCM encryption with authenticated encryption.
+ */
+
+const ALGORITHM = "aes-256-gcm";
+const IV_LENGTH = 12; // 96 bits (Standard for GCM)
+const TAG_LENGTH = 16; // 128 bits
+
+/**
+ * Derives a 256-bit key from the provided encryption key string
+ * Uses SHA-256 to ensure consistent key length
+ */
+function deriveKey(encryptionKey: string): Buffer {
+  return crypto.createHash("sha256").update(encryptionKey).digest();
+}
+
+/**
+ * Encrypts a secret using AES-256-GCM
+ *
+ * @param secret - The secret to encrypt
+ * @param encryptionKey - The encryption key (will be hashed to 256 bits)
+ * @returns Base64 encoded encrypted data containing IV, encrypted token, and auth tag
+ * @throws Error if encryption fails or inputs are invalid
+ */
+export function encryptSecret(secret: string, encryptionKey: string): string {
+  if (!secret || typeof secret !== "string") {
+    throw new Error("Secret must be a non-empty string");
+  }
+
+  if (!encryptionKey || typeof encryptionKey !== "string") {
+    throw new Error("Encryption key must be a non-empty string");
+  }
+
+  try {
+    // Generate a random IV for each encryption (12 bytes for GCM)
+    const iv = crypto.randomBytes(IV_LENGTH);
+
+    // Derive the encryption key
+    const key = deriveKey(encryptionKey);
+
+    // Create cipher
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+
+    // Encrypt the secret
+    const encryptedBuffer = Buffer.concat([
+      cipher.update(secret, "utf8"),
+      cipher.final(),
+    ]);
+
+    // Get the authentication tag
+    const tag = cipher.getAuthTag();
+
+    // Combine IV, encrypted data, and tag into a single base64 string
+    // Format: IV (12 bytes) + EncryptedData + AuthTag (16 bytes)
+    const combined = Buffer.concat([iv, encryptedBuffer, tag]);
+    return combined.toString("base64");
+  } catch (error) {
+    throw new Error(
+      `Failed to encrypt secret: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+/**
+ * Decrypts a secret using AES-256-GCM
+ *
+ * @param encryptedSecret - Base64 encoded encrypted data from encryptSecret
+ * @param encryptionKey - The encryption key used for encryption
+ * @returns The decrypted secret
+ * @throws Error if decryption fails or inputs are invalid
+ */
+export function decryptSecret(
+  encryptedSecret: string,
+  encryptionKey: string,
+): string {
+  if (!encryptedSecret || typeof encryptedSecret !== "string") {
+    throw new Error("Encrypted secret must be a non-empty string");
+  }
+
+  if (!encryptionKey || typeof encryptionKey !== "string") {
+    throw new Error("Encryption key must be a non-empty string");
+  }
+
+  try {
+    // Decode the combined data
+    const combined = Buffer.from(encryptedSecret, "base64");
+
+    // Minimum length: IV_LENGTH + TAG_LENGTH + 1 byte for data
+    if (combined.length < IV_LENGTH + TAG_LENGTH + 1) {
+      throw new Error(
+        "Invalid encrypted secret format: too short or malformed",
+      );
+    }
+
+    // Extract IV, encrypted data, and tag
+    // IV is first IV_LENGTH bytes
+    // AuthTag is last TAG_LENGTH bytes
+    // Encrypted data is in between
+    const iv = combined.subarray(0, IV_LENGTH);
+    const tag = combined.subarray(combined.length - TAG_LENGTH);
+    const encrypted = combined.subarray(
+      IV_LENGTH,
+      combined.length - TAG_LENGTH,
+    );
+
+    // Derive the encryption key
+    const key = deriveKey(encryptionKey);
+
+    // Create decipher
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(tag);
+
+    // Decrypt the token
+    // 'encrypted' is a Buffer, so no input encoding is specified for update()
+    const decryptedBuffer = Buffer.concat([
+      decipher.update(encrypted),
+      decipher.final(),
+    ]);
+
+    return decryptedBuffer.toString("utf8");
+  } catch (error) {
+    throw new Error(
+      `Failed to decrypt secret: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}</doc><doc title="Git" desc="docs page.">import { SANDBOX_ROOT_DIR } from "./constants.js";
+import { TargetRepository, GraphConfig } from "./open-swe/types.js";
+import {
+  isLocalMode,
+  getLocalWorkingDirectory,
+} from "./open-swe/local-mode.js";
+
+export function getRepoAbsolutePath(
+  targetRepository: TargetRepository,
+  config?: GraphConfig,
+): string {
+  // Check for local mode first
+  if (config && isLocalMode(config)) {
+    return getLocalWorkingDirectory();
+  }
+
+  const repoName = targetRepository.repo;
+  if (!repoName) {
+    throw new Error("No repository name provided");
+  }
+
+  return `${SANDBOX_ROOT_DIR}/${repoName}`;
+}</doc><doc title="Index" desc="docs page.">// no-op file
+export {};</doc></packages></project>

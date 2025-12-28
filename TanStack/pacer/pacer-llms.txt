@@ -1,0 +1,62 @@
+# Pacer
+
+> TanStack Pacer is a lightweight, type-safe library designed to manage asynchronous operations with precision, offering utilities for debouncing, throttling, rate limiting, queuing, and batching. Its primary goal is to help developers control the timing and scheduling of async functions to prevent performance bottlenecks, reduce unnecessary API calls, and improve user experience. It supports multiple frameworks (React, Solid) and includes developer tools for inspecting async state, making it ideal for modern frontend applications that require fine-grained control over async behavior.
+
+**Remember:**
+- Debouncing
+- Throttling
+- Rate Limiting
+- Queuing
+- Batching
+- Async Workflows
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/pacer/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/pacer/main/docs/overview.md): install & quickstart.
+- [Reference](https://raw.githubusercontent.com/TanStack/pacer/main/docs/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/pacer/main/docs/framework/react/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/pacer/main/docs/framework/solid/reference/index.md): API reference.
+- [Devtools](https://raw.githubusercontent.com/TanStack/pacer/main/docs/devtools.md): docs page.
+- [Generatedocs](https://raw.githubusercontent.com/TanStack/pacer/main/scripts/generateDocs.js): docs page.
+- [Quick Start](https://raw.githubusercontent.com/TanStack/pacer/main/docs/quick-start.md): docs page.
+- [Async Batching](https://raw.githubusercontent.com/TanStack/pacer/main/docs/guides/async-batching.md): docs page.
+- [Async Debouncing](https://raw.githubusercontent.com/TanStack/pacer/main/docs/guides/async-debouncing.md): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/asyncBatch/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/asyncDebounce/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/asyncRateLimit/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/asyncRetry/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/asyncThrottle/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/batch/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/debounce/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/queue/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/rateLimit/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/examples/react/react-query-debounced-prefetch/README.md): install & quickstart.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/pacer/main/CONTRIBUTING.md): docs page.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer-devtools/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer-devtools/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/solid-pacer-devtools/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/pacer/main/packages/solid-pacer/CHANGELOG.md): version history.
+- [Code Of Conduct](https://raw.githubusercontent.com/TanStack/pacer/main/CODE_OF_CONDUCT.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/pacer/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/eslint.config.js): docs page.
+- [Prettier.Config](https://raw.githubusercontent.com/TanStack/pacer/main/prettier.config.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/pacer/main/scripts/verify-links.ts): docs page.
+- [Vitest.Workspace](https://raw.githubusercontent.com/TanStack/pacer/main/vitest.workspace.js): docs page.
+
+## Packages
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer-devtools/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer-devtools/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/solid-pacer-devtools/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/solid-pacer/eslint.config.js): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer-devtools/vite.config.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/pacer/vite.config.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer-devtools/vite.config.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/pacer/main/packages/react-pacer/vite.config.ts): docs page.

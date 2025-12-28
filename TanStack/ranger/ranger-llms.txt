@@ -1,0 +1,56 @@
+# Ranger
+
+> TanStack Ranger is a lightweight, headless UI component library that enables developers to build range‑selector controls with a single or multiple handles, custom step sizes, and optional tick marks. It is designed to be framework‑agnostic (core) while offering a React‑specific wrapper for easy integration into React applications.
+
+**Remember:**
+- headless UI
+- range selector
+- multiple handles
+- custom steps
+- tick marks
+- React wrapper
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/tanstack/ranger/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/tanstack/ranger/main/docs/overview.md): install & quickstart.
+- [Concepts](https://raw.githubusercontent.com/tanstack/ranger/main/docs/concepts.md): core concept.
+- [Faq](https://raw.githubusercontent.com/tanstack/ranger/main/docs/faq.md): core concept.
+- [Quick Start](https://raw.githubusercontent.com/tanstack/ranger/main/docs/quick-start.md): docs page.
+- [React Ranger](https://raw.githubusercontent.com/tanstack/ranger/main/docs/framework/react/react-ranger.md): docs page.
+- [Basic](https://raw.githubusercontent.com/tanstack/ranger/main/docs/framework/react/api/basic.md): API reference.
+- [Custom Steps](https://raw.githubusercontent.com/tanstack/ranger/main/docs/framework/react/api/custom-steps.md): API reference.
+- [Custom Styles](https://raw.githubusercontent.com/tanstack/ranger/main/docs/framework/react/api/custom-styles.md): API reference.
+- [Logarithmic Interpolator](https://raw.githubusercontent.com/tanstack/ranger/main/docs/framework/react/api/logarithmic-interpolator.md): API reference.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/basic/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/custom-steps/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/custom-styles/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/logarithmic-interpolator/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/update-on-drag/README.md): install & quickstart.
+- [Basic](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/basic/index.html): worked example.
+- [Custom Steps](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/custom-steps/index.html): worked example.
+- [Custom Styles](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/custom-styles/index.html): worked example.
+- [Logarithmic Interpolator](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/logarithmic-interpolator/index.html): worked example.
+- [Update On Drag](https://raw.githubusercontent.com/tanstack/ranger/main/examples/react/update-on-drag/index.html): worked example.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/tanstack/ranger/main/CONTRIBUTING.md): docs page.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/README.md): docs page.
+- [Babel.Config](https://raw.githubusercontent.com/tanstack/ranger/main/babel.config.js): docs page.
+- [Jest.Config](https://raw.githubusercontent.com/tanstack/ranger/main/jest.config.ts): docs page.
+- [Rollup.Config](https://raw.githubusercontent.com/tanstack/ranger/main/rollup.config.js): docs page.
+- [Rollup.Config](https://raw.githubusercontent.com/tanstack/ranger/main/rollup.config.ts): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/packages/ranger/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/tanstack/ranger/main/packages/react-ranger/README.md): install & quickstart.
+- [Index](https://raw.githubusercontent.com/tanstack/ranger/main/packages/ranger/src/index.ts): docs page.
+- [Jest.Setup](https://raw.githubusercontent.com/tanstack/ranger/main/packages/ranger/__tests__/jest.setup.js): docs page.
+- [Jest.Setup](https://raw.githubusercontent.com/tanstack/ranger/main/packages/react-ranger/__tests__/jest.setup.js): docs page.
+- [Utils](https://raw.githubusercontent.com/tanstack/ranger/main/packages/ranger/src/utils.ts): docs page.
+
+## Scripts
+- [Config](https://raw.githubusercontent.com/tanstack/ranger/main/scripts/config.ts): docs page.
+- [Publish](https://raw.githubusercontent.com/tanstack/ranger/main/scripts/publish.ts): docs page.
+- [Types](https://raw.githubusercontent.com/tanstack/ranger/main/scripts/types.ts): docs page.

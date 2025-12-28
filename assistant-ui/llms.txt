@@ -1,0 +1,145 @@
+# Docs
+
+## about-assistantui
+
+- [About assistant-ui](https://assistant-ui.com/docs/about-assistantui): 
+
+## architecture
+
+- [Architecture](https://assistant-ui.com/docs/architecture): 
+
+## cli
+
+- [CLI](https://assistant-ui.com/docs/cli): Use the assistant-ui CLI to add components and dependencies to your project.
+
+## devtools
+
+- [DevTools](https://assistant-ui.com/docs/devtools): 
+
+## getting-started
+
+- [Getting Started](https://assistant-ui.com/docs/getting-started): 
+
+## root
+
+- [Documentation](https://assistant-ui.com/docs): 
+
+## mcp-docs-server
+
+- [MCP Docs Server](https://assistant-ui.com/docs/mcp-docs-server): Learn how to use the assistant-ui MCP documentation server in your IDE to access documentation and examples directly.
+
+## react-compatibility
+
+- [Using old React versions](https://assistant-ui.com/docs/react-compatibility): Guide for using assistant-ui with older React versions (18, 17, 16)
+
+## api-reference
+
+- [Overview](https://assistant-ui.com/docs/api-reference/overview): 
+- [<AssistantRuntimeProvider />](https://assistant-ui.com/docs/api-reference/context-providers/AssistantRuntimeProvider): 
+- [<TextMessagePartProvider />](https://assistant-ui.com/docs/api-reference/context-providers/TextMessagePartProvider): 
+- [@assistant-ui/react-data-stream](https://assistant-ui.com/docs/api-reference/integrations/react-data-stream): 
+- [@assistant-ui/react-hook-form](https://assistant-ui.com/docs/api-reference/integrations/react-hook-form): 
+- [@assistant-ui/react-ai-sdk](https://assistant-ui.com/docs/api-reference/integrations/vercel-ai-sdk): 
+- [AssistantRuntime](https://assistant-ui.com/docs/api-reference/runtimes/AssistantRuntime): 
+- [AttachmentRuntime](https://assistant-ui.com/docs/api-reference/runtimes/AttachmentRuntime): 
+- [ComposerRuntime](https://assistant-ui.com/docs/api-reference/runtimes/ComposerRuntime): 
+- [MessagePartRuntime](https://assistant-ui.com/docs/api-reference/runtimes/MessagePartRuntime): 
+- [MessageRuntime](https://assistant-ui.com/docs/api-reference/runtimes/MessageRuntime): 
+- [ThreadListItemRuntime](https://assistant-ui.com/docs/api-reference/runtimes/ThreadListItemRuntime): 
+- [ThreadListRuntime](https://assistant-ui.com/docs/api-reference/runtimes/ThreadListRuntime): 
+- [ThreadRuntime](https://assistant-ui.com/docs/api-reference/runtimes/ThreadRuntime): 
+- [ActionBarPrimitive](https://assistant-ui.com/docs/api-reference/primitives/ActionBar): 
+- [AssistantIf](https://assistant-ui.com/docs/api-reference/primitives/AssistantIf): 
+- [AssistantModalPrimitive](https://assistant-ui.com/docs/api-reference/primitives/AssistantModal): 
+- [AttachmentPrimitive](https://assistant-ui.com/docs/api-reference/primitives/Attachment): 
+- [BranchPickerPrimitive](https://assistant-ui.com/docs/api-reference/primitives/BranchPicker): 
+- [ComposerPrimitive](https://assistant-ui.com/docs/api-reference/primitives/Composer): 
+- [ErrorPrimitive](https://assistant-ui.com/docs/api-reference/primitives/Error): 
+- [MessagePrimitive](https://assistant-ui.com/docs/api-reference/primitives/Message): 
+- [MessagePartPrimitive](https://assistant-ui.com/docs/api-reference/primitives/MessagePart): A part of a message's content. Message parts may be text, image, tool call or UI elements.
+- [ThreadPrimitive](https://assistant-ui.com/docs/api-reference/primitives/Thread): 
+- [ThreadListPrimitive](https://assistant-ui.com/docs/api-reference/primitives/ThreadList): 
+- [ThreadListItemPrimitive](https://assistant-ui.com/docs/api-reference/primitives/ThreadListItem): 
+- [Composition](https://assistant-ui.com/docs/api-reference/primitives/composition): 
+
+## cloud
+
+- [User Authorization](https://assistant-ui.com/docs/cloud/authorization): 
+- [Overview](https://assistant-ui.com/docs/cloud/overview): 
+- [Chat History for AI SDK](https://assistant-ui.com/docs/cloud/persistence/ai-sdk): 
+- [Chat History for LangGraph Cloud](https://assistant-ui.com/docs/cloud/persistence/langgraph): 
+
+## copilots
+
+- [Assistant Frame API](https://assistant-ui.com/docs/copilots/assistant-frame): Share model context across iframe boundaries
+- [makeAssistantVisible](https://assistant-ui.com/docs/copilots/make-assistant-readable): 
+- [makeAssistantToolUI](https://assistant-ui.com/docs/copilots/make-assistant-tool-ui): 
+- [makeAssistantTool](https://assistant-ui.com/docs/copilots/make-assistant-tool): 
+- [Model Context](https://assistant-ui.com/docs/copilots/model-context): 
+- [Intelligent Components](https://assistant-ui.com/docs/copilots/motivation): 
+- [useAssistantInstructions](https://assistant-ui.com/docs/copilots/use-assistant-instructions): 
+
+## guides
+
+- [Attachments](https://assistant-ui.com/docs/guides/Attachments): 
+- [Message Branching](https://assistant-ui.com/docs/guides/Branching): 
+- [Message Editing](https://assistant-ui.com/docs/guides/Editing): 
+- [LaTeX](https://assistant-ui.com/docs/guides/Latex): 
+- [Speech](https://assistant-ui.com/docs/guides/Speech): 
+- [Generative UI](https://assistant-ui.com/docs/guides/ToolUI): 
+- [Tools](https://assistant-ui.com/docs/guides/Tools): 
+- [Context API](https://assistant-ui.com/docs/guides/context-api): 
+
+## migrations
+
+- [Deprecation Policy](https://assistant-ui.com/docs/migrations/deprecation-policy): 
+- [Migrating to react-langgraph v0.7](https://assistant-ui.com/docs/migrations/react-langgraph-v0-7): 
+- [Migration to v0.11](https://assistant-ui.com/docs/migrations/v0-11): 
+- [Migration to v0.12](https://assistant-ui.com/docs/migrations/v0-12): 
+
+## runtimes
+
+- [Assistant Transport](https://assistant-ui.com/docs/runtimes/assistant-transport): 
+- [Data Stream Protocol](https://assistant-ui.com/docs/runtimes/data-stream): 
+- [Helicone](https://assistant-ui.com/docs/runtimes/helicone): 
+- [LangChain LangServe](https://assistant-ui.com/docs/runtimes/langserve): 
+- [Picking a Runtime](https://assistant-ui.com/docs/runtimes/pick-a-runtime): 
+- [AI SDK v5](https://assistant-ui.com/docs/runtimes/ai-sdk/use-chat): 
+- [AI SDK v4 (Legacy)](https://assistant-ui.com/docs/runtimes/ai-sdk/v4-legacy): 
+- [Custom Thread List](https://assistant-ui.com/docs/runtimes/custom/custom-thread-list): 
+- [ExternalStoreRuntime](https://assistant-ui.com/docs/runtimes/custom/external-store): 
+- [LocalRuntime](https://assistant-ui.com/docs/runtimes/custom/local): 
+- [Getting Started](https://assistant-ui.com/docs/runtimes/langgraph): 
+- [Full-Stack Integration](https://assistant-ui.com/docs/runtimes/mastra/full-stack-integration): 
+- [Overview](https://assistant-ui.com/docs/runtimes/mastra/overview): 
+- [Separate Server Integration](https://assistant-ui.com/docs/runtimes/mastra/separate-server-integration): 
+- [Introduction](https://assistant-ui.com/docs/runtimes/langgraph/tutorial): 
+- [Introduction](https://assistant-ui.com/docs/runtimes/langgraph/tutorial/introduction): 
+- [Part 1: Setup frontend](https://assistant-ui.com/docs/runtimes/langgraph/tutorial/part-1): 
+- [Part 2: Generative UI](https://assistant-ui.com/docs/runtimes/langgraph/tutorial/part-2): 
+- [Part 3: Approval UI](https://assistant-ui.com/docs/runtimes/langgraph/tutorial/part-3): 
+
+## ui
+
+- [AssistantModal](https://assistant-ui.com/docs/ui/AssistantModal): 
+- [AssistantSidebar](https://assistant-ui.com/docs/ui/AssistantSidebar): 
+- [Attachment](https://assistant-ui.com/docs/ui/Attachment): 
+- [Markdown](https://assistant-ui.com/docs/ui/Markdown): 
+- [Mermaid Diagrams](https://assistant-ui.com/docs/ui/Mermaid): 
+- [Message Part Grouping](https://assistant-ui.com/docs/ui/PartGrouping): 
+- [Reasoning](https://assistant-ui.com/docs/ui/Reasoning): 
+- [Custom Scrollbar](https://assistant-ui.com/docs/ui/Scrollbar): 
+- [Syntax Highlighting](https://assistant-ui.com/docs/ui/SyntaxHighlighting): 
+- [Thread](https://assistant-ui.com/docs/ui/Thread): 
+- [ThreadList](https://assistant-ui.com/docs/ui/ThreadList): 
+- [ToolFallback](https://assistant-ui.com/docs/ui/ToolFallback): 
+- [ToolGroup](https://assistant-ui.com/docs/ui/ToolGroup): 
+
+## legacy
+
+- [AssistantModal](https://assistant-ui.com/docs/legacy/styled/AssistantModal): 
+- [Decomposition](https://assistant-ui.com/docs/legacy/styled/Decomposition): 
+- [Markdown](https://assistant-ui.com/docs/legacy/styled/Markdown): 
+- [Custom Scrollbar](https://assistant-ui.com/docs/legacy/styled/Scrollbar): 
+- [Thread](https://assistant-ui.com/docs/legacy/styled/Thread): 
+- [Thread Width](https://assistant-ui.com/docs/legacy/styled/ThreadWidth): 

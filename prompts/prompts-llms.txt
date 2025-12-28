@@ -1,0 +1,217 @@
+# Prompts
+
+> To provide a structured, automated, and developer-friendly workflow for software development by exposing a catalog of lifecycle prompts (via MCP tools) that guide teams through planning, implementation, testing, deployment, and post-release operations—ensuring consistency, reducing errors, and enabling seamless integration with existing tools and practices.
+
+**Remember:**
+- Stage-based development lifecycle (P0 to P9)
+- MCP (Model-Driven Code Platform) as a tooling layer for prompt-based automation
+- Prompt catalog with direct CLI and tool access (e.g., /planning-process, /integration-test)
+- Task Master parity via workflow export to .taskmaster/tasks/tasks.json
+- Safety gates (Scope Gate, Test Gate, Review Gate, Release Gate, Hardening Gate)
+- Automated quality gates and checks (e.g., scope control, regression guard, dead code scan)
+
+## Docs
+- [Tm Overview](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-overview.md): install & quickstart.
+- [Tm Overview](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/tm-overview.md): install & quickstart.
+- [Shared  Tm  Overview.Tm.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/_shared__tm__overview.tm.refactor.md): install & quickstart.
+- [Overview.Tm](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/_shared/tm/overview.tm.md): install & quickstart.
+- [50 Docs  Examples  Api Usage.Examples.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/50-docs__examples__api-usage.examples.refactor.md): worked example.
+- [50 Docs  Examples  Reference Implementation.Examples.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/50-docs__examples__reference-implementation.examples.refactor.md): API reference.
+- [Api Usage.Examples](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/50-docs/examples/api-usage.examples.md): API reference.
+- [Reference Implementation.Examples](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/50-docs/examples/reference-implementation.examples.md): API reference.
+- [Api Docs Local](https://raw.githubusercontent.com/AcidicSoil/prompts/main/api-docs-local.md): docs page.
+- [Coverage Guide](https://raw.githubusercontent.com/AcidicSoil/prompts/main/coverage-guide.md): docs page.
+
+## Tutorials
+- [Agent Demo](https://raw.githubusercontent.com/AcidicSoil/prompts/main/examples/agent-demo.md): worked example.
+
+## API
+- [Api Contract](https://raw.githubusercontent.com/AcidicSoil/prompts/main/api-contract.md): docs page.
+- [Api Usage](https://raw.githubusercontent.com/AcidicSoil/prompts/main/api-usage.md): docs page.
+- [Openapi Generate](https://raw.githubusercontent.com/AcidicSoil/prompts/main/openapi-generate.md): docs page.
+- [Reference Implementation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/reference-implementation.md): API reference.
+- [Api Contract](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/api-contract.md): API reference.
+- [Api Usage](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/api-usage.md): API reference.
+- [Openapi Generate](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/openapi-generate.md): docs page.
+- [Reference Implementation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/reference-implementation.md): API reference.
+- [00 Ideation  Design  Api Contract.Design.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__design__api-contract.design.refactor.md): docs page.
+- [Api Contract.Design](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/00-ideation/design/api-contract.design.md): API reference.
+
+## Concepts
+- [Design Assets](https://raw.githubusercontent.com/AcidicSoil/prompts/main/design-assets.md): docs page.
+- [Modular Architecture](https://raw.githubusercontent.com/AcidicSoil/prompts/main/modular-architecture.md): core concept.
+- [Design Assets](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/design-assets.md): docs page.
+- [Modular Architecture](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/modular-architecture.md): core concept.
+- [00 Ideation  Architecture  Adr New.Architecture.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__architecture__adr-new.architecture.refactor.md): core concept.
+- [00 Ideation  Architecture  Logging Strategy.Architecture.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__architecture__logging-strategy.architecture.refactor.md): core concept.
+- [00 Ideation  Architecture  Modular Architecture.Architecture.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__architecture__modular-architecture.architecture.refactor.md): core concept.
+- [00 Ideation  Architecture  Stack Evaluation.Architecture.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__architecture__stack-evaluation.architecture.refactor.md): core concept.
+- [00 Ideation  Design  Action Diagram.Design.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__design__action-diagram.design.refactor.md): docs page.
+- [00 Ideation  Design  Design Assets.Design.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__design__design-assets.design.refactor.md): docs page.
+
+## Optional
+- [Changelog](https://raw.githubusercontent.com/AcidicSoil/prompts/main/CHANGELOG.md): version history.
+- [Changelog From Commits](https://raw.githubusercontent.com/AcidicSoil/prompts/main/changelog-from-commits.md): version history.
+- [Changelog Verify](https://raw.githubusercontent.com/AcidicSoil/prompts/main/changelog-verify.md): version history.
+- [Contributing](https://raw.githubusercontent.com/AcidicSoil/prompts/main/CONTRIBUTING.md): docs page.
+- [License Report](https://raw.githubusercontent.com/AcidicSoil/prompts/main/license-report.md): usage terms.
+- [Release Notes](https://raw.githubusercontent.com/AcidicSoil/prompts/main/release-notes.md): version history.
+- [Release Notes Prepare](https://raw.githubusercontent.com/AcidicSoil/prompts/main/release-notes-prepare.md): version history.
+- [Update Changelog](https://raw.githubusercontent.com/AcidicSoil/prompts/main/update-changelog.md): version history.
+- [Changelog From Commits](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/changelog-from-commits.md): version history.
+- [Changelog Verify](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/changelog-verify.md): version history.
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/prompts/main/AGENTS.md): docs page.
+- [README](https://raw.githubusercontent.com/AcidicSoil/prompts/main/README.md): docs page.
+- [Workflow](https://raw.githubusercontent.com/AcidicSoil/prompts/main/WORKFLOW.md): docs page.
+- [Action Diagram](https://raw.githubusercontent.com/AcidicSoil/prompts/main/action-diagram.md): docs page.
+- [Adr New](https://raw.githubusercontent.com/AcidicSoil/prompts/main/adr-new.md): docs page.
+- [Adr New.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/adr-new.refactor.md): docs page.
+- [Audit](https://raw.githubusercontent.com/AcidicSoil/prompts/main/audit.md): docs page.
+- [Auth Scaffold](https://raw.githubusercontent.com/AcidicSoil/prompts/main/auth-scaffold.md): docs page.
+- [Blame Summary](https://raw.githubusercontent.com/AcidicSoil/prompts/main/blame-summary.md): docs page.
+- [Changed Files](https://raw.githubusercontent.com/AcidicSoil/prompts/main/changed-files.md): docs page.
+- [Check](https://raw.githubusercontent.com/AcidicSoil/prompts/main/check.md): docs page.
+- [Cleanup Branches](https://raw.githubusercontent.com/AcidicSoil/prompts/main/cleanup-branches.md): docs page.
+- [Code Review High](https://raw.githubusercontent.com/AcidicSoil/prompts/main/code-review-high.md): docs page.
+- [Code Review Low](https://raw.githubusercontent.com/AcidicSoil/prompts/main/code-review-low.md): docs page.
+- [Commit](https://raw.githubusercontent.com/AcidicSoil/prompts/main/commit.md): docs page.
+- [Compare Outputs](https://raw.githubusercontent.com/AcidicSoil/prompts/main/compare-outputs.md): docs page.
+- [Content Generation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/content-generation.md): docs page.
+- [Cross Check](https://raw.githubusercontent.com/AcidicSoil/prompts/main/cross-check.md): docs page.
+- [Db Bootstrap](https://raw.githubusercontent.com/AcidicSoil/prompts/main/db-bootstrap.md): docs page.
+- [Dead Code Scan](https://raw.githubusercontent.com/AcidicSoil/prompts/main/dead-code-scan.md): docs page.
+- [Devops Automation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/devops-automation.md): docs page.
+- [E2E Runner Setup](https://raw.githubusercontent.com/AcidicSoil/prompts/main/e2e-runner-setup.md): docs page.
+- [Env Setup](https://raw.githubusercontent.com/AcidicSoil/prompts/main/env-setup.md): docs page.
+- [Error Analysis](https://raw.githubusercontent.com/AcidicSoil/prompts/main/error-analysis.md): docs page.
+- [Eslint Review](https://raw.githubusercontent.com/AcidicSoil/prompts/main/eslint-review.md): docs page.
+- [Evidence Capture](https://raw.githubusercontent.com/AcidicSoil/prompts/main/evidence-capture.md): docs page.
+- [Explain Code](https://raw.githubusercontent.com/AcidicSoil/prompts/main/explain-code.md): docs page.
+- [Explain Failures](https://raw.githubusercontent.com/AcidicSoil/prompts/main/explain-failures.md): docs page.
+- [Explain Symbol](https://raw.githubusercontent.com/AcidicSoil/prompts/main/explain-symbol.md): docs page.
+- [Feature Flags](https://raw.githubusercontent.com/AcidicSoil/prompts/main/feature-flags.md): docs page.
+- [File Modularity](https://raw.githubusercontent.com/AcidicSoil/prompts/main/file-modularity.md): docs page.
+- [Fix](https://raw.githubusercontent.com/AcidicSoil/prompts/main/fix.md): docs page.
+- [Gemini Map](https://raw.githubusercontent.com/AcidicSoil/prompts/main/gemini-map.md): docs page.
+- [Generate](https://raw.githubusercontent.com/AcidicSoil/prompts/main/generate.md): docs page.
+- [Grep](https://raw.githubusercontent.com/AcidicSoil/prompts/main/grep.md): docs page.
+- [Iac Bootstrap](https://raw.githubusercontent.com/AcidicSoil/prompts/main/iac-bootstrap.md): docs page.
+- [Instruction File](https://raw.githubusercontent.com/AcidicSoil/prompts/main/instruction-file.md): docs page.
+- [Integration Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/integration-test.md): docs page.
+- [Jest.Config](https://raw.githubusercontent.com/AcidicSoil/prompts/main/jest.config.ts): docs page.
+- [Logging Strategy](https://raw.githubusercontent.com/AcidicSoil/prompts/main/logging-strategy.md): docs page.
+- [Migration Plan](https://raw.githubusercontent.com/AcidicSoil/prompts/main/migration-plan.md): docs page.
+- [Model Evaluation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/model-evaluation.md): docs page.
+- [Model Strengths](https://raw.githubusercontent.com/AcidicSoil/prompts/main/model-strengths.md): docs page.
+- [Monitoring Setup](https://raw.githubusercontent.com/AcidicSoil/prompts/main/monitoring-setup.md): docs page.
+- [Owners](https://raw.githubusercontent.com/AcidicSoil/prompts/main/owners.md): docs page.
+- [Plan Delta](https://raw.githubusercontent.com/AcidicSoil/prompts/main/plan-delta.md): docs page.
+- [Plan Review](https://raw.githubusercontent.com/AcidicSoil/prompts/main/plan-review.md): docs page.
+- [Planning Process](https://raw.githubusercontent.com/AcidicSoil/prompts/main/planning-process.md): docs page.
+- [Pr Desc](https://raw.githubusercontent.com/AcidicSoil/prompts/main/pr-desc.md): docs page.
+- [Prd Generator](https://raw.githubusercontent.com/AcidicSoil/prompts/main/prd-generator.md): docs page.
+- [Prettier Adopt Migration Report](https://raw.githubusercontent.com/AcidicSoil/prompts/main/prettier-adopt_Migration_report.md): docs page.
+- [Problem Analyzer](https://raw.githubusercontent.com/AcidicSoil/prompts/main/problem-analyzer.md): docs page.
+- [Prompt Sequence Generator](https://raw.githubusercontent.com/AcidicSoil/prompts/main/prompt-sequence-generator.md): docs page.
+- [Docfetch Check](https://raw.githubusercontent.com/AcidicSoil/prompts/main/prompts/preflight/docfetch-check.md): docs page.
+- [Prototype Feature](https://raw.githubusercontent.com/AcidicSoil/prompts/main/prototype-feature.md): docs page.
+- [Query Set](https://raw.githubusercontent.com/AcidicSoil/prompts/main/query-set.md): docs page.
+- [Rank Root Prompts](https://raw.githubusercontent.com/AcidicSoil/prompts/main/rank-root-prompts.md): docs page.
+- [Refactor Code](https://raw.githubusercontent.com/AcidicSoil/prompts/main/refactor-code.md): docs page.
+- [Refactor File](https://raw.githubusercontent.com/AcidicSoil/prompts/main/refactor-file.md): docs page.
+- [Refactor Suggestions](https://raw.githubusercontent.com/AcidicSoil/prompts/main/refactor-suggestions.md): docs page.
+- [Regression Guard](https://raw.githubusercontent.com/AcidicSoil/prompts/main/regression-guard.md): docs page.
+- [Research Batch](https://raw.githubusercontent.com/AcidicSoil/prompts/main/research-batch.md): docs page.
+- [Research Item](https://raw.githubusercontent.com/AcidicSoil/prompts/main/research-item.md): docs page.
+- [Reset Strategy](https://raw.githubusercontent.com/AcidicSoil/prompts/main/reset-strategy.md): docs page.
+- [Review Branch](https://raw.githubusercontent.com/AcidicSoil/prompts/main/review-branch.md): docs page.
+- [Review](https://raw.githubusercontent.com/AcidicSoil/prompts/main/review.md): docs page.
+- [Roll Up](https://raw.githubusercontent.com/AcidicSoil/prompts/main/roll-up.md): docs page.
+- [Scaffold Fullstack](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scaffold-fullstack.md): docs page.
+- [Scope Control](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scope-control.md): docs page.
+- [Secrets Manager Setup](https://raw.githubusercontent.com/AcidicSoil/prompts/main/secrets-manager-setup.md): docs page.
+- [Secrets Scan](https://raw.githubusercontent.com/AcidicSoil/prompts/main/secrets-scan.md): docs page.
+- [Slo Setup](https://raw.githubusercontent.com/AcidicSoil/prompts/main/slo-setup.md): docs page.
+- [Stack Evaluation](https://raw.githubusercontent.com/AcidicSoil/prompts/main/stack-evaluation.md): docs page.
+- [Summary](https://raw.githubusercontent.com/AcidicSoil/prompts/main/summary.md): docs page.
+- [Switch Model](https://raw.githubusercontent.com/AcidicSoil/prompts/main/switch-model.md): docs page.
+- [System Level Instruction Editor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/system-level-instruction-editor.md): docs page.
+- [Ingest.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tests/adapters/ingest.test.ts): docs page.
+- [Tm Advance](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-advance.md): docs page.
+- [Tm Blockers](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-blockers.md): docs page.
+- [Tm Ci](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-ci.md): docs page.
+- [Tm Delta](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-delta.md): docs page.
+- [Tm Next](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-next.md): docs page.
+- [Tm Refine](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tm-refine.md): docs page.
+- [Todo Report](https://raw.githubusercontent.com/AcidicSoil/prompts/main/todo-report.md): docs page.
+- [Todos](https://raw.githubusercontent.com/AcidicSoil/prompts/main/todos.md): docs page.
+- [Tsconfig Review](https://raw.githubusercontent.com/AcidicSoil/prompts/main/tsconfig-review.md): docs page.
+- [Ui Screenshots](https://raw.githubusercontent.com/AcidicSoil/prompts/main/ui-screenshots.md): docs page.
+- [Version Proposal](https://raw.githubusercontent.com/AcidicSoil/prompts/main/version-proposal.md): docs page.
+- [Vibe Coders](https://raw.githubusercontent.com/AcidicSoil/prompts/main/vibe-coders.md): docs page.
+- [Voice Input](https://raw.githubusercontent.com/AcidicSoil/prompts/main/voice-input.md): docs page.
+
+## Artifacts
+- [Delta 20250921 173948](https://raw.githubusercontent.com/AcidicSoil/prompts/main/artifacts/delta-20250921-173948.md): docs page.
+- [Readiness 20250921 173948](https://raw.githubusercontent.com/AcidicSoil/prompts/main/artifacts/readiness-20250921-173948.txt): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/AcidicSoil/prompts/main/packages/prompts-tools/README.md): install & quickstart.
+- [Index](https://raw.githubusercontent.com/AcidicSoil/prompts/main/packages/prompts-tools/src/index.ts): docs page.
+
+## Scripts
+- [Build Catalog](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/build_catalog.ts): docs page.
+- [Catalog Types](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/catalog_types.ts): docs page.
+- [File Utils](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/file_utils.ts): docs page.
+- [Front Matter](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/front_matter.ts): docs page.
+- [Markdown Utils](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/markdown_utils.ts): docs page.
+- [Validate Metadata](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/validate_metadata.ts): docs page.
+- [Workflow Sync.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/scripts/__tests__/workflow_sync.test.ts): docs page.
+
+## Src
+- [Logger](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/logger.ts): docs page.
+- [Planner](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/planner.ts): docs page.
+- [Server](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/server.ts): docs page.
+- [Types](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/types.ts): docs page.
+- [Actions](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/cli/actions.ts): docs page.
+- [Factory](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/providers/factory.ts): docs page.
+- [Geminicli](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/providers/geminiCli.ts): docs page.
+- [Graph](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/state/graph.js): docs page.
+- [Graph](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/state/graph.ts): docs page.
+- [Graph.D](https://raw.githubusercontent.com/AcidicSoil/prompts/main/src/state/graph.d.ts): docs page.
+
+## Temp Prompts Organized
+- [Temp Prompt Worklist](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/temp-prompt-worklist.md): docs page.
+- [00 Ideation  Requirements  Plan Delta.Requirements.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__requirements__plan-delta.requirements.refactor.md): docs page.
+- [00 Ideation  Requirements  Planning Process.Requirements.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__requirements__planning-process.requirements.refactor.md): docs page.
+- [00 Ideation  Requirements  Prd Generator.Requirements.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__requirements__prd-generator.requirements.refactor.md): docs page.
+- [00 Ideation  Requirements  Scope Control.Requirements.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/00-ideation__requirements__scope-control.requirements.refactor.md): docs page.
+- [10 Scaffold  Ci Setup  Devops Automation.Ci Setup.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/10-scaffold__ci-setup__devops-automation.ci-setup.refactor.md): docs page.
+- [10 Scaffold  Ci Setup  Env Setup.Ci Setup.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/10-scaffold__ci-setup__env-setup.ci-setup.refactor.md): docs page.
+- [10 Scaffold  Ci Setup  Monitoring Setup.Ci Setup.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/10-scaffold__ci-setup__monitoring-setup.ci-setup.refactor.md): docs page.
+- [10 Scaffold  Ci Setup  Secrets Manager Setup.Ci Setup.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/10-scaffold__ci-setup__secrets-manager-setup.ci-setup.refactor.md): docs page.
+- [10 Scaffold  Ci Setup  Slo Setup.Ci Setup.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-organized/prompt-front-matter/10-scaffold__ci-setup__slo-setup.ci-setup.refactor.md): docs page.
+
+## Temp Prompts Refactored
+- [3 Step Process B4 Refactoring](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/3-step-process-b4-refactoring.md): docs page.
+- [Action Diagram](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/action-diagram.md): docs page.
+- [Adr New](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/adr-new.md): docs page.
+- [Adr New.Refactor](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/adr-new.refactor.md): docs page.
+- [Audit](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/audit.md): docs page.
+- [Auth Scaffold](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/auth-scaffold.md): docs page.
+- [Blame Summary](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/blame-summary.md): docs page.
+- [Changed Files](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/changed-files.md): docs page.
+- [Check](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/check.md): docs page.
+- [Cleanup Branches](https://raw.githubusercontent.com/AcidicSoil/prompts/main/temp-prompts-refactored/cleanup-branches.md): docs page.
+
+## Test
+- [Agent Smoke.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/integration/agent-smoke.test.ts): docs page.
+- [Enrichment.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/adapters/enrichment.test.ts): docs page.
+- [Factory.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/providers/factory.test.ts): docs page.
+- [Ingest.Schema Path.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/adapters/ingest.schema-path.test.ts): docs page.
+- [Loop Execution.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/integration/loop-execution.test.ts): docs page.
+- [Planner.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/planner/Planner.test.ts): docs page.
+- [Prompts Cli.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/cli/prompts-cli.test.ts): docs page.
+- [Prompts Tools.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/mastra/prompts-tools.test.ts): docs page.
+- [Resources.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/integration/resources.test.ts): docs page.
+- [Run Lint.Test](https://raw.githubusercontent.com/AcidicSoil/prompts/main/test/integration/run-lint.test.ts): docs page.

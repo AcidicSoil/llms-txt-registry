@@ -1,0 +1,87 @@
+# Create Tsrouter App
+
+> The project aims to provide a streamlined, customizable CLI tool for generating new TypeScript applications using TanStack Router, with support for multiple frameworks (React and Solid) and a wide range of add-ons (e.g., tRPC, Convex, Sentry, ShadCN, etc.). It enables developers to quickly bootstrap projects with pre-configured templates, integrations, and tooling, reducing boilerplate and accelerating development.
+
+**Remember:**
+- TanStack Router
+- CLI Tool
+- Application Scaffolding
+- Framework Agnostic (React/Solid)
+- Add-ons and Integrations
+- Customizable Starters
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/custom-cli/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/react-cra/blog-starter/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/react-cra/ecommerce-starter/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/react-cra/legend-state-add-on/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/react-cra/mui-add-on/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/react-cra/resume-starter/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/examples/tanchat/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/examples/tanchat/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/custom-cli/create-rwsdk/add-ons/neon/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/examples/custom-cli/create-rwsdk/project/base/README.md): install & quickstart.
+
+## API
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/strapi/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/strapi/README.md): install & quickstart.
+- [File Classes](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui-base/src/file-classes.ts): docs page.
+- [Api](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui-base/src/lib/api.ts): API reference.
+- [Rimraf Node Modules](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/src/special-steps/rimraf-node-modules.ts): docs page.
+- [Api](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/convex/assets/convex/_generated/api.js): API reference.
+- [Api](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/convex/assets/convex/_generated/api.js): API reference.
+- [Api.$](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/oRPC/assets/src/routes/api.$.ts): API reference.
+- [Api.D](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/convex/assets/convex/_generated/api.d.ts): API reference.
+- [Api.D](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/convex/assets/convex/_generated/api.d.ts): API reference.
+
+## Concepts
+- [Architecture](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/ARCHITECTURE.md): core concept.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/CONTRIBUTING.md): docs page.
+- [Claude](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/CLAUDE.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/eslint.config.js): docs page.
+- [Prettier.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/prettier.config.js): docs page.
+
+## Cli
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-start-app/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tanstack-app/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tanstack/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tsrouter-app/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/ts-create-start/README.md): install & quickstart.
+- [Index](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-start-app/src/index.ts): docs page.
+- [Index](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tanstack-app/src/index.ts): docs page.
+- [Index](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tanstack/src/index.ts): docs page.
+- [Index](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/create-tsrouter-app/src/index.ts): docs page.
+- [Index](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/cli/ts-create-start/src/index.ts): docs page.
+
+## Frameworks
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/clerk/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/convex/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/neon/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/shadcn/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/t3env/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/add-ons/workos/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/convex/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/solid-ui/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/solid/add-ons/t3env/README.md): install & quickstart.
+- [Add On Authoring](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/frameworks/react-cra/ADD-ON-AUTHORING.md): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui/README.md): install & quickstart.
+- [Cta Ui](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui/index.html): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui/vite.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-cli/vitest.config.js): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/vitest.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-ui-base/vitest.config.ts): docs page.
+- [Add On Options.Test](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/tests/add-on-options.test.ts): docs page.
+- [Add Ons](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/src/add-ons.ts): docs page.
+- [Add Ons.Test](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/tests/add-ons.test.ts): docs page.
+- [Add To App](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/packages/cta-engine/src/add-to-app.ts): docs page.
+
+## Scripts
+- [README](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/scripts/README.md): install & quickstart.
+- [Check Outdated Packages](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/scripts/check-outdated-packages.js): docs page.
+- [Generate Checksums](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/scripts/generate-checksums.js): docs page.
+- [Publish](https://raw.githubusercontent.com/TanStack/create-tsrouter-app/main/scripts/publish.js): docs page.

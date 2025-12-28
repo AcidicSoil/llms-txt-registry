@@ -1,0 +1,4853 @@
+<project title="Create Tsrouter App" summary="The project aims to provide a streamlined, customizable CLI tool for generating new TypeScript applications using TanStack Router, with support for multiple frameworks (React and Solid) and a wide range of add-ons (e.g., tRPC, Convex, Sentry, ShadCN, etc.). It enables developers to quickly bootstrap projects with pre-configured templates, integrations, and tooling, reducing boilerplate and accelerating development.">**Remember:**
+- TanStack Router
+- CLI Tool
+- Application Scaffolding
+- Framework Agnostic (React/Solid)
+- Add-ons and Integrations
+- Customizable Starters<tutorials><doc title="README" desc="install &amp; quickstart.">## Scenarios
+
+There are three customizing scenarios we should support:
+
+- Augmenting an exsting CTA framework - Take an existing framework like `react-cra` then allow for base template customization, removal of add-ons, and addition of new custom add-ons.
+- Customized UI - Build up a new UI from components of the base UI.
+- New framework - Build up a new framework from with base and add-ons as well as a new CLI.
+
+## Customers
+
+There are two types of customers for this work:
+
+- Infrastructure teams - Infrastructure teams at companies who want to create a template for new applications as well as optional add-ons with a friendly CLI and UI.
+- OSS framework authors - OSS framework authors who want to build a friendly CLI and UI for their framework.
+
+## Examples
+
+| Project                                | Description                                                           |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| [customized-react](./customized-react) | Shows a small customization of the existing `react-cra` framework.    |
+| [create-qwik-app](./create-qwik-app)   | Show support for an entire framework (Qwik) with a custom CLI and UI. |</doc><doc title="README" desc="install &amp; quickstart.">Welcome to your new TanStack app! 
+
+# Getting Started
+
+To run this application:
+
+```bash
+pnpm install
+pnpm start  
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+pnpm build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+pnpm test
+```
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+
+
+## Shadcn
+
+Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+
+```bash
+pnpx shadcn@latest add button
+```
+
+
+
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Link } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### React-Query
+
+React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+
+First add your dependencies:
+
+```bash
+pnpm add @tanstack/react-query @tanstack/react-query-devtools
+```
+
+Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// ...
+
+const queryClient = new QueryClient();
+
+// ...
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+You can also add TanStack Query Devtools to the root route (optional).
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <ReactQueryDevtools buttonPosition="top-right" />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+```
+
+Now you can use `useQuery` to fetch your data.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+import "./App.css";
+
+function App() {
+  const { data } = useQuery({
+    queryKey: ["people"],
+    queryFn: () =>
+      fetch("https://swapi.dev/api/people")
+        .then((res) => res.json())
+        .then((data) => data.results as { name: string }[]),
+    initialData: [],
+  });
+
+  return (
+    <div>
+      <ul>
+        {data.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+
+## State Management
+
+Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+
+First you need to add TanStack Store as a dependency:
+
+```bash
+pnpm add @tanstack/store
+```
+
+Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+function App() {
+  const count = useStore(countStore);
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+
+Let's check this out by doubling the count using derived state.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store, Derived } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+const doubledStore = new Derived({
+  fn: () => countStore.state * 2,
+  deps: [countStore],
+});
+doubledStore.mount();
+
+function App() {
+  const count = useStore(countStore);
+  const doubledCount = useStore(doubledStore);
+
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+      <div>Doubled - {doubledCount}</div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+
+Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+
+You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart.">Welcome to your new TanStack app! 
+
+# Getting Started
+
+To run this application:
+
+```bash
+npm install
+npm run start  
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+npm run build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+npm run test
+```
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+
+
+# TanStack Chat Application
+
+Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
+
+## .env Updates
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+## ✨ Features
+
+### AI Capabilities
+- 🤖 Powered by Claude 3.7 Sonnet 
+- 📝 Rich markdown formatting with syntax highlighting
+- 🎯 Customizable system prompts for tailored AI behavior
+- 🔄 Real-time message updates and streaming responses (coming soon)
+
+### User Experience
+- 🎨 Modern UI with Tailwind CSS and Lucide icons
+- 🔍 Conversation management and history
+- 🔐 Secure API key management
+- 📋 Markdown rendering with code highlighting
+
+### Technical Features
+- 📦 Centralized state management with TanStack Store
+- 🔌 Extensible architecture for multiple AI providers
+- 🛠️ TypeScript for type safety
+
+## Architecture
+
+### Tech Stack
+- **Frontend Framework**: TanStack Start
+- **Routing**: TanStack Router
+- **State Management**: TanStack Store
+- **Styling**: Tailwind CSS
+- **AI Integration**: Anthropic's Claude API
+
+
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Link } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### React-Query
+
+React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+
+First add your dependencies:
+
+```bash
+npm install @tanstack/react-query @tanstack/react-query-devtools
+```
+
+Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// ...
+
+const queryClient = new QueryClient();
+
+// ...
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+You can also add TanStack Query Devtools to the root route (optional).
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <ReactQueryDevtools buttonPosition="top-right" />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+```
+
+Now you can use `useQuery` to fetch your data.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+import "./App.css";
+
+function App() {
+  const { data } = useQuery({
+    queryKey: ["people"],
+    queryFn: () =>
+      fetch("https://swapi.dev/api/people")
+        .then((res) => res.json())
+        .then((data) => data.results as { name: string }[]),
+    initialData: [],
+  });
+
+  return (
+    <div>
+      <ul>
+        {data.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+
+## State Management
+
+Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+
+First you need to add TanStack Store as a dependency:
+
+```bash
+npm install @tanstack/store
+```
+
+Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+function App() {
+  const count = useStore(countStore);
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+
+Let's check this out by doubling the count using derived state.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store, Derived } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+const doubledStore = new Derived({
+  fn: () => countStore.state * 2,
+  deps: [countStore],
+});
+doubledStore.mount();
+
+function App() {
+  const count = useStore(countStore);
+  const doubledCount = useStore(doubledStore);
+
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+      <div>Doubled - {doubledCount}</div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+
+Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+
+You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart.">Welcome to your new TanStack app! 
+
+# Getting Started
+
+To run this application:
+
+```bash
+pnpm install
+pnpm start  
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+pnpm build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+pnpm test
+```
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+
+
+
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Link } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### React-Query
+
+React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+
+First add your dependencies:
+
+```bash
+pnpm add @tanstack/react-query @tanstack/react-query-devtools
+```
+
+Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// ...
+
+const queryClient = new QueryClient();
+
+// ...
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+You can also add TanStack Query Devtools to the root route (optional).
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <ReactQueryDevtools buttonPosition="top-right" />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+```
+
+Now you can use `useQuery` to fetch your data.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+import "./App.css";
+
+function App() {
+  const { data } = useQuery({
+    queryKey: ["people"],
+    queryFn: () =>
+      fetch("https://swapi.dev/api/people")
+        .then((res) => res.json())
+        .then((data) => data.results as { name: string }[]),
+    initialData: [],
+  });
+
+  return (
+    <div>
+      <ul>
+        {data.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+
+## State Management
+
+Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+
+First you need to add TanStack Store as a dependency:
+
+```bash
+pnpm add @tanstack/store
+```
+
+Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+function App() {
+  const count = useStore(countStore);
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+
+Let's check this out by doubling the count using derived state.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store, Derived } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+const doubledStore = new Derived({
+  fn: () => countStore.state * 2,
+  deps: [countStore],
+});
+doubledStore.mount();
+
+function App() {
+  const count = useStore(countStore);
+  const doubledCount = useStore(doubledStore);
+
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+      <div>Doubled - {doubledCount}</div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+
+Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+
+You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart.">Welcome to your new TanStack app! 
+
+# Getting Started
+
+To run this application:
+
+```bash
+pnpm install
+pnpm start  
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+pnpm build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+pnpm test
+```
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+
+
+
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Link } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### React-Query
+
+React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+
+First add your dependencies:
+
+```bash
+pnpm add @tanstack/react-query @tanstack/react-query-devtools
+```
+
+Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// ...
+
+const queryClient = new QueryClient();
+
+// ...
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+You can also add TanStack Query Devtools to the root route (optional).
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <ReactQueryDevtools buttonPosition="top-right" />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+```
+
+Now you can use `useQuery` to fetch your data.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+import "./App.css";
+
+function App() {
+  const { data } = useQuery({
+    queryKey: ["people"],
+    queryFn: () =>
+      fetch("https://swapi.dev/api/people")
+        .then((res) => res.json())
+        .then((data) => data.results as { name: string }[]),
+    initialData: [],
+  });
+
+  return (
+    <div>
+      <ul>
+        {data.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+
+## State Management
+
+Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+
+First you need to add TanStack Store as a dependency:
+
+```bash
+pnpm add @tanstack/store
+```
+
+Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+function App() {
+  const count = useStore(countStore);
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+
+Let's check this out by doubling the count using derived state.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store, Derived } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+const doubledStore = new Derived({
+  fn: () => countStore.state * 2,
+  deps: [countStore],
+});
+doubledStore.mount();
+
+function App() {
+  const count = useStore(countStore);
+  const doubledCount = useStore(doubledStore);
+
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+      <div>Doubled - {doubledCount}</div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+
+Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+
+You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart.">Welcome to your new TanStack app! 
+
+# Getting Started
+
+To run this application:
+
+```bash
+npm install
+npm run start  
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+npm run build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+npm run test
+```
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+
+
+## Shadcn
+
+Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+
+```bash
+pnpx shadcn@latest add button
+```
+
+
+
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router";
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Link } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### React-Query
+
+React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
+
+First add your dependencies:
+
+```bash
+npm install @tanstack/react-query @tanstack/react-query-devtools
+```
+
+Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// ...
+
+const queryClient = new QueryClient();
+
+// ...
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
+}
+```
+
+You can also add TanStack Query Devtools to the root route (optional).
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <ReactQueryDevtools buttonPosition="top-right" />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
+```
+
+Now you can use `useQuery` to fetch your data.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+import "./App.css";
+
+function App() {
+  const { data } = useQuery({
+    queryKey: ["people"],
+    queryFn: () =>
+      fetch("https://swapi.dev/api/people")
+        .then((res) => res.json())
+        .then((data) => data.results as { name: string }[]),
+    initialData: [],
+  });
+
+  return (
+    <div>
+      <ul>
+        {data.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
+
+## State Management
+
+Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
+
+First you need to add TanStack Store as a dependency:
+
+```bash
+npm install @tanstack/store
+```
+
+Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+function App() {
+  const count = useStore(countStore);
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+
+Let's check this out by doubling the count using derived state.
+
+```tsx
+import { useStore } from "@tanstack/react-store";
+import { Store, Derived } from "@tanstack/store";
+import "./App.css";
+
+const countStore = new Store(0);
+
+const doubledStore = new Derived({
+  fn: () => countStore.state * 2,
+  deps: [countStore],
+});
+doubledStore.mount();
+
+function App() {
+  const count = useStore(countStore);
+  const doubledCount = useStore(doubledStore);
+
+  return (
+    <div>
+      <button onClick={() => countStore.setState((n) => n + 1)}>
+        Increment - {count}
+      </button>
+      <div>Doubled - {doubledCount}</div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+
+Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+
+You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart."># TanStack Chat Application
+
+Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
+
+## .env Updates
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+## ✨ Features
+
+### AI Capabilities
+- 🤖 Powered by Claude 3.5 Sonnet 
+- 📝 Rich markdown formatting with syntax highlighting
+- 🎯 Customizable system prompts for tailored AI behavior
+- 🔄 Real-time message updates and streaming responses (coming soon)
+
+### User Experience
+- 🎨 Modern UI with Tailwind CSS and Lucide icons
+- 🔍 Conversation management and history
+- 🔐 Secure API key management
+- 📋 Markdown rendering with code highlighting
+
+### Technical Features
+- 📦 Centralized state management with TanStack Store
+- 🔌 Extensible architecture for multiple AI providers
+- 🛠️ TypeScript for type safety
+
+## Architecture
+
+### Tech Stack
+- **Frontend Framework**: TanStack Start
+- **Routing**: TanStack Router
+- **State Management**: TanStack Store
+- **Styling**: Tailwind CSS
+- **AI Integration**: Anthropic's Claude API</doc><doc title="README" desc="install &amp; quickstart."># TanStack Chat Application
+
+Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
+
+## Sidecar service
+
+This applicaton requires a sidecar microservice to be running. The server is located in the `ai-streaming-service` directory.
+
+In that directory you should edit the `.env.local` file to add your Anthropic API key:
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+Then run the server:
+
+```bash
+cd ai-streaming-service
+npm install
+npm run dev
+```
+
+## ✨ Features
+
+### AI Capabilities
+
+- 🤖 Powered by Claude 3.5 Sonnet
+- 📝 Rich markdown formatting with syntax highlighting
+- 🎯 Customizable system prompts for tailored AI behavior
+- 🔄 Real-time message updates and streaming responses (coming soon)
+
+### User Experience
+
+- 🎨 Modern UI with Tailwind CSS and Lucide icons
+- 🔍 Conversation management and history
+- 🔐 Secure API key management
+- 📋 Markdown rendering with code highlighting
+
+### Technical Features
+
+- 📦 Centralized state management with TanStack Store
+- 🔌 Extensible architecture for multiple AI providers
+- 🛠️ TypeScript for type safety
+
+## Architecture
+
+### Tech Stack
+
+- **Routing**: TanStack Router
+- **State Management**: TanStack Store
+- **Styling**: Tailwind CSS
+- **AI Integration**: Anthropic's Claude API</doc><doc title="README" desc="install &amp; quickstart.">## Setting up Neon
+
+When running the `dev` command, the `@neondatabase/vite-plugin-postgres` will identify there is not a database setup. It will then create and seed a claimable database.
+
+It is the same process as [Neon Launchpad](https://neon.new).
+
+> [!IMPORTANT]  
+> Claimable databases expire in 72 hours.</doc><doc title="README" desc="install &amp; quickstart."># RedwoodSDK Minimal Starter
+
+This is the starter project for RedwoodSDK. It's a template designed to get you up and running as quickly as possible.
+
+Create your new project:
+
+```shell
+npx create-rwsdk my-project-name -t minimal
+cd my-project-name
+npm install
+```
+
+## Running the dev server
+
+```shell
+npm run dev
+```
+
+Point your browser to the URL displayed in the terminal (e.g. `http://localhost:5173/`). You should see a "Hello World" message in your browser.
+
+## Further Reading
+
+- [RedwoodSDK Documentation](https://docs.rwsdk.com/)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers)</doc></tutorials><api><doc title="README" desc="install &amp; quickstart.">## Setting up Strapi
+
+The current setup shows an example of how to use Strapi with an articles collection which is part of the example structure & data.
+
+- Create a local running copy of the strapi admin
+
+```bash
+pnpx create-strapi@latest my-strapi-project
+cd my-strapi-project
+pnpm dev
+```
+
+- Login and publish the example articles to see them on the strapi demo page.
+- Set the `VITE_STRAPI_URL` environment variable in your `.env.local`. (For local it should be http://localhost:1337/api)</doc><doc title="README" desc="install &amp; quickstart.">## Setting up Strapi
+
+The current setup shows an example of how to use Strapi with an articles collection which is part of the example structure & data.
+
+- Create a local running copy of the strapi admin
+
+```bash
+pnpx create-strapi@latest my-strapi-project
+cd my-strapi-project
+pnpm dev
+```
+
+- Login and publish the example articles to see them on the strapi demo page.
+- Set the `VITE_STRAPI_URL` environment variable in your `.env.local`. (For local it should be http://localhost:1337/api)</doc><doc title="File Classes" desc="docs page.">import type { FileClass } from './types'
+
+export const twClasses: Record<FileClass, string> = {
+  unchanged: 'text-gray-500',
+  added: 'text-green-500 font-bold',
+  modified: 'text-blue-500 italic',
+  deleted: 'text-red-500 line-through',
+  overwritten: 'text-red-700 underline',
+}
+
+export type FileClassAndInfo = {
+  fileClass: FileClass
+  originalFile?: string
+  modifiedFile?: string
+}
+
+export const getFileClass = (
+  file: string,
+  tree: Record<string, string>,
+  originalTree: Record<string, string>,
+  localTree: Record<string, string>,
+  deletedFiles: Array<string>,
+): FileClassAndInfo => {
+  if (localTree[file]) {
+    if (deletedFiles.includes(file)) {
+      return { fileClass: 'deleted', originalFile: localTree[file] }
+    }
+    // We have a local file and it's in the new tree
+    if (tree[file]) {
+      // Our new tree has changed this file
+      if (localTree[file] !== tree[file]) {
+        // Was the local tree different from the original?
+        if (originalTree[file] && localTree[file] !== originalTree[file]) {
+          // Yes, it was overwritten
+          return {
+            fileClass: 'overwritten',
+            originalFile: localTree[file],
+            modifiedFile: tree[file],
+          }
+        } else {
+          // No, it just being modified
+          return {
+            fileClass: 'modified',
+            originalFile: localTree[file],
+            modifiedFile: tree[file],
+          }
+        }
+      }
+    }
+    return { fileClass: 'unchanged', modifiedFile: localTree[file] }
+  } else {
+    return { fileClass: 'added', modifiedFile: tree[file] }
+  }
+}</doc><doc title="Api" desc="API reference.">import type { SerializedOptions } from '@tanstack/cta-engine'
+
+import type {
+  AddOnInfo,
+  DryRunOutput,
+  InitialData,
+  StarterInfo,
+} from '../types'
+
+// @ts-ignore - import.meta.env is not available in the browser
+const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+
+export async function createAppStreaming(
+  options: SerializedOptions,
+  chosenAddOns: Array<string>,
+  projectStarter?: StarterInfo,
+) {
+  return await fetch(`${baseUrl}/api/create-app`, {
+    method: 'POST',
+    body: JSON.stringify({
+      options: {
+        ...options,
+        chosenAddOns,
+        starter: projectStarter?.url || undefined,
+      },
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export async function addToAppStreaming(chosenAddOns: Array<string>) {
+  return await fetch(`${baseUrl}/api/add-to-app`, {
+    method: 'POST',
+    body: JSON.stringify({
+      addOns: chosenAddOns,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export function shutdown() {
+  return fetch(`${baseUrl}/api/shutdown`, {
+    method: 'POST',
+  })
+}
+
+export async function loadRemoteAddOn(url: string) {
+  const response = await fetch(`${baseUrl}/api/load-remote-add-on?url=${url}`)
+  return (await response.json()) as AddOnInfo | { error: string }
+}
+
+export async function loadRemoteStarter(url: string) {
+  const response = await fetch(`${baseUrl}/api/load-starter?url=${url}`)
+  return (await response.json()) as StarterInfo | { error: string }
+}
+
+const initialDataRequest = fetch(`${baseUrl}/api/initial-payload`)
+
+export async function loadInitialData() {
+  const payloadReq = await initialDataRequest
+  return (await payloadReq.json()) as InitialData
+}
+
+export async function dryRunCreateApp(
+  options: SerializedOptions,
+  chosenAddOns: Array<string>,
+  projectStarter?: StarterInfo,
+) {
+  const outputReq = await fetch(`${baseUrl}/api/dry-run-create-app`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      options: {
+        ...options,
+        chosenAddOns: chosenAddOns,
+        starter: projectStarter?.url,
+      },
+    }),
+  })
+  return outputReq.json() as Promise<DryRunOutput>
+}
+
+export async function dryRunAddToApp(addOns: Array<string>) {
+  const outputReq = await fetch(`${baseUrl}/api/dry-run-add-to-app`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      addOns,
+    }),
+  })
+  return outputReq.json() as Promise<DryRunOutput>
+}</doc><doc title="Rimraf Node Modules" desc="docs page.">import { resolve } from 'node:path'
+
+import type { Environment, Options } from '../types.js'
+
+const lockFiles = ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml']
+
+export async function rimrafNodeModules(
+  environment: Environment,
+  options: Options,
+) {
+  environment.startStep({
+    id: 'special-steps',
+    type: 'command',
+    message: 'Removing node_modules...',
+  })
+
+  await environment.rimraf(resolve(options.targetDir, 'node_modules'))
+
+  for (const lockFile of lockFiles) {
+    const lockFilePath = resolve(options.targetDir, lockFile)
+    if (environment.exists(lockFilePath)) {
+      await environment.deleteFile(lockFilePath)
+    }
+  }
+}</doc><doc title="Api" desc="API reference.">/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import { anyApi } from "convex/server";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export const api = anyApi;
+export const internal = anyApi;</doc><doc title="Api" desc="API reference.">/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import { anyApi } from "convex/server";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export const api = anyApi;
+export const internal = anyApi;</doc><doc title="Api.$" desc="API reference.">import '@/polyfill'
+
+import { OpenAPIHandler } from '@orpc/openapi/fetch'
+import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
+import { experimental_SmartCoercionPlugin as SmartCoercionPlugin } from '@orpc/json-schema'
+import { createFileRoute } from '@tanstack/react-router'
+import { onError } from '@orpc/server'
+import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins'
+
+import { TodoSchema } from '@/orpc/schema'
+import router from '@/orpc/router'
+
+const handler = new OpenAPIHandler(router, {
+  interceptors: [
+    onError((error) => {
+      console.error(error)
+    }),
+  ],
+  plugins: [
+    new SmartCoercionPlugin({
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+    }),
+    new OpenAPIReferencePlugin({
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+      specGenerateOptions: {
+        info: {
+          title: 'TanStack ORPC Playground',
+          version: '1.0.0',
+        },
+        commonSchemas: {
+          Todo: { schema: TodoSchema },
+          UndefinedError: { error: 'UndefinedError' },
+        },
+        security: [{ bearerAuth: [] }],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+            },
+          },
+        },
+      },
+      docsConfig: {
+        authentication: {
+          securitySchemes: {
+            bearerAuth: {
+              token: 'default-token',
+            },
+          },
+        },
+      },
+    }),
+  ],
+})
+
+async function handle({ request }: { request: Request }) {
+  const { response } = await handler.handle(request, {
+    prefix: '/api',
+    context: {},
+  })
+
+  return response ?? new Response('Not Found', { status: 404 })
+}
+
+export const Route = createFileRoute('/api/$')({
+  server: {
+    handlers: {
+      HEAD: handle,
+      GET: handle,
+      POST: handle,
+      PUT: handle,
+      PATCH: handle,
+      DELETE: handle,
+    },
+  },
+})</doc><doc title="Api.D" desc="API reference.">/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+import type * as todos from "../todos.js";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+declare const fullApi: ApiFromModules<{
+  todos: typeof todos;
+}>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;</doc><doc title="Api.D" desc="API reference.">/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+import type * as todos from "../todos.js";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+declare const fullApi: ApiFromModules<{
+  todos: typeof todos;
+}>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;</doc></api><concepts><doc title="Architecture" desc="core concept.">## Nomenclature
+
+- `cta` - Create Tanstack Application
+- CTA Framework - A framework that supports the creation of a TanStack Application using a specific technology (e.g. React, Solid, Vue, etc.)
+- `code-router` - One of two _modes_ of TanStack Application. The other is `file-router`. The code router is when the applications routes are defined in code.
+- `file-router` - One of two _modes_ of TanStack Application. The other is `code-router`. The file router is when the applications routes are defined in files (usually in the `src/routes` directory).
+- `add-on` - A plugin that extends the capabilities of a TanStack Application (e.g. the `tanstack-query` add-on integrates TanStack Query into the application).
+- custom `add-on` - An externalized `add-on` contained in a single JSON file that can integate technologies that aren't covered with the built-in add-ons.
+- `starter` - An application template that is constructed from an existing CTA created application that has been modified to the customers needs. The advantage of a starter over a cloneable git repo is that when a starter is used the add-ons and project will be created using the latest version of the CTA framework and the add-ons. This reduces the versioning burden on the customer. This does come with a risk of potential breaking changes.
+
+## CLI applications
+
+- `create-tanstack` - The CLI application for creating a TanStack Application.
+- `create-start-app` - The CLI application for creating a TanStack Start Application.
+- `create-tsrouter-app` - The CLI application for creating a TanStack Router Application.
+
+## Packages
+
+- `@tanstack/cta-cli` - The command line interface for TanStack CTA.
+- `@tanstack/cta-engine` - The core engine that powers TanStack CTA.
+- `@tanstack/cta-ui` - The UI components for TanStack CTA.
+
+## Frameworks
+
+- `@tanstack/cta-frameworks-react-cra` - The React (Create React App) framework for TanStack CTA.
+- `@tanstack/cta-frameworks-solid` - The Solid framework for TanStack CTA.
+
+## File Templates
+
+The CTA system uses EJS to render the files into the final application.
+
+Below are all of the variables that are available to the file templates.
+
+| Variable                     | Description                                                                                                                                                                                          |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packageManager`             | The package manager that is being used (e.g. `npm`, `yarn`, `pnpm`)                                                                                                                                  |
+| `projectName`                | The name of the project                                                                                                                                                                              |
+| `typescript`                 | Boolean value that is `true` if TypeScript is being used, otherwise it is `false`                                                                                                                    |
+| `tailwind`                   | Boolean value that is `true` if Tailwind CSS is being used, otherwise it is `false`                                                                                                                  |
+| `js`                         | The file extension for files that do not include JSX. When in TypeScript mode it is `ts`. When in JavaScript mode it is `js`.                                                                        |
+| `jsx`                        | The file extension for files that include JSX. When in TypeScript mode it is `tsx`. When in JavaScript mode it is `jsx`.                                                                             |
+| `fileRouter`                 | Boolean value that is `true` if the file router is being used, otherwise it is `false`                                                                                                               |
+| `codeRouter`                 | Boolean value that is `true` if the code router is being used, otherwise it is `false`                                                                                                               |
+| `addOnEnabled`               | An object that contains the enabled add-ons. The keys are the `id` values of the add-ons. For example, if the tanstack-query add-on is enabled the `addOnEnabled]['tanstack-query']` will be `true`. |
+| `addOns`                     | An array of the enabled add-on objects                                                                                                                                                               |
+| `integrations`               | An array of the enabled integrations                                                                                                                                                                 |
+| `routes`                     | An array containing all of the routes from all of the add-ons. (Used by the header and the `code-router` setup.)                                                                                     |
+| `getPackageManagerAddScript` | A function that returns the script to add a dependency to the project.                                                                                                                               |
+| `getPackageManagerRunScript` | A function that returns the script to run a command in the project.                                                                                                                                  |
+| `relativePath`               | A function that returns the relative path from the current file to the specified target file.                                                                                                        |
+| `ignoreFile`                 | A function that if called will tell CTA to not include this file in the application.                                                                                                                 |</doc></concepts><cli><doc title="README" desc="install &amp; quickstart."># Create React App for TanStack Router
+
+This CLI application builds Tanstack Router applications that are the functional equivalent of [Create React App](https://create-react-app.dev/).
+
+To help accelerate the migration away from `create-react-app` we created the `create-start-app` CLI which is a plug-n-play replacement for CRA.
+
+## Quick Start
+
+To maintain compatability with `create-react-app` you can build a new application by running:
+
+| Command                                                 | Description        |
+| ------------------------------------------------------- | ------------------ |
+| `pnpx create-start-app@latest my-app`                   | Create a new app   |
+| `pnpx create-start-app@latest my-app --framework solid` | Create a Solid app |
+
+If you don't specify a project name, the CLI will walk you through an interactive setup process:
+
+```bash
+pnpx create-start-app@latest
+```
+
+This will start an interactive CLI that guides you through the setup process, allowing you to choose:
+
+- Project Name
+- Package manager
+- Toolchain
+- Git initialization
+
+## Command Line Options
+
+You can also use command line flags to specify your preferences directly:
+
+```bash
+pnpx create-start-app@latest my-app --tailwind --package-manager pnpm
+```
+
+Available options:
+
+- `--package-manager`: Specify your preferred package manager (`npm`, `yarn`, `pnpm`, `bun`, or `deno`)
+- `--toolchain`: Specify your toolchain solution for formatting/linting (`biome`, `eslint`)
+- `--no-git`: Do not initialize a git repository
+- `--add-ons`: Enable add-on selection or specify add-ons to install
+
+When using flags, the CLI will display which options were provided and only prompt for the remaining choices.
+
+## Features
+
+What you'll get is a Vite application that uses TanStack Router. All the files will still be in the same place as in CRA, but you'll get a fully functional Router setup under in `app/main.tsx`.
+
+`create-start-app` is everything you loved about CRA but implemented with modern tools and best practices, on top of the popular TanStack set of libraries. Which includes [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/react-router](https://tanstack.com/router/latest).
+
+## Additional Configuration
+
+### Package Manager
+
+Choose your preferred package manager (`npm`, `bun`, `yarn`, `pnpm`, or `deno`) either through the interactive CLI or using the `--package-manager` flag.
+
+Extensive documentation on using the TanStack Start, as well as integrating [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/store](https://tanstack.com/store/latest) can be found in the generated `README.md` for your project.
+
+### Toolchain
+
+Choose your preferred solution for formatting and linting either through the interactive CLI or using the `--toolchain` flag.
+
+Setting this flag to `biome` will configure it as your toolchain of choice, adding a `biome.json` to the root of the project. Consult the [biome documentation](https://biomejs.dev/guides/getting-started/) for further customization.
+
+Setting this flag to `eslint` will configure it as your toolchain of choice, adding an `eslint.config.js` and `prettier.config.js` to the root of the project, as well as a `.prettierignore` file. Consult the [eslint documentation](https://eslint.org/docs/latest/) and [prettier documentation](https://prettier.io/docs/) for further customization.
+
+## Add-ons (experimental)
+
+You can enable add-on selection:
+
+```bash
+pnpx create-start-app@latest --add-ons
+```
+
+This will prompt you to select the add-ons you want to enable during application creation.
+
+You can enable specific add-ons directly by adding a comma separated list of add-on names to the `--add-ons` flag. For example:
+
+```bash
+pnpx create-start-app@latest my-app --add-ons shadcn,tanstack-query
+```
+
+You can get a list of all available add-ons by running:
+
+```bash
+pnpx create-start-app@latest --list-add-ons
+```
+
+This will get you a list of all available add-ons for Solid.
+
+```bash
+pnpx create-start-app@latest --list-add-ons --framework solid
+```
+
+## MCP (Model Context Protocol) Support (experimental)
+
+You can launch the `create-start-app` CLI with the `--mcp` flag to enable MCP support. Use this in your MCP enabled IDE to allow the Agent model to generate TanStack Start applications.
+
+```bash
+pnpx create-start-app@latest --mcp
+```
+
+Here is the JSON configuration for MCP support in many MCP clients.
+
+```json
+{
+  "mcpServers": {
+    "create-start-app": {
+      "command": "pnpx",
+      "args": ["create-start-app@latest", "--mcp"]
+    }
+  }
+}
+```
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md) guide.
+
+# License
+
+MIT</doc><doc title="README" desc="install &amp; quickstart."># Create React App for TanStack Router
+
+This CLI application builds Tanstack Router applications that are the functional equivalent of [Create React App](https://create-react-app.dev/).
+
+To help accelerate the migration away from `create-react-app` we created the `create-tanstack-app` CLI which is a plug-n-play replacement for CRA.
+
+## Quick Start
+
+To maintain compatability with `create-react-app` you can build a new application by running:
+
+| Command                                                                           | Description                                       |
+| --------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `pnpx create-tanstack-app@latest my-app`                                          | Create a new app                                  |
+| `pnpx create-tanstack-app@latest my-app --template file-router`                   | Create a new file based app                       |
+| `pnpx create-tanstack-app@latest my-app --template typescript`                    | Create a new TypeScript app using the Code Router |
+| `pnpx create-tanstack-app@latest my-app --tailwind`                               | Add Tailwind CSS support                          |
+| `pnpx create-tanstack-app@latest my-app --framework solid`                        | Create a Solid app                                |
+| `pnpx create-tanstack-app@latest my-app --framework solid --template file-router` | Create a Solid app with file-router               |
+
+If you don't specify a project name, the CLI will walk you through an interactive setup process:
+
+```bash
+pnpx create-tanstack-app@latest
+```
+
+This will start an interactive CLI that guides you through the setup process, allowing you to choose:
+
+- Project Name
+- Router Type (File-based or Code-based routing)
+- TypeScript support
+- Tailwind CSS integration
+- Package manager
+- Toolchain
+- Git initialization
+
+## Command Line Options
+
+You can also use command line flags to specify your preferences directly:
+
+```bash
+pnpx create-tanstack-app@latest my-app --template file-router --tailwind --package-manager pnpm
+```
+
+Available options:
+
+- `--template <type>`: Choose between `file-router`, `typescript`, or `javascript`
+- `--tailwind`: Enable Tailwind CSS
+- `--package-manager`: Specify your preferred package manager (`npm`, `yarn`, `pnpm`, `bun`, or `deno`)
+- `--toolchain`: Specify your toolchain solution for formatting/linting (`biome`, `eslint`)
+- `--no-git`: Do not initialize a git repository
+- `--add-ons`: Enable add-on selection or specify add-ons to install
+
+When using flags, the CLI will display which options were provided and only prompt for the remaining choices.
+
+## Features
+
+What you'll get is a Vite application that uses TanStack Router. All the files will still be in the same place as in CRA, but you'll get a fully functional Router setup under in `app/main.tsx`.
+
+`create-tanstack-app` is everything you loved about CRA but implemented with modern tools and best practices, on top of the popular TanStack set of libraries. Which includes [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/react-router](https://tanstack.com/router/latest).
+
+## Routing Options
+
+### File Based Routing (Recommended)
+
+File Based Routing is the default option when using the interactive CLI. The location of the home page will be `app/routes/index.tsx`. This approach provides a more intuitive and maintainable way to structure your routes.
+
+To explicitly choose File Based Routing, use:
+
+```bash
+pnpx create-tanstack-app@latest my-app --template file-router
+```
+
+### Code Based Routing
+
+If you prefer traditional code-based routing, you can select it in the interactive CLI or specify it by using either the `typescript` or `javascript` template:
+
+```bash
+pnpx create-tanstack-app@latest my-app --template typescript
+```
+
+## Additional Configuration
+
+### TypeScript
+
+- File Based Routing always uses TypeScript
+- For Code Based Routing, you can choose between TypeScript and JavaScript
+- Enable TypeScript explicitly with `--template typescript`
+
+### Tailwind CSS
+
+Enable Tailwind CSS either through the interactive CLI or by adding the `--tailwind` flag. This will automatically configure [Tailwind V4](https://tailwindcss.com/).
+
+### Package Manager
+
+Choose your preferred package manager (`npm`, `bun`, `yarn`, `pnpm`, or `deno`) either through the interactive CLI or using the `--package-manager` flag.
+
+Extensive documentation on using the TanStack Router, migrating to a File Base Routing approach, as well as integrating [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/store](https://tanstack.com/store/latest) can be found in the generated `README.md` for your project.
+
+### Toolchain
+
+Choose your preferred solution for formatting and linting either through the interactive CLI or using the `--toolchain` flag.
+
+Setting this flag to `biome` will configure it as your toolchain of choice, adding a `biome.json` to the root of the project. Consult the [biome documentation](https://biomejs.dev/guides/getting-started/) for further customization.
+
+Setting this flag to `eslint` will configure it as your toolchain of choice, adding an `eslint.config.js` and `prettier.config.js` to the root of the project, as well as a `.prettierignore` file. Consult the [eslint documentation](https://eslint.org/docs/latest/) and [prettier documentation](https://prettier.io/docs/) for further customization.
+
+## Add-ons (experimental)
+
+You can enable add-on selection:
+
+```bash
+pnpx create-tanstack-app@latest --add-ons
+```
+
+This will prompt you to select the add-ons you want to enable during application creation.
+
+You can enable specific add-ons directly by adding a comma separated list of add-on names to the `--add-ons` flag. For example:
+
+```bash
+pnpx create-tanstack-app@latest my-app --add-ons shadcn,tanstack-query
+```
+
+You can get a list of all available add-ons by running:
+
+```bash
+pnpx create-tanstack-app@latest --list-add-ons
+```
+
+This will display a list of all available add-ons for React that are compatible with the Code Router.
+
+```bash
+pnpx create-tanstack-app@latest --list-add-ons --framework solid --template file-router
+```
+
+Will get you a list of all available add-ons for Solid that are compatible with the File Router.
+
+## MCP (Model Context Protocol) Support (experimental)
+
+You can launch the `create-tanstack-app` CLI with the `--mcp` flag to enable MCP support. Use this in your MCP enabled IDE to allow the Agent model to generate TanStack Router applications.
+
+```bash
+pnpx create-tanstack-app@latest --mcp
+```
+
+Here is the JSON configuration for MCP support in many MCP clients.
+
+```json
+{
+  "mcpServers": {
+    "create-tanstack-app": {
+      "command": "pnpx",
+      "args": ["create-tanstack-app@latest", "--mcp"]
+    }
+  }
+}
+```
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md) guide.
+
+# License
+
+MIT</doc><doc title="README" desc="install &amp; quickstart."># Create React App for TanStack Router
+
+This CLI application builds Tanstack Router applications that are the functional equivalent of [Create React App](https://create-react-app.dev/).
+
+To help accelerate the migration away from `create-react-app` we created the `create-tanstack` CLI which is a plug-n-play replacement for CRA.
+
+## Quick Start
+
+To maintain compatability with `create-react-app` you can build a new application by running:
+
+| Command                                                                       | Description                                       |
+| ----------------------------------------------------------------------------- | ------------------------------------------------- |
+| `pnpx create-tanstack@latest my-app`                                          | Create a new app                                  |
+| `pnpx create-tanstack@latest my-app --template file-router`                   | Create a new file based app                       |
+| `pnpx create-tanstack@latest my-app --template typescript`                    | Create a new TypeScript app using the Code Router |
+| `pnpx create-tanstack@latest my-app --tailwind`                               | Add Tailwind CSS support                          |
+| `pnpx create-tanstack@latest my-app --framework solid`                        | Create a Solid app                                |
+| `pnpx create-tanstack@latest my-app --framework solid --template file-router` | Create a Solid app with file-router               |
+
+If you don't specify a project name, the CLI will walk you through an interactive setup process:
+
+```bash
+pnpx create-tanstack@latest
+```
+
+This will start an interactive CLI that guides you through the setup process, allowing you to choose:
+
+- Project Name
+- Router Type (File-based or Code-based routing)
+- TypeScript support
+- Tailwind CSS integration
+- Package manager
+- Toolchain
+- Git initialization
+
+## Command Line Options
+
+You can also use command line flags to specify your preferences directly:
+
+```bash
+pnpx create-tanstack@latest my-app --template file-router --tailwind --package-manager pnpm
+```
+
+Available options:
+
+- `--template <type>`: Choose between `file-router`, `typescript`, or `javascript`
+- `--tailwind`: Enable Tailwind CSS
+- `--package-manager`: Specify your preferred package manager (`npm`, `yarn`, `pnpm`, `bun`, or `deno`)
+- `--toolchain`: Specify your toolchain solution for formatting/linting (`biome`, `eslint`)
+- `--no-git`: Do not initialize a git repository
+- `--add-ons`: Enable add-on selection or specify add-ons to install
+
+When using flags, the CLI will display which options were provided and only prompt for the remaining choices.
+
+## Features
+
+What you'll get is a Vite application that uses TanStack Router. All the files will still be in the same place as in CRA, but you'll get a fully functional Router setup under in `app/main.tsx`.
+
+`create-tanstack` is everything you loved about CRA but implemented with modern tools and best practices, on top of the popular TanStack set of libraries. Which includes [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/react-router](https://tanstack.com/router/latest).
+
+## Routing Options
+
+### File Based Routing (Recommended)
+
+File Based Routing is the default option when using the interactive CLI. The location of the home page will be `app/routes/index.tsx`. This approach provides a more intuitive and maintainable way to structure your routes.
+
+To explicitly choose File Based Routing, use:
+
+```bash
+pnpx create-tanstack@latest my-app --template file-router
+```
+
+### Code Based Routing
+
+If you prefer traditional code-based routing, you can select it in the interactive CLI or specify it by using either the `typescript` or `javascript` template:
+
+```bash
+pnpx create-tanstack@latest my-app --template typescript
+```
+
+## Additional Configuration
+
+### TypeScript
+
+- File Based Routing always uses TypeScript
+- For Code Based Routing, you can choose between TypeScript and JavaScript
+- Enable TypeScript explicitly with `--template typescript`
+
+### Tailwind CSS
+
+Enable Tailwind CSS either through the interactive CLI or by adding the `--tailwind` flag. This will automatically configure [Tailwind V4](https://tailwindcss.com/).
+
+### Package Manager
+
+Choose your preferred package manager (`npm`, `bun`, `yarn`, `pnpm`, or `deno`) either through the interactive CLI or using the `--package-manager` flag.
+
+Extensive documentation on using the TanStack Router, migrating to a File Base Routing approach, as well as integrating [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/store](https://tanstack.com/store/latest) can be found in the generated `README.md` for your project.
+
+### Toolchain
+
+Choose your preferred solution for formatting and linting either through the interactive CLI or using the `--toolchain` flag.
+
+Setting this flag to `biome` will configure it as your toolchain of choice, adding a `biome.json` to the root of the project. Consult the [biome documentation](https://biomejs.dev/guides/getting-started/) for further customization.
+
+Setting this flag to `eslint` will configure it as your toolchain of choice, adding an `eslint.config.js` and `prettier.config.js` to the root of the project, as well as a `.prettierignore` file. Consult the [eslint documentation](https://eslint.org/docs/latest/) and [prettier documentation](https://prettier.io/docs/) for further customization.
+
+## Add-ons (experimental)
+
+You can enable add-on selection:
+
+```bash
+pnpx create-tanstack@latest --add-ons
+```
+
+This will prompt you to select the add-ons you want to enable during application creation.
+
+You can enable specific add-ons directly by adding a comma separated list of add-on names to the `--add-ons` flag. For example:
+
+```bash
+pnpx create-tanstack@latest my-app --add-ons shadcn,tanstack-query
+```
+
+You can get a list of all available add-ons by running:
+
+```bash
+pnpx create-tanstack@latest --list-add-ons
+```
+
+This will display a list of all available add-ons for React that are compatible with the Code Router.
+
+```bash
+pnpx create-tanstack@latest --list-add-ons --framework solid --template file-router
+```
+
+Will get you a list of all available add-ons for Solid that are compatible with the File Router.
+
+## MCP (Model Context Protocol) Support (experimental)
+
+You can launch the `create-tanstack` CLI with the `--mcp` flag to enable MCP support. Use this in your MCP enabled IDE to allow the Agent model to generate TanStack Router applications.
+
+```bash
+pnpx create-tanstack@latest --mcp
+```
+
+Here is the JSON configuration for MCP support in many MCP clients.
+
+```json
+{
+  "mcpServers": {
+    "create-tanstack": {
+      "command": "pnpx",
+      "args": ["create-tanstack@latest", "--mcp"]
+    }
+  }
+}
+```
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md) guide.
+
+# License
+
+MIT</doc><doc title="README" desc="install &amp; quickstart."># Create React App for TanStack Router
+
+This CLI application builds Tanstack Router applications that are the functional equivalent of [Create React App](https://create-react-app.dev/).
+
+To help accelerate the migration away from `create-react-app` we created the `create-tsrouter-app` CLI which is a plug-n-play replacement for CRA.
+
+## Quick Start
+
+To maintain compatability with `create-react-app` you can build a new application by running:
+
+| Command                                                                           | Description                                       |
+| --------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `pnpx create-tsrouter-app@latest my-app`                                          | Create a new app                                  |
+| `pnpx create-tsrouter-app@latest my-app --template file-router`                   | Create a new file based app                       |
+| `pnpx create-tsrouter-app@latest my-app --template typescript`                    | Create a new TypeScript app using the Code Router |
+| `pnpx create-tsrouter-app@latest my-app --tailwind`                               | Add Tailwind CSS support                          |
+| `pnpx create-tsrouter-app@latest my-app --framework solid`                        | Create a Solid app                                |
+| `pnpx create-tsrouter-app@latest my-app --framework solid --template file-router` | Create a Solid app with file-router               |
+
+If you don't specify a project name, the CLI will walk you through an interactive setup process:
+
+```bash
+pnpx create-tsrouter-app@latest
+```
+
+This will start an interactive CLI that guides you through the setup process, allowing you to choose:
+
+- Project Name
+- Router Type (File-based or Code-based routing)
+- TypeScript support
+- Tailwind CSS integration
+- Package manager
+- Toolchain
+- Git initialization
+
+## Command Line Options
+
+You can also use command line flags to specify your preferences directly:
+
+```bash
+pnpx create-tsrouter-app@latest my-app --template file-router --tailwind --package-manager pnpm
+```
+
+Available options:
+
+- `--template <type>`: Choose between `file-router`, `typescript`, or `javascript`
+- `--tailwind`: Enable Tailwind CSS
+- `--package-manager`: Specify your preferred package manager (`npm`, `yarn`, `pnpm`, `bun`, or `deno`)
+- `--toolchain`: Specify your toolchain solution for formatting/linting (`biome`, `eslint`)
+- `--no-git`: Do not initialize a git repository
+- `--add-ons`: Enable add-on selection or specify add-ons to install
+
+When using flags, the CLI will display which options were provided and only prompt for the remaining choices.
+
+## Features
+
+What you'll get is a Vite application that uses TanStack Router. All the files will still be in the same place as in CRA, but you'll get a fully functional Router setup under in `app/main.tsx`.
+
+`create-tsrouter-app` is everything you loved about CRA but implemented with modern tools and best practices, on top of the popular TanStack set of libraries. Which includes [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/react-router](https://tanstack.com/router/latest).
+
+## Routing Options
+
+### File Based Routing (Recommended)
+
+File Based Routing is the default option when using the interactive CLI. The location of the home page will be `app/routes/index.tsx`. This approach provides a more intuitive and maintainable way to structure your routes.
+
+To explicitly choose File Based Routing, use:
+
+```bash
+pnpx create-tsrouter-app@latest my-app --template file-router
+```
+
+### Code Based Routing
+
+If you prefer traditional code-based routing, you can select it in the interactive CLI or specify it by using either the `typescript` or `javascript` template:
+
+```bash
+pnpx create-tsrouter-app@latest my-app --template typescript
+```
+
+## Additional Configuration
+
+### TypeScript
+
+- File Based Routing always uses TypeScript
+- For Code Based Routing, you can choose between TypeScript and JavaScript
+- Enable TypeScript explicitly with `--template typescript`
+
+### Tailwind CSS
+
+Enable Tailwind CSS either through the interactive CLI or by adding the `--tailwind` flag. This will automatically configure [Tailwind V4](https://tailwindcss.com/).
+
+### Package Manager
+
+Choose your preferred package manager (`npm`, `bun`, `yarn`, `pnpm`, or `deno`) either through the interactive CLI or using the `--package-manager` flag.
+
+Extensive documentation on using the TanStack Router, migrating to a File Base Routing approach, as well as integrating [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/store](https://tanstack.com/store/latest) can be found in the generated `README.md` for your project.
+
+### Toolchain
+
+Choose your preferred solution for formatting and linting either through the interactive CLI or using the `--toolchain` flag.
+
+Setting this flag to `biome` will configure it as your toolchain of choice, adding a `biome.json` to the root of the project. Consult the [biome documentation](https://biomejs.dev/guides/getting-started/) for further customization.
+
+Setting this flag to `eslint` will configure it as your toolchain of choice, adding an `eslint.config.js` and `prettier.config.js` to the root of the project, as well as a `.prettierignore` file. Consult the [eslint documentation](https://eslint.org/docs/latest/) and [prettier documentation](https://prettier.io/docs/) for further customization.
+
+## Add-ons (experimental)
+
+You can enable add-on selection:
+
+```bash
+pnpx create-tsrouter-app@latest --add-ons
+```
+
+This will prompt you to select the add-ons you want to enable during application creation.
+
+You can enable specific add-ons directly by adding a comma separated list of add-on names to the `--add-ons` flag. For example:
+
+```bash
+pnpx create-tsrouter-app@latest my-app --add-ons shadcn,tanstack-query
+```
+
+You can get a list of all available add-ons by running:
+
+```bash
+pnpx create-tsrouter-app@latest --list-add-ons
+```
+
+This will display a list of all available add-ons for React that are compatible with the Code Router.
+
+```bash
+pnpx create-tsrouter-app@latest --list-add-ons --framework solid --template file-router
+```
+
+Will get you a list of all available add-ons for Solid that are compatible with the File Router.
+
+## MCP (Model Context Protocol) Support (experimental)
+
+You can launch the `create-tsrouter-app` CLI with the `--mcp` flag to enable MCP support. Use this in your MCP enabled IDE to allow the Agent model to generate TanStack Router applications.
+
+```bash
+pnpx create-tsrouter-app@latest --mcp
+```
+
+Here is the JSON configuration for MCP support in many MCP clients.
+
+```json
+{
+  "mcpServers": {
+    "create-tsrouter-app": {
+      "command": "pnpx",
+      "args": ["create-tsrouter-app@latest", "--mcp"]
+    }
+  }
+}
+```
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md) guide.
+
+# License
+
+MIT</doc><doc title="README" desc="install &amp; quickstart."># Create React App for TanStack Router
+
+This CLI application builds Tanstack Router applications that are the functional equivalent of [Create React App](https://create-react-app.dev/).
+
+To help accelerate the migration away from `create-react-app` we created the `create-start` CLI which is a plug-n-play replacement for CRA.
+
+## Quick Start
+
+To maintain compatability with `create-react-app` you can build a new application by running:
+
+| Command                                                       | Description        |
+| ------------------------------------------------------------- | ------------------ |
+| `pnpm create @tanstack/start@latest my-app`                   | Create a new app   |
+| `pnpm create @tanstack/start@latest my-app --framework solid` | Create a Solid app |
+
+If you don't specify a project name, the CLI will walk you through an interactive setup process:
+
+```bash
+pnpm create @tanstack/start@latest
+```
+
+This will start an interactive CLI that guides you through the setup process, allowing you to choose:
+
+- Project Name
+- Package manager
+- Toolchain
+- Git initialization
+
+## Command Line Options
+
+You can also use command line flags to specify your preferences directly:
+
+```bash
+pnpm create @tanstack/start@latest my-app --tailwind --package-manager pnpm
+```
+
+Available options:
+
+- `--package-manager`: Specify your preferred package manager (`npm`, `yarn`, `pnpm`, `bun`, or `deno`)
+- `--toolchain`: Specify your toolchain solution for formatting/linting (`biome`, `eslint`)
+- `--no-git`: Do not initialize a git repository
+- `--add-ons`: Enable add-on selection or specify add-ons to install
+
+When using flags, the CLI will display which options were provided and only prompt for the remaining choices.
+
+## Features
+
+What you'll get is a Vite application that uses TanStack Router. All the files will still be in the same place as in CRA, but you'll get a fully functional Router setup under in `app/main.tsx`.
+
+`create-start-app` is everything you loved about CRA but implemented with modern tools and best practices, on top of the popular TanStack set of libraries. Which includes [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/react-router](https://tanstack.com/router/latest).
+
+## Additional Configuration
+
+### Package Manager
+
+Choose your preferred package manager (`npm`, `bun`, `yarn`, `pnpm`, or `deno`) either through the interactive CLI or using the `--package-manager` flag.
+
+Extensive documentation on using the TanStack Start, as well as integrating [@tanstack/react-query](https://tanstack.com/query/latest) and [@tanstack/store](https://tanstack.com/store/latest) can be found in the generated `README.md` for your project.
+
+### Toolchain
+
+Choose your preferred solution for formatting and linting either through the interactive CLI or using the `--toolchain` flag.
+
+Setting this flag to `biome` will configure it as your toolchain of choice, adding a `biome.json` to the root of the project. Consult the [biome documentation](https://biomejs.dev/guides/getting-started/) for further customization.
+
+Setting this flag to `eslint` will configure it as your toolchain of choice, adding an `eslint.config.js` and `prettier.config.js` to the root of the project, as well as a `.prettierignore` file. Consult the [eslint documentation](https://eslint.org/docs/latest/) and [prettier documentation](https://prettier.io/docs/) for further customization.
+
+## Add-ons (experimental)
+
+You can enable add-on selection:
+
+```bash
+pnpm create @tanstack/start@latest --add-ons
+```
+
+This will prompt you to select the add-ons you want to enable during application creation.
+
+You can enable specific add-ons directly by adding a comma separated list of add-on names to the `--add-ons` flag. For example:
+
+```bash
+pnpm create @tanstack/start@latest my-app --add-ons shadcn,tanstack-query
+```
+
+You can get a list of all available add-ons by running:
+
+```bash
+pnpm create @tanstack/start@latest --list-add-ons
+```
+
+This will get you a list of all available add-ons for Solid.
+
+```bash
+pnpm create @tanstack/start@latest --list-add-ons --framework solid
+```
+
+## MCP (Model Context Protocol) Support (experimental)
+
+You can launch the `create-start-app` CLI with the `--mcp` flag to enable MCP support. Use this in your MCP enabled IDE to allow the Agent model to generate TanStack Start applications.
+
+```bash
+pnpm create @tanstack/start@latest --mcp
+```
+
+Here is the JSON configuration for MCP support in many MCP clients.
+
+```json
+{
+  "mcpServers": {
+    "create-start-app": {
+      "command": "pnpx",
+      "args": ["create-start-app@latest", "--mcp"]
+    }
+  }
+}
+```
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md) guide.
+
+# License
+
+MIT</doc><doc title="Index" desc="docs page.">#!/usr/bin/env node
+import { cli } from '@tanstack/cta-cli'
+
+import { register as registerReactCra } from '@tanstack/cta-framework-react-cra'
+import { register as registerSolid } from '@tanstack/cta-framework-solid'
+
+registerReactCra()
+registerSolid()
+
+cli({
+  name: 'create-start-app',
+  appName: 'TanStack Start',
+  forcedMode: 'file-router',
+  forcedAddOns: ['start'],
+  showHostingOptions: true,
+  forcedHost: 'nitro',
+  craCompatible: true,
+})</doc><doc title="Index" desc="docs page.">#!/usr/bin/env node
+import { cli } from '@tanstack/cta-cli'
+
+import { register as registerReactCra } from '@tanstack/cta-framework-react-cra'
+import { register as registerSolid } from '@tanstack/cta-framework-solid'
+
+registerReactCra()
+registerSolid()
+
+cli({
+  name: 'create-tanstack-app',
+  appName: 'TanStack',
+  forcedHost: 'nitro',
+  defaultTemplate: 'file-router',
+  craCompatible: true,
+})</doc><doc title="Index" desc="docs page.">#!/usr/bin/env node
+import { cli } from '@tanstack/cta-cli'
+
+import { register as registerReactCra } from '@tanstack/cta-framework-react-cra'
+import { register as registerSolid } from '@tanstack/cta-framework-solid'
+
+registerReactCra()
+registerSolid()
+
+cli({
+  name: 'create-tanstack',
+  appName: 'TanStack',
+  forcedHost: 'nitro',
+  defaultTemplate: 'file-router',
+  craCompatible: true,
+})</doc><doc title="Index" desc="docs page.">#!/usr/bin/env node
+import { cli } from '@tanstack/cta-cli'
+
+import { register as registerReactCra } from '@tanstack/cta-framework-react-cra'
+import { register as registerSolid } from '@tanstack/cta-framework-solid'
+
+registerReactCra()
+registerSolid()
+
+cli({
+  name: 'create-tsrouter-app',
+  appName: 'TanStack',
+  craCompatible: true,
+})</doc><doc title="Index" desc="docs page.">#!/usr/bin/env node
+import { cli } from '@tanstack/cta-cli'
+
+import { register as registerReactCra } from '@tanstack/cta-framework-react-cra'
+import { register as registerSolid } from '@tanstack/cta-framework-solid'
+
+registerReactCra()
+registerSolid()
+
+cli({
+  name: '@tanstack/create-start',
+  forcedHost: 'nitro',
+  appName: 'TanStack Start',
+  forcedMode: 'file-router',
+  forcedAddOns: ['start'],
+  craCompatible: true,
+})</doc></cli><frameworks><doc title="README" desc="install &amp; quickstart.">## Setting up Clerk
+
+- Set the `VITE_CLERK_PUBLISHABLE_KEY` in your `.env.local`.</doc><doc title="README" desc="install &amp; quickstart.">## Setting up Convex
+
+- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex init` to set them automatically.)
+- Run `npx convex dev` to start the Convex server.</doc><doc title="README" desc="install &amp; quickstart.">## Setting up Neon
+
+When running the `dev` command, the `@neondatabase/vite-plugin-postgres` will identify there is not a database setup. It will then create and seed a claimable database.
+
+It is the same process as [Neon Launchpad](https://neon.new).
+
+> [!IMPORTANT]  
+> Claimable databases expire in 72 hours.</doc><doc title="README" desc="install &amp; quickstart.">## Shadcn
+
+Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+
+```bash
+pnpx shadcn@latest add button
+```</doc><doc title="README" desc="install &amp; quickstart.">## T3Env
+
+- You can use T3Env to add type safety to your environment variables.
+- Add Environment variables to the `src/env.mjs` file.
+- Use the environment variables in your code.
+
+### Usage
+
+```ts
+import { env } from "@/env";
+
+console.log(env.VITE_APP_TITLE);
+```
+
+
+</doc><doc title="README" desc="install &amp; quickstart.">## Setting up WorkOS
+
+- Set the `VITE_WORKOS_CLIENT_ID` in your `.env.local`.</doc><doc title="README" desc="install &amp; quickstart.">## Setting up Convex
+
+- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex init` to set them automatically.)
+- Run `npx convex dev` to start the Convex server.</doc><doc title="README" desc="install &amp; quickstart.">## Solid-UI
+
+This installation of Solid-UI follows the manual instructions but was modified to work with Tailwind V4.
+
+To install the components, run the following command (this install button):
+
+```bash
+npx solidui-cli@latest add button
+```</doc><doc title="README" desc="install &amp; quickstart.">## T3Env
+
+- You can use T3Env to add type safety to your environment variables.
+- Add Environment variables to the `src/env.mjs` file.
+- Use the environment variables in your code.
+
+### Usage
+
+```ts
+import { env } from "@/env";
+
+console.log(env.VITE_APP_TITLE);
+```
+
+
+</doc><doc title="Add On Authoring" desc="docs page."># Add-on Authoring for the CTA Framework for React CRA
+
+# Available Integrations
+
+These are the available integration points for the React CRA Template System.
+
+## header-user
+
+Integrates into the `Header` component shared by all routes. These components are placed in the right hand side of the header bar.
+
+The code is always integrated into the `src/components/Header.(tsx|jsx)` file.
+
+### Examples
+
+Code in `assets/src/components/my-header.tsx`:
+
+```ts
+export default function MyHeader() {
+  return <div>Header User</div>
+}
+```
+
+Configuration in `info.json`:
+
+```json
+"integrations": [
+  {
+    "type": "header-user",
+    "jsName": "MyHeader",
+    "path": "src/components/my-header.tsx"
+  },
+]
+```
+
+## layout
+
+Handles injecting a component into the layout of the page:
+
+The code is integrated into these locations with these application architectures:
+
+- `code-router` - In the `src/main.tsx` (or `src/main.jsx`) file
+- `file-router` - In the `src/__root.tsx` file
+- `file-router` with `start` - In the `src/main.tsx` file
+
+### Examples
+
+Code in `assets/src/components/my-layout.tsx`:
+
+```ts
+export default function MyLayout() {
+  return <div>Hi from MyLayout!</div>
+}
+```
+
+Configuration in `info.json`:
+
+```json
+"integrations": [
+  {
+    "type": "layout",
+    "jsName": "MyLayout",
+    "path": "src/components/my-layout.tsx"
+  },
+]
+```
+
+## provider
+
+Handles placing UI style provider wrappers into the right spot in three different applicatin setups:
+
+The code is integrated into these locations with these application architectures:
+
+- `code-router` - In the `src/main.tsx` (or `src/main.jsx`) file
+- `file-router` - In the `src/__root.tsx` file
+- `file-router` with `start` - In the `src/main.tsx` file
+
+### Examples
+
+Code in `assets/src/components/my-provider.tsx`:
+
+```ts
+export default function MyProvider({ children }: { children: React.ReactNode }) {
+  return <SomeKindOfProvider>{children}</SomeKindOfProvider>
+}
+```
+
+Configuration in `info.json`:
+
+```json
+"integrations": [
+  {
+    "type": "provider",
+    "jsName": "MyProvider",
+    "path": "src/components/my-provider.tsx"
+  },
+]
+```
+
+## root-provider
+
+This is a complex integration that handles both a provider component and context. The only example we have of this is the integration for TanStack Query.
+
+The code is integrated into these locations with these application architectures:
+
+- `code-router` - In the `src/main.tsx` (or `src/main.jsx`) file
+- `file-router` - In the `src/__root.tsx` file
+- `file-router` with `start` - In the `src/main.tsx` file
+
+### Examples
+
+Code in `assets/src/components/my-root-provider.tsx`:
+
+```ts
+export function getContext() {
+  return {
+    someAdditionalContext: {
+      someAdditionalContextValue: "someAdditionalContextValue",
+    },
+  }
+}
+
+export default function MyRootProvider({ children }: { children: React.ReactNode }) {
+  return <SomeKindOfProvider>{children}</SomeKindOfProvider>
+}
+```
+
+Configuration in `info.json`:
+
+```json
+"integrations": [
+  {
+    "type": "root-provider",
+    "jsName": "MyRootProvider",
+    "path": "src/components/my-root-provider.tsx"
+  },
+]
+```
+
+## vite-plugin
+
+The code is integrated into `src/vite.config.ts`
+
+### Examples
+
+Code in `assets/vite-plugins/netlify.ts`:
+
+```ts
+import netlify from '@netlify/vite-plugin-tanstack-start'
+
+export default netlify()
+```
+
+Configuration in `info.json`:
+
+```json
+"integrations": [
+  {
+    "type": "vite-plugin",
+    "jsName": "netlify",
+    "path": "vite-plugins/netlify.ts"
+  },
+]
+```
+
+# Routes
+
+If your add-on creates routes you need to specify those in the `info.json` file.
+
+This example will define a route at `/demo/my-demo-route` that will be rendered by the `DemoMyDemoRoute` component. There will be a `Demo Route` link in the header to this route.
+
+```json
+"routes": [
+  {
+    "url": "/demo/my-demo-route",
+    "name": "Demo Route",
+    "path": "src/routes/demo.my-demo-route.tsx",
+    "jsName": "DemoMyDemoRoute"
+  }
+],
+```
+
+If you don't want a header link you can omit the `url` and `name` properties.
+
+```json
+"routes": [
+  {
+    "path": "src/routes/demo.my-hidden-demo-route.tsx",
+    "jsName": "DemoMyHiddenDemoRoute"
+  }
+],
+```
+
+You **MUST** specify routes in the `info.json` file if your add-on supports the `code-router` mode. This is because the `code-routers` setup needs to import the routes in order to add them to the router.
+
+By convension you should prefix demo routes with `demo` to make it clear that they are demo routes so they can be easily identified and removed.
+
+# Add-on Options
+
+The CTA framework supports configurable add-ons through an options system that allows users to customize add-on behavior during creation. This enables more flexible and reusable add-ons that can adapt to different use cases.
+
+## Overview
+
+Add-on options allow developers to create configurable add-ons where users can select from predefined choices that affect:
+
+- Which files are included in the generated project
+- Template variable values used during file generation
+- Package dependencies that get installed
+- Configuration file contents
+
+## Configuration Format
+
+Options are defined in the `info.json` file using the following schema:
+
+```json
+{
+  "name": "My Add-on",
+  "description": "A configurable add-on",
+  "options": {
+    "optionName": {
+      "type": "select",
+      "label": "Display Label",
+      "description": "Optional description shown to users",
+      "default": "defaultValue",
+      "options": [
+        { "value": "option1", "label": "Option 1" },
+        { "value": "option2", "label": "Option 2" }
+      ]
+    }
+  }
+}
+```
+
+### Option Types
+
+#### Select Options
+
+The `select` type allows users to choose from a predefined list of options:
+
+```json
+"database": {
+  "type": "select",
+  "label": "Database Provider",
+  "description": "Choose your database provider",
+  "default": "postgres",
+  "options": [
+    { "value": "postgres", "label": "PostgreSQL" },
+    { "value": "mysql", "label": "MySQL" },
+    { "value": "sqlite", "label": "SQLite" }
+  ]
+}
+```
+
+**Properties:**
+
+- `type`: Must be `"select"`
+- `label`: Display text shown to users
+- `description`: Optional help text
+- `default`: Default value that must match one of the option values
+- `options`: Array of value/label pairs
+
+## Template Usage
+
+Option values are available in EJS templates through the `addOnOption` variable:
+
+```ejs
+<% if (addOnOption.myAddOnId.database === 'postgres') { %>
+  PostgreSQL specific code
+<% } %>
+
+const driver = '<%= addOnOption.myAddOnId.database %>'
+```
+
+The structure is: `addOnOption.{addOnId}.{optionName}`
+
+### Template Conditional Logic
+
+Within template files, use `ignoreFile()` to skip file generation:
+
+```ejs
+<% if (addOnOption.prisma.database !== 'postgres') { ignoreFile() } %>
+import { PrismaClient } from '@prisma/client'
+
+declare global {
+  var __prisma: PrismaClient | undefined
+}
+
+export const prisma = globalThis.__prisma || new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.__prisma = prisma
+}
+```
+
+## Complete Example: Prisma Add-on
+
+Here's how the Prisma add-on implements configurable database support:
+
+### Examples
+
+Configuration in `info.json`:
+
+```json
+{
+  "name": "Prisma ORM",
+  "description": "Add Prisma ORM with configurable database support to your application.",
+  "options": {
+    "database": {
+      "type": "select",
+      "label": "Database Provider",
+      "description": "Choose your database provider",
+      "default": "postgres",
+      "options": [
+        { "value": "postgres", "label": "PostgreSQL" },
+        { "value": "mysql", "label": "MySQL" },
+        { "value": "sqlite", "label": "SQLite" }
+      ]
+    }
+  }
+}
+```
+
+Code in `package.json.ejs`:
+
+```ejs
+{
+  "prisma": "^6.16.3",
+  "@prisma/client": "^6.16.3"<% if (addOnOption.prisma.database === 'postgres') { %>,
+  "pg": "^8.11.0",
+  "@types/pg": "^8.10.0"<% } else if (addOnOption.prisma.database === 'mysql') { %>,
+  "mysql2": "^3.6.0"<% } else if (addOnOption.prisma.database === 'sqlite') { %><% } %>
+}
+```
+
+## CLI Usage
+
+### Interactive Mode
+
+When using the CLI interactively, users are prompted for each option:
+
+```bash
+create-tsrouter-app my-app
+# User selects Prisma add-on
+# CLI prompts: "Prisma ORM: Database Provider" with options
+```
+
+### Non-Interactive Mode
+
+Options can be specified via JSON configuration:
+
+```bash
+create-tsrouter-app my-app --add-ons prisma --add-on-config '{"prisma":{"database":"mysql"}}'
+```
+
+## Best Practices
+
+1. **Use descriptive labels** - Make option purposes clear to users
+2. **Provide sensible defaults** - Choose the most common use case
+3. **Group related files** - Use consistent prefixing for option-specific files
+4. **Document options** - Include descriptions to help users understand choices
+5. **Test all combinations** - Ensure each option value generates working code
+6. **Use validation** - The system validates options against the schema automatically</doc></frameworks><packages><doc title="README" desc="install &amp; quickstart."># Create TanStack App - User Interface
+
+This is an odd package because it's both a library that runs a web server, as well as a React SPA app that builds using Vite.
+
+## Script Commands
+
+| Command              | Description                                    |
+| -------------------- | ---------------------------------------------- |
+| `pnpm build`         | Builds **both** the library and the React app  |
+| `pnpm build:ui`      | Builds the React app only                      |
+| `pnpm build:lib`     | Builds just the `lib` directory                |
+| `pnpm dev:ui`        | Uses Vite to run the React app in dev mode     |
+| `pnpm dev`           | Builds the `lib` directory in watch mode       |
+| `pnpm test`          | Runs the tests                                 |
+| `pnpm test:watch`    | Runs the tests in watch mode                   |
+| `pnpm test:coverage` | Runs the tests and generates a coverage report |
+
+## Dev vs Prod Mode
+
+The only difference between dev and prod mode (outside of the usual minification and tree-shaking that goes into prod builds) is that in development mode the `src/lib/api.ts` uses a base URL of `http://localhost:8080` to point at the CLI running in API mode.</doc><doc title="Cta Ui" desc="docs page."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TanStack CTA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+    />
+    <!-- PRELOAD-->
+  </head>
+  <body class="dark">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Vite.Config" desc="docs page.">import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import tailwind from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths(), tailwind()],
+  server: {
+    open: true,
+    port: 3000,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
+})</doc><doc title="Vitest.Config" desc="docs page.">import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    setupFiles: ['./tests/setupVitest.js'],
+  },
+})</doc><doc title="Vitest.Config" desc="docs page.">import { defineConfig } from 'vitest/config'
+import path from 'node:path'
+
+export default defineConfig({
+  test: {
+    setupFiles: ['./tests/setupVitest.js'],
+    deps: {
+      moduleDirectories: ['node_modules', path.resolve('../../packages')],
+    },
+    coverage: {
+      exclude: [
+        'node_modules',
+        'dist',
+        'build',
+        'tests/**',
+        '**/types.ts',
+        'vitest.config.ts',
+      ],
+    },
+  },
+})</doc><doc title="Vitest.Config" desc="docs page.">import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [tsconfigPaths()],
+})</doc><doc title="Add On Options.Test" desc="docs page.">import { describe, expect, it } from 'vitest'
+import { populateAddOnOptionsDefaults } from '../src/add-ons.js'
+import { AddOnOptionSchema, AddOnOptionsSchema, AddOnSelectOptionSchema } from '../src/types.js'
+import type { AddOn } from '../src/types.js'
+
+// Helper function to create test AddOn objects
+function createTestAddOn(overrides: Partial<AddOn>): AddOn {
+  return {
+    id: 'test-addon',
+    name: 'Test Addon',
+    description: 'Test addon description',
+    type: 'add-on',
+    modes: ['file-router'],
+    phase: 'add-on',
+    files: {},
+    deletedFiles: [],
+    getFiles: () => Promise.resolve([]),
+    getFileContents: () => Promise.resolve(''),
+    getDeletedFiles: () => Promise.resolve([]),
+    ...overrides
+  }
+}
+
+describe('Add-on Options', () => {
+  describe('Option Schema Validation', () => {
+    it('should validate a valid select option', () => {
+      const validSelectOption = {
+        type: 'select',
+        label: 'Database Provider',
+        description: 'Choose your database provider',
+        default: 'postgres',
+        options: [
+          { value: 'postgres', label: 'PostgreSQL' },
+          { value: 'mysql', label: 'MySQL' },
+          { value: 'sqlite', label: 'SQLite' }
+        ]
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(validSelectOption)).not.toThrow()
+    })
+
+    it('should reject select option without required fields', () => {
+      const invalidSelectOption = {
+        type: 'select',
+        // Missing required 'label' field
+        options: [{ value: 'test', label: 'Test' }]
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(invalidSelectOption)).toThrow()
+    })
+
+    it('should reject select option with invalid option format', () => {
+      const invalidSelectOption = {
+        type: 'select',
+        label: 'Test',
+        options: [
+          { value: 'test' } // Missing 'label' field
+        ]
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(invalidSelectOption)).toThrow()
+    })
+
+    it('should reject select option with empty options array', () => {
+      const invalidSelectOption = {
+        type: 'select',
+        label: 'Test',
+        options: []
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(invalidSelectOption)).toThrow()
+    })
+
+    it('should validate AddOnOption discriminated union', () => {
+      const validOption = {
+        type: 'select',
+        label: 'Theme',
+        default: 'dark',
+        options: [
+          { value: 'dark', label: 'Dark' },
+          { value: 'light', label: 'Light' }
+        ]
+      }
+
+      expect(() => AddOnOptionSchema.parse(validOption)).not.toThrow()
+    })
+
+    it('should validate AddOnOptions record', () => {
+      const validOptions = {
+        database: {
+          type: 'select',
+          label: 'Database Provider',
+          default: 'postgres',
+          options: [
+            { value: 'postgres', label: 'PostgreSQL' },
+            { value: 'mysql', label: 'MySQL' }
+          ]
+        },
+        theme: {
+          type: 'select',
+          label: 'Theme',
+          default: 'dark',
+          options: [
+            { value: 'dark', label: 'Dark' },
+            { value: 'light', label: 'Light' }
+          ]
+        }
+      }
+
+      expect(() => AddOnOptionsSchema.parse(validOptions)).not.toThrow()
+    })
+  })
+
+  describe('populateAddOnOptionsDefaults', () => {
+    it('should populate defaults for add-ons with options', () => {
+      const addOns = [
+        createTestAddOn({
+          id: 'testAddon',
+          name: 'Test Addon',
+          options: {
+            database: {
+              type: 'select' as const,
+              label: 'Database Provider',
+              default: 'postgres',
+              options: [
+                { value: 'postgres', label: 'PostgreSQL' },
+                { value: 'mysql', label: 'MySQL' },
+                { value: 'sqlite', label: 'SQLite' }
+              ]
+            }
+          }
+        }),
+        createTestAddOn({
+          id: 'shadcn',
+          name: 'shadcn/ui',
+          options: {
+            theme: {
+              type: 'select' as const,
+              label: 'Theme',
+              default: 'neutral',
+              options: [
+                { value: 'neutral', label: 'Neutral' },
+                { value: 'slate', label: 'Slate' }
+              ]
+            }
+          }
+        })
+      ]
+
+      const result = populateAddOnOptionsDefaults(addOns)
+
+      expect(result).toEqual({
+        testAddon: {
+          database: 'postgres'
+        },
+        shadcn: {
+          theme: 'neutral'
+        }
+      })
+    })
+
+    it('should handle add-ons without options', () => {
+      const addOns = [
+        createTestAddOn({
+          id: 'simple-addon',
+          name: 'Simple Add-on'
+          // No options property
+        })
+      ]
+
+      const result = populateAddOnOptionsDefaults(addOns)
+
+      expect(result).toEqual({})
+    })
+
+    it('should only populate defaults for enabled add-ons', () => {
+      const addOns = [
+        createTestAddOn({
+          id: 'testAddon',
+          name: 'Test Addon',
+          options: {
+            database: {
+              type: 'select' as const,
+              label: 'Database Provider',
+              default: 'postgres',
+              options: [
+                { value: 'postgres', label: 'PostgreSQL' },
+                { value: 'mysql', label: 'MySQL' }
+              ]
+            }
+          }
+        }),
+        createTestAddOn({
+          id: 'shadcn',
+          name: 'shadcn/ui',
+          options: {
+            theme: {
+              type: 'select' as const,
+              label: 'Theme',
+              default: 'neutral',
+              options: [
+                { value: 'neutral', label: 'Neutral' },
+                { value: 'slate', label: 'Slate' }
+              ]
+            }
+          }
+        })
+      ]
+
+      const enabledAddOns = [addOns[0]] // Only testAddon
+      const result = populateAddOnOptionsDefaults(enabledAddOns)
+
+      expect(result).toEqual({
+        testAddon: {
+          database: 'postgres'
+        }
+        // shadcn should not be included
+      })
+    })
+
+    it('should handle empty enabled add-ons array', () => {
+      const enabledAddOns: Array<any> = []
+      const result = populateAddOnOptionsDefaults(enabledAddOns)
+
+      expect(result).toEqual({})
+    })
+
+    it('should handle add-ons with multiple options', () => {
+      const addOns = [
+        createTestAddOn({
+          id: 'complex-addon',
+          name: 'Complex Add-on',
+          options: {
+            database: {
+              type: 'select' as const,
+              label: 'Database',
+              default: 'postgres',
+              options: [
+                { value: 'postgres', label: 'PostgreSQL' },
+                { value: 'mysql', label: 'MySQL' }
+              ]
+            },
+            theme: {
+              type: 'select' as const,
+              label: 'Theme',
+              default: 'dark',
+              options: [
+                { value: 'dark', label: 'Dark' },
+                { value: 'light', label: 'Light' }
+              ]
+            }
+          }
+        })
+      ]
+
+      const result = populateAddOnOptionsDefaults(addOns)
+
+      expect(result).toEqual({
+        'complex-addon': {
+          database: 'postgres',
+          theme: 'dark'
+        }
+      })
+    })
+
+    it('should handle options without default values', () => {
+      const addOns = [
+        createTestAddOn({
+          id: 'no-default',
+          name: 'No Default Add-on',
+          options: {
+            database: {
+              type: 'select' as const,
+              label: 'Database',
+              default: 'postgres', // We need a default for valid schema
+              options: [
+                { value: 'postgres', label: 'PostgreSQL' },
+                { value: 'mysql', label: 'MySQL' }
+              ]
+            }
+          }
+        })
+      ]
+
+      // Test the case where an addon has no default by manually modifying the option
+      if (addOns[0].options?.database) {
+        delete (addOns[0].options.database as any).default
+      }
+
+      const result = populateAddOnOptionsDefaults(addOns)
+
+      expect(result).toEqual({
+        'no-default': {
+          database: undefined
+        }
+      })
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('should handle malformed option definitions gracefully', () => {
+      const malformedOptions = {
+        invalid: {
+          type: 'unknown-type', // Invalid type
+          label: 'Test'
+        }
+      }
+
+      expect(() => AddOnOptionsSchema.parse(malformedOptions)).toThrow()
+    })
+
+    it('should validate option value types', () => {
+      const invalidOption = {
+        type: 'select',
+        label: 123, // Should be string
+        options: [{ value: 'test', label: 'Test' }]
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(invalidOption)).toThrow()
+    })
+
+    it('should require non-empty option arrays', () => {
+      const emptyOptionsArray = {
+        type: 'select',
+        label: 'Test',
+        options: []
+      }
+
+      expect(() => AddOnSelectOptionSchema.parse(emptyOptionsArray)).toThrow()
+    })
+  })
+})</doc><doc title="Add Ons" desc="docs page.">import { loadRemoteAddOn } from './custom-add-ons/add-on.js'
+
+import type { AddOn, Framework } from './types.js'
+
+export function getAllAddOns(framework: Framework, mode: string): Array<AddOn> {
+  return framework
+    .getAddOns()
+    .filter((a) => a.modes.includes(mode))
+    .sort((a, b) => {
+      const aPriority = a.priority ?? 0
+      const bPriority = b.priority ?? 0
+      return bPriority - aPriority // Higher priority first
+    })
+}
+
+// Turn the list of chosen add-on IDs into a final list of add-ons by resolving dependencies
+export async function finalizeAddOns(
+  framework: Framework,
+  mode: string,
+  chosenAddOnIDs: Array<string>,
+): Promise<Array<AddOn>> {
+  const finalAddOnIDs = new Set(chosenAddOnIDs)
+
+  const addOns = getAllAddOns(framework, mode)
+
+  for (const addOnID of finalAddOnIDs) {
+    let addOn: AddOn | undefined
+    const localAddOn = addOns.find((a) => a.id === addOnID)
+    if (localAddOn) {
+      addOn = loadAddOn(localAddOn)
+    } else if (addOnID.startsWith('http')) {
+      addOn = await loadRemoteAddOn(addOnID)
+      addOns.push(addOn)
+    } else {
+      throw new Error(`Add-on ${addOnID} not found`)
+    }
+
+    for (const dependsOn of addOn.dependsOn || []) {
+      const dep = addOns.find((a) => a.id === dependsOn)
+      if (!dep) {
+        throw new Error(`Dependency ${dependsOn} not found`)
+      }
+      finalAddOnIDs.add(dep.id)
+    }
+  }
+
+  const finalAddOns = [...finalAddOnIDs].map(
+    (id) => addOns.find((a) => a.id === id)!,
+  )
+
+  return finalAddOns
+}
+
+function loadAddOn(addOn: AddOn): AddOn {
+  return addOn
+}
+
+export function populateAddOnOptionsDefaults(
+  chosenAddOns: Array<AddOn>,
+): Record<string, Record<string, any>> {
+  const addOnOptions: Record<string, Record<string, any>> = {}
+
+  for (const addOn of chosenAddOns) {
+    if (addOn.options) {
+      const defaults: Record<string, any> = {}
+      for (const [optionKey, optionDef] of Object.entries(addOn.options)) {
+        defaults[optionKey] = optionDef.default
+      }
+      addOnOptions[addOn.id] = defaults
+    }
+  }
+
+  return addOnOptions
+}</doc><doc title="Add Ons.Test" desc="docs page.">import { describe, expect, it } from 'vitest'
+
+import { finalizeAddOns, getAllAddOns } from '../src/add-ons.js'
+
+import type { AddOn, Framework } from '../src/types.js'
+
+describe('getAllAddOns', () => {
+  it('filter add-ons', () => {
+    const addOns = getAllAddOns(
+      {
+        id: 'react-cra',
+        getAddOns: () => [
+          {
+            id: 'add-on-1',
+            description: 'Add-on 1',
+            modes: ['file-router'],
+          } as AddOn,
+          {
+            id: 'add-on-2',
+            description: 'Add-on 2',
+            modes: ['code-router'],
+          } as AddOn,
+        ],
+      } as Framework,
+      'file-router',
+    )
+
+    expect(addOns.length).toEqual(1)
+    expect(addOns[0].id).toEqual('add-on-1')
+  })
+
+  it('should sort add-ons by priority (higher priority first)', () => {
+    const addOns = getAllAddOns(
+      {
+        id: 'react-cra',
+        getAddOns: () => [
+          {
+            id: 'low-priority',
+            description: 'Low Priority',
+            modes: ['file-router'],
+            priority: 10,
+          } as AddOn,
+          {
+            id: 'high-priority',
+            description: 'High Priority',
+            modes: ['file-router'],
+            priority: 100,
+          } as AddOn,
+          {
+            id: 'no-priority',
+            description: 'No Priority (defaults to 0)',
+            modes: ['file-router'],
+          } as AddOn,
+          {
+            id: 'medium-priority',
+            description: 'Medium Priority',
+            modes: ['file-router'],
+            priority: 50,
+          } as AddOn,
+        ],
+      } as Framework,
+      'file-router',
+    )
+
+    expect(addOns.length).toEqual(4)
+    expect(addOns[0].id).toEqual('high-priority')
+    expect(addOns[1].id).toEqual('medium-priority')
+    expect(addOns[2].id).toEqual('low-priority')
+    expect(addOns[3].id).toEqual('no-priority')
+  })
+
+  it('should filter by mode and then sort by priority', () => {
+    const addOns = getAllAddOns(
+      {
+        id: 'react-cra',
+        getAddOns: () => [
+          {
+            id: 'file-router-low',
+            description: 'File Router Low',
+            modes: ['file-router'],
+            priority: 20,
+          } as AddOn,
+          {
+            id: 'code-router-high',
+            description: 'Code Router High (should be filtered out)',
+            modes: ['code-router'],
+            priority: 200,
+          } as AddOn,
+          {
+            id: 'file-router-high',
+            description: 'File Router High',
+            modes: ['file-router'],
+            priority: 100,
+          } as AddOn,
+        ],
+      } as Framework,
+      'file-router',
+    )
+
+    expect(addOns.length).toEqual(2)
+    expect(addOns[0].id).toEqual('file-router-high')
+    expect(addOns[1].id).toEqual('file-router-low')
+  })
+})
+
+describe('finalizeAddOns', () => {
+  it('should finalize add-ons', async () => {
+    const addOns = await finalizeAddOns(
+      {
+        id: 'react-cra',
+        getAddOns: () => [
+          {
+            id: 'add-on-1',
+            description: 'Add-on 1',
+            modes: ['file-router'],
+            dependsOn: ['add-on-2'],
+          } as AddOn,
+          {
+            id: 'add-on-2',
+            description: 'Add-on 2',
+            modes: ['file-router'],
+          } as AddOn,
+          {
+            id: 'add-on-3',
+            description: 'Add-on 3',
+            modes: ['file-router'],
+          } as AddOn,
+        ],
+      } as Framework,
+      'file-router',
+      ['add-on-1'],
+    )
+
+    expect(addOns.length).toEqual(2)
+    const addOnIds = addOns.map((a) => a.id)
+    expect(addOnIds.includes('add-on-1')).toEqual(true)
+    expect(addOnIds.includes('add-on-2')).toEqual(true)
+    expect(addOnIds.includes('add-on-3')).toEqual(false)
+  })
+})</doc><doc title="Add To App" desc="docs page.">import { basename, resolve } from 'node:path'
+
+import { CONFIG_FILE } from './constants.js'
+import { finalizeAddOns } from './add-ons.js'
+import { getFrameworkById } from './frameworks.js'
+import { createMemoryEnvironment } from './environment.js'
+import { createApp } from './create-app.js'
+import {
+  readConfigFileFromEnvironment,
+  writeConfigFileToEnvironment,
+} from './config-file.js'
+import { formatCommand } from './utils.js'
+import { packageManagerInstall } from './package-manager.js'
+import {
+  isBase64,
+  recursivelyGatherFilesFromEnvironment,
+} from './file-helpers.js'
+import { mergePackageJSON } from './package-json.js'
+import { runSpecialSteps } from './special-steps/index.js'
+import { loadStarter } from './custom-add-ons/starter.js'
+
+import type { Environment, Options } from './types.js'
+import type { PersistedOptions } from './config-file.js'
+
+export async function hasPendingGitChanges(
+  environment: Environment,
+  cwd: string,
+) {
+  const { stdout } = await environment.execute(
+    'git',
+    ['status', '--porcelain'],
+    cwd,
+  )
+  return stdout.length > 0
+}
+
+async function createOptions(
+  json: PersistedOptions,
+  addOns: Array<string>,
+  targetDir: string,
+): Promise<Options> {
+  const framework = getFrameworkById(json.framework)
+
+  const starter = json.starter ? await loadStarter(json.starter) : undefined
+
+  return {
+    ...json,
+    framework,
+    tailwind: true,
+    addOns: true,
+    chosenAddOns: await finalizeAddOns(framework!, json.mode!, [
+      ...json.chosenAddOns,
+      ...addOns,
+    ]),
+    targetDir,
+    starter,
+  } as Options
+}
+
+async function runCreateApp(options: Required<Options>) {
+  const { environment, output } = createMemoryEnvironment(options.targetDir)
+  await createApp(environment, options)
+  return output
+}
+
+export async function getCurrentConfiguration(
+  environment: Environment,
+  cwd: string,
+) {
+  const persistedOptions = await readConfigFileFromEnvironment(environment, cwd)
+  if (!persistedOptions) {
+    environment.error(
+      'There is no .cta.json file in your project.',
+      'This is probably because this was created with an older version of create-tsrouter-app.',
+    )
+    return undefined
+  }
+
+  return persistedOptions
+}
+
+export async function writeFiles(
+  environment: Environment,
+  cwd: string,
+  output: {
+    files: Record<string, string>
+    deletedFiles: Array<string>
+  },
+  forced: boolean,
+) {
+  const currentFiles = await recursivelyGatherFilesFromEnvironment(
+    environment,
+    cwd,
+    false,
+  )
+
+  const overwrittenFiles: Array<string> = []
+  const changedFiles: Array<string> = []
+  for (const file of Object.keys(output.files)) {
+    const relativeFile = file.replace(cwd, '')
+    if (currentFiles[relativeFile]) {
+      if (currentFiles[relativeFile] !== output.files[file]) {
+        overwrittenFiles.push(relativeFile)
+      }
+    } else {
+      changedFiles.push(relativeFile)
+    }
+  }
+
+  if (!forced && overwrittenFiles.length) {
+    environment.warn(
+      'The following will be overwritten',
+      [...overwrittenFiles, ...output.deletedFiles].join('\n'),
+    )
+    const shouldContinue = await environment.confirm('Do you want to continue?')
+    if (!shouldContinue) {
+      throw new Error('User cancelled')
+    }
+  }
+
+  for (const file of output.deletedFiles) {
+    if (environment.exists(resolve(cwd, file))) {
+      await environment.deleteFile(resolve(cwd, file))
+    }
+  }
+
+  environment.startStep({
+    id: 'write-files',
+    type: 'file',
+    message: 'Writing add-on files...',
+  })
+
+  for (const file of [...changedFiles, ...overwrittenFiles]) {
+    const fName = basename(file)
+    const contents = output.files[file]
+    if (fName === 'package.json') {
+      const currentJson = JSON.parse(
+        await environment.readFile(resolve(cwd, file)),
+      )
+      const newJSON = mergePackageJSON(currentJson, JSON.parse(contents))
+      environment.writeFile(
+        resolve(cwd, file),
+        JSON.stringify(newJSON, null, 2),
+      )
+    } else if (fName !== CONFIG_FILE) {
+      if (isBase64(contents)) {
+        await environment.writeFileBase64(resolve(cwd, file), contents)
+      } else {
+        await environment.writeFile(resolve(cwd, file), contents)
+      }
+    }
+  }
+
+  environment.finishStep('write-files', 'Add-on files written')
+}
+
+export async function runNewCommands(
+  environment: Environment,
+  originalOptions: PersistedOptions,
+  cwd: string,
+  output: {
+    commands: Array<{
+      command: string
+      args: Array<string>
+    }>
+  },
+) {
+  const originalOutput = await runCreateApp({
+    ...(await createOptions(originalOptions, [], cwd)),
+  } as Required<Options>)
+
+  const originalCommands = new Set(
+    originalOutput.commands.map((c) => [c.command, ...c.args].join(' ')),
+  )
+
+  for (const command of output.commands) {
+    const commandString = [command.command, ...command.args].join(' ')
+    if (!originalCommands.has(commandString)) {
+      environment.startStep({
+        id: 'run-commands',
+        type: 'command',
+        message: `Running ${formatCommand({ command: command.command, args: command.args })}...`,
+      })
+      await environment.execute(command.command, command.args, cwd, {
+        inherit: true,
+      })
+      environment.finishStep('run-commands', 'Setup commands complete')
+    }
+  }
+}
+
+export async function addToApp(
+  environment: Environment,
+  addOns: Array<string>,
+  cwd: string,
+  options?: {
+    forced?: boolean
+  },
+) {
+  const persistedOptions = await getCurrentConfiguration(environment, cwd)
+  if (!persistedOptions) {
+    return
+  }
+
+  if (!options?.forced && (await hasPendingGitChanges(environment, cwd))) {
+    environment.error(
+      'You have pending git changes.',
+      'Please commit or stash them before adding add-ons.',
+    )
+    return
+  }
+
+  environment.intro(`Adding ${addOns.join(', ')} to the project...`)
+  environment.startStep({
+    id: 'processing-new-app-setup',
+    type: 'file',
+    message: 'Processing new app setup...',
+  })
+
+  const newOptions = await createOptions(persistedOptions, addOns, cwd)
+
+  const output = await runCreateApp({
+    ...newOptions,
+    targetDir: cwd,
+  } as Required<Options>)
+
+  await writeFiles(environment, cwd, output, !!options?.forced)
+
+  environment.finishStep(
+    'processing-new-app-setup',
+    'Application files written',
+  )
+
+  // Run any special steps for the new add-ons
+
+  const specialSteps = new Set<string>([])
+  for (const addOn of newOptions.chosenAddOns) {
+    for (const step of addOn.addOnSpecialSteps || []) {
+      if (addOns.includes(addOn.id)) {
+        specialSteps.add(step)
+      }
+    }
+  }
+  if (specialSteps.size) {
+    await runSpecialSteps(environment, newOptions, Array.from(specialSteps))
+  }
+
+  // Install dependencies
+
+  environment.startStep({
+    id: 'install-dependencies',
+    type: 'package-manager',
+    message: `Installing dependencies via ${newOptions.packageManager}...`,
+  })
+  const s = environment.spinner()
+  s.start(`Installing dependencies via ${newOptions.packageManager}...`)
+  await packageManagerInstall(
+    environment,
+    newOptions.targetDir,
+    newOptions.packageManager,
+  )
+  s.stop(`Installed dependencies`)
+  environment.finishStep('install-dependencies', 'Dependencies installed')
+
+  // Run any post-init special steps for the new add-ons
+  const postInitSpecialSteps = new Set<string>([])
+  for (const addOn of newOptions.chosenAddOns) {
+    for (const step of addOn.postInitSpecialSteps || []) {
+      if (addOns.includes(addOn.id)) {
+        postInitSpecialSteps.add(step)
+      }
+    }
+  }
+  if (postInitSpecialSteps.size) {
+    await runSpecialSteps(
+      environment,
+      newOptions,
+      Array.from(postInitSpecialSteps),
+    )
+  }
+
+  // Handle new commands
+
+  await runNewCommands(environment, persistedOptions, cwd, output)
+
+  environment.startStep({
+    id: 'write-config-file',
+    type: 'file',
+    message: 'Writing config file...',
+  })
+  writeConfigFileToEnvironment(environment, newOptions)
+  environment.finishStep('write-config-file', 'Config file written')
+
+  environment.outro(`Add-ons ${addOns.join(', ')} added!`)
+}</doc></packages><scripts><doc title="README" desc="install &amp; quickstart."># Scripts
+
+## generate-checksums.js
+
+This script generates checksums for the `react-cra` and `solid` frameworks to ensure version bumps when content changes.
+
+### Purpose
+
+The checksum system ensures that when any files in the following directories change, the framework package will have a different build output, triggering proper version bumping:
+
+- `add-ons/`
+- `examples/`
+- `hosts/`
+- `project/`
+- `toolchains/`
+
+### How It Works
+
+1. The script recursively scans all files in the specified directories
+2. Calculates a SHA-256 hash of all file contents and paths
+3. Generates `src/checksum.ts` in each framework with the exported checksum value
+4. The checksum is exported from `src/index.ts` and included in the built output
+
+### Integration
+
+The checksum generation runs automatically before each build via the `prebuild` script in:
+
+- `frameworks/react-cra/package.json`
+- `frameworks/solid/package.json`
+
+When running `pnpm build` at the root level, the checksums are automatically regenerated for both frameworks before TypeScript compilation.
+
+### Generated Files
+
+- `frameworks/react-cra/src/checksum.ts`
+- `frameworks/solid/src/checksum.ts`
+
+**Note:** These generated files should be committed to git as they are part of the package's public API and need to be tracked for proper version management.</doc><doc title="Check Outdated Packages" desc="docs page.">#!/usr/bin/env node
+
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
+import { join, dirname, relative } from 'path'
+import { fileURLToPath } from 'url'
+import semver from 'semver'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Parse command line arguments
+const args = process.argv.slice(2)
+const shouldUpdate = args.includes('--update')
+
+// Colors for console output
+const colors = {
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+}
+
+/**
+ * Recursively find all package.json files in a directory
+ */
+function findPackageJsonFiles(dir, files = []) {
+  const items = readdirSync(dir)
+
+  for (const item of items) {
+    const fullPath = join(dir, item)
+    const stat = statSync(fullPath)
+
+    if (stat.isDirectory() && item !== 'node_modules' && item !== 'dist') {
+      findPackageJsonFiles(fullPath, files)
+    } else if (item === 'package.json') {
+      files.push(fullPath)
+    }
+  }
+
+  return files
+}
+
+// Cache for package versions to avoid duplicate API calls
+const versionCache = new Map()
+
+/**
+ * Get the latest version of a package from npm with caching and timeout
+ */
+async function getLatestVersion(packageName) {
+  // Check cache first
+  if (versionCache.has(packageName)) {
+    return versionCache.get(packageName)
+  }
+
+  try {
+    // Add timeout to prevent hanging
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
+    const response = await fetch(
+      `https://registry.npmjs.org/${packageName}/latest`,
+      {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'create-tsrouter-app-outdated-checker',
+        },
+      },
+    )
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    const version = data.version
+
+    // Cache the result
+    versionCache.set(packageName, version)
+    return version
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.warn(
+        `${colors.yellow}Warning: Timeout fetching latest version for ${packageName}${colors.reset}`,
+      )
+    } else {
+      console.warn(
+        `${colors.yellow}Warning: Could not fetch latest version for ${packageName}: ${error.message}${colors.reset}`,
+      )
+    }
+
+    // Cache null result to avoid retrying
+    versionCache.set(packageName, null)
+    return null
+  }
+}
+
+/**
+ * Check if a version range satisfies the latest version
+ */
+function isVersionRangeOutdated(versionRange, latestVersion) {
+  try {
+    // Clean the version range (remove any npm-specific prefixes)
+    const cleanRange = versionRange.replace(/^npm:/, '').split('@').pop()
+
+    // Check if the range satisfies the latest version
+    return !semver.satisfies(latestVersion, cleanRange)
+  } catch (error) {
+    console.warn(
+      `${colors.yellow}Warning: Could not parse version range "${versionRange}": ${error.message}${colors.reset}`,
+    )
+    return false
+  }
+}
+
+/**
+ * Update package.json file with new versions
+ */
+function updatePackageJson(filePath, outdatedPackages) {
+  try {
+    const content = readFileSync(filePath, 'utf8')
+    const packageJson = JSON.parse(content)
+
+    let updated = false
+
+    for (const pkg of outdatedPackages) {
+      // Check and update in dependencies
+      if (packageJson.dependencies && packageJson.dependencies[pkg.name]) {
+        const currentRange = packageJson.dependencies[pkg.name]
+        const newRange = updateVersionRange(currentRange, pkg.latest)
+        packageJson.dependencies[pkg.name] = newRange
+        updated = true
+      }
+
+      // Check and update in devDependencies
+      if (
+        packageJson.devDependencies &&
+        packageJson.devDependencies[pkg.name]
+      ) {
+        const currentRange = packageJson.devDependencies[pkg.name]
+        const newRange = updateVersionRange(currentRange, pkg.latest)
+        packageJson.devDependencies[pkg.name] = newRange
+        updated = true
+      }
+
+      // Check and update in peerDependencies
+      if (
+        packageJson.peerDependencies &&
+        packageJson.peerDependencies[pkg.name]
+      ) {
+        const currentRange = packageJson.peerDependencies[pkg.name]
+        const newRange = updateVersionRange(currentRange, pkg.latest)
+        packageJson.peerDependencies[pkg.name] = newRange
+        updated = true
+      }
+    }
+
+    if (updated) {
+      // Write back with proper formatting
+      writeFileSync(filePath, JSON.stringify(packageJson, null, 2) + '\n')
+      return true
+    }
+
+    return false
+  } catch (error) {
+    console.error(
+      `${colors.red}Error updating ${filePath}: ${error.message}${colors.reset}`,
+    )
+    return false
+  }
+}
+
+/**
+ * Update version range while preserving the range type (^, ~, etc.)
+ */
+function updateVersionRange(currentRange, latestVersion) {
+  // Preserve the prefix (^, ~, >=, etc.)
+  if (currentRange.startsWith('^')) {
+    return `^${latestVersion}`
+  } else if (currentRange.startsWith('~')) {
+    return `~${latestVersion}`
+  } else if (currentRange.startsWith('>=')) {
+    return `>=${latestVersion}`
+  } else if (currentRange.startsWith('>')) {
+    return `>${latestVersion}`
+  } else if (currentRange.startsWith('<=')) {
+    return `<=${latestVersion}`
+  } else if (currentRange.startsWith('<')) {
+    return `<${latestVersion}`
+  } else {
+    // Exact version or other format, just use the latest version
+    return latestVersion
+  }
+}
+
+/**
+ * Get relative path for display
+ */
+function getDisplayPath(filePath, frameworksDir) {
+  const relativePath = relative(frameworksDir, filePath)
+  // Remove the package.json part
+  return relativePath.replace('/package.json', '')
+}
+
+/**
+ * Check dependencies in a package.json file
+ */
+async function checkPackageJson(filePath) {
+  try {
+    const content = readFileSync(filePath, 'utf8')
+    const packageJson = JSON.parse(content)
+
+    const outdatedPackages = []
+    const allDependencies = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+      ...packageJson.peerDependencies,
+    }
+
+    if (Object.keys(allDependencies).length === 0) {
+      return { filePath, outdatedPackages: [], totalDependencies: 0 }
+    }
+
+    const packageNames = Object.keys(allDependencies).filter((name) => {
+      const versionRange = allDependencies[name]
+      // Skip workspace dependencies and local packages
+      return !(
+        versionRange.startsWith('workspace:') ||
+        versionRange.startsWith('file:') ||
+        versionRange.startsWith('link:')
+      )
+    })
+
+    // Process packages in batches to avoid overwhelming the API
+    const batchSize = 5
+    for (let i = 0; i < packageNames.length; i += batchSize) {
+      const batch = packageNames.slice(i, i + batchSize)
+
+      // Process batch in parallel
+      const promises = batch.map(async (packageName) => {
+        const versionRange = allDependencies[packageName]
+        const latestVersion = await getLatestVersion(packageName)
+
+        if (!latestVersion) {
+          return null
+        }
+
+        if (isVersionRangeOutdated(versionRange, latestVersion)) {
+          return {
+            name: packageName,
+            current: versionRange,
+            latest: latestVersion,
+          }
+        }
+
+        return null
+      })
+
+      const results = await Promise.all(promises)
+      outdatedPackages.push(...results.filter(Boolean))
+
+      // Small delay between batches
+      if (i + batchSize < packageNames.length) {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+    }
+
+    return {
+      filePath,
+      outdatedPackages,
+      totalDependencies: Object.keys(allDependencies).length,
+    }
+  } catch (error) {
+    console.error(
+      `${colors.red}Error processing ${filePath}: ${error.message}${colors.reset}`,
+    )
+    return {
+      filePath,
+      outdatedPackages: [],
+      totalDependencies: 0,
+      error: error.message,
+    }
+  }
+}
+
+/**
+ * Main function
+ */
+async function main() {
+  const actionText = shouldUpdate ? 'Updating' : 'Checking for'
+  console.log(
+    `${colors.bold}${colors.blue}${actionText} outdated packages in frameworks directory...${colors.reset}\n`,
+  )
+
+  const frameworksDir = join(__dirname, '..', 'frameworks')
+  const packageJsonFiles = findPackageJsonFiles(frameworksDir)
+
+  console.log(`Found ${packageJsonFiles.length} package.json files\n`)
+
+  let totalOutdated = 0
+  let totalChecked = 0
+  let totalUpdated = 0
+  const results = []
+
+  for (let i = 0; i < packageJsonFiles.length; i++) {
+    const filePath = packageJsonFiles[i]
+    const displayPath = getDisplayPath(filePath, frameworksDir)
+
+    // Show progress
+    process.stdout.write(
+      `\r${colors.blue}Processing ${i + 1}/${packageJsonFiles.length}: ${displayPath}...${colors.reset}`,
+    )
+
+    const result = await checkPackageJson(filePath)
+    results.push(result)
+
+    if (result.error) {
+      console.log(`\n${colors.red}Error: ${result.error}${colors.reset}`)
+      continue
+    }
+
+    totalChecked += result.totalDependencies
+    totalOutdated += result.outdatedPackages.length
+
+    if (result.outdatedPackages.length > 0) {
+      console.log(
+        `\n${colors.red}${colors.bold}Found ${result.outdatedPackages.length} outdated packages in ${displayPath}:${colors.reset}`,
+      )
+      for (const pkg of result.outdatedPackages) {
+        console.log(
+          `  ${colors.red}${pkg.name}${colors.reset}: ${pkg.current} → ${colors.green}${pkg.latest}${colors.reset}`,
+        )
+      }
+
+      if (shouldUpdate) {
+        const updated = updatePackageJson(filePath, result.outdatedPackages)
+        if (updated) {
+          totalUpdated++
+          console.log(
+            `  ${colors.green}✓ Updated ${displayPath}${colors.reset}`,
+          )
+        } else {
+          console.log(
+            `  ${colors.yellow}⚠ Failed to update ${displayPath}${colors.reset}`,
+          )
+        }
+      }
+
+      console.log()
+    }
+  }
+
+  // Clear progress line and add spacing
+  console.log('\n')
+
+  // Summary
+  console.log(`${colors.bold}${colors.blue}Summary:${colors.reset}`)
+  console.log(`Total dependencies checked: ${totalChecked}`)
+  console.log(
+    `Total outdated packages: ${colors.red}${totalOutdated}${colors.reset}`,
+  )
+
+  if (shouldUpdate) {
+    console.log(
+      `Total files updated: ${colors.green}${totalUpdated}${colors.reset}`,
+    )
+  }
+
+  if (totalOutdated === 0) {
+    console.log(
+      `${colors.green}${colors.bold}🎉 All packages are up to date!${colors.reset}`,
+    )
+  } else if (shouldUpdate && totalUpdated > 0) {
+    console.log(
+      `${colors.green}${colors.bold}✅ Successfully updated ${totalUpdated} files with outdated packages!${colors.reset}`,
+    )
+  } else if (shouldUpdate && totalUpdated === 0) {
+    console.log(
+      `${colors.yellow}${colors.bold}⚠️  No files were updated. Check for errors above.${colors.reset}`,
+    )
+  } else {
+    console.log(
+      `${colors.yellow}${colors.bold}⚠️  Found outdated packages that need attention. Use --update to update them.${colors.reset}`,
+    )
+  }
+
+  // Exit with error code if outdated packages found and not updating
+  process.exit(totalOutdated > 0 && !shouldUpdate ? 1 : 0)
+}
+
+main().catch((error) => {
+  console.error(
+    `${colors.red}${colors.bold}Fatal error: ${error.message}${colors.reset}`,
+  )
+  process.exit(1)
+})</doc><doc title="Generate Checksums" desc="docs page.">#!/usr/bin/env node
+
+import { createHash } from 'node:crypto'
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+/**
+ * Recursively gets all files in a directory
+ * @param {string} dir - Directory to scan
+ * @param {string[]} fileList - Accumulator for file paths
+ * @returns {string[]} Array of file paths
+ */
+function getAllFiles(dir, fileList = []) {
+  try {
+    const files = readdirSync(dir)
+
+    files.forEach((file) => {
+      const filePath = join(dir, file)
+      try {
+        const stat = statSync(filePath)
+
+        if (stat.isDirectory()) {
+          // Skip node_modules and dist directories
+          if (file !== 'node_modules' && file !== 'dist') {
+            getAllFiles(filePath, fileList)
+          }
+        } else {
+          fileList.push(filePath)
+        }
+      } catch (err) {
+        console.warn(`Warning: Could not read ${filePath}: ${err.message}`)
+      }
+    })
+  } catch (err) {
+    console.warn(`Warning: Could not read directory ${dir}: ${err.message}`)
+  }
+
+  return fileList
+}
+
+/**
+ * Generates a checksum for all files in specified directories
+ * @param {string} baseDir - Base directory path
+ * @param {string[]} directories - Array of directory names to checksum
+ * @returns {string} Hex checksum
+ */
+function generateChecksum(baseDir, directories) {
+  const hash = createHash('sha256')
+  const allFiles = []
+
+  // Collect all files from specified directories
+  directories.forEach((dir) => {
+    const dirPath = join(baseDir, dir)
+    const files = getAllFiles(dirPath)
+    allFiles.push(...files)
+  })
+
+  // Sort files to ensure consistent ordering
+  allFiles.sort()
+
+  // Hash each file's content
+  allFiles.forEach((filePath) => {
+    try {
+      const content = readFileSync(filePath)
+      const relativePath = relative(baseDir, filePath)
+      // Include the file path in the hash for uniqueness
+      hash.update(relativePath)
+      hash.update(content)
+    } catch (err) {
+      console.warn(`Warning: Could not read ${filePath}: ${err.message}`)
+    }
+  })
+
+  return hash.digest('hex')
+}
+
+/**
+ * Generates checksum.ts file for a framework
+ * @param {string} frameworkPath - Path to the framework directory
+ * @param {string} frameworkName - Name of the framework for logging
+ */
+function generateChecksumFile(frameworkPath, frameworkName) {
+  const directories = ['add-ons', 'examples', 'hosts', 'project', 'toolchains']
+  const checksum = generateChecksum(frameworkPath, directories)
+
+  const checksumContent = `// This file is auto-generated. Do not edit manually.
+// Generated from add-ons, examples, hosts, project, and toolchains directories
+export const contentChecksum = '${checksum}'
+`
+
+  const checksumPath = join(frameworkPath, 'src', 'checksum.ts')
+  writeFileSync(checksumPath, checksumContent, 'utf8')
+
+  console.log(`✓ Generated checksum for ${frameworkName}: ${checksum}`)
+}
+
+// Main execution
+const rootDir = join(__dirname, '..')
+const reactCraPath = join(rootDir, 'frameworks', 'react-cra')
+const solidPath = join(rootDir, 'frameworks', 'solid')
+
+console.log('Generating checksums...')
+generateChecksumFile(reactCraPath, 'react-cra')
+generateChecksumFile(solidPath, 'solid')
+console.log('✓ Checksums generated successfully')</doc><doc title="Publish" desc="docs page.">// @ts-check
+
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { publish } from '@tanstack/config/publish'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+await publish({
+  packages: [
+    {
+      name: '@tanstack/create-start',
+      packageDir: './cli/ts-create-start',
+    },
+    {
+      name: 'create-tsrouter-app',
+      packageDir: './cli/create-tsrouter-app',
+    },
+    {
+      name: 'create-start-app',
+      packageDir: './cli/create-start-app',
+    },
+    {
+      name: 'create-tanstack-app',
+      packageDir: './cli/create-tanstack-app',
+    },
+    {
+      name: 'create-tanstack',
+      packageDir: './cli/create-tanstack',
+    },
+    {
+      name: '@tanstack/cta-cli',
+      packageDir: './packages/cta-cli',
+    },
+    {
+      name: '@tanstack/cta-engine',
+      packageDir: './packages/cta-engine',
+    },
+    {
+      name: '@tanstack/cta-ui',
+      packageDir: './packages/cta-ui',
+    },
+    {
+      name: '@tanstack/cta-ui-base',
+      packageDir: './packages/cta-ui-base',
+    },
+    {
+      name: '@tanstack/cta-frameworks-react-cra',
+      packageDir: './frameworks/react-cra',
+    },
+    {
+      name: '@tanstack/cta-frameworks-solid',
+      packageDir: './frameworks/solid',
+    },
+  ],
+  branchConfigs: {
+    main: {
+      prerelease: false,
+    },
+    alpha: {
+      prerelease: true,
+    },
+    beta: {
+      prerelease: true,
+    },
+  },
+  rootDir: resolve(__dirname, '..'),
+  branch: process.env.BRANCH,
+  tag: process.env.TAG,
+  ghToken: process.env.GH_TOKEN,
+})
+
+process.exit(0)</doc></scripts></project>

@@ -1,0 +1,78 @@
+# Anime
+
+> Anime.js is a lightweight, high-performance JavaScript animation library designed to simplify and enhance the creation of animations in web applications. It supports animating CSS properties, SVG elements, DOM attributes, and JavaScript objects with a clean, intuitive API. The project aims to provide developers with powerful, flexible, and performant animation capabilities without requiring heavy frameworks or complex configurations.
+
+**Remember:**
+- Animation
+- CSS Properties
+- SVG Animation
+- DOM Attributes
+- Easing Functions
+- Timeline Control
+
+## Tutorials
+- [Additive Creature](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/additive-creature/index.html): worked example.
+- [Additive Fireflies](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/additive-fireflies/index.html): worked example.
+- [Advanced Grid Staggering](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/advanced-grid-staggering/index.html): worked example.
+- [Animatable Follow Cursor](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/animatable-follow-cursor/index.html): worked example.
+- [Animejs V4 Logo Animation](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/animejs-v4-logo-animation/index.html): worked example.
+- [Canvas 2D](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/canvas-2d/index.html): worked example.
+- [Clock Playback Controls](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/clock-playback-controls/index.html): worked example.
+- [Draggable Infinite Auto Carousel](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/draggable-infinite-auto-carousel/index.html): worked example.
+- [Draggable Mouse Scroll Snap Carousel](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/draggable-mouse-scroll-snap-carousel/index.html): worked example.
+- [Draggable Playground](https://raw.githubusercontent.com/juliangarnier/anime/master/examples/draggable-playground/index.html): worked example.
+
+## API
+- [Composition](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/waapi/composition/index.html): docs page.
+- [Eases](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/waapi/eases/index.html): docs page.
+- [Playback](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/waapi/playback/index.html): docs page.
+- [Values](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/waapi/values/index.html): docs page.
+- [Composition](https://raw.githubusercontent.com/juliangarnier/anime/master/src/waapi/composition.js): docs page.
+- [Index](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/modules/index.js): docs page.
+- [Index](https://raw.githubusercontent.com/juliangarnier/anime/master/src/waapi/index.js): docs page.
+- [Index.D](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/modules/index.d.ts): docs page.
+- [Waapi](https://raw.githubusercontent.com/juliangarnier/anime/master/src/waapi/waapi.js): docs page.
+- [Waapi.Test](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/suites/waapi.test.js): docs page.
+
+## Optional
+- [Benchmark](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/benchmark/index.html): docs page.
+- [Contributing](https://raw.githubusercontent.com/juliangarnier/anime/master/CONTRIBUTING.md): docs page.
+- [License](https://raw.githubusercontent.com/juliangarnier/anime/master/LICENSE.md): usage terms.
+- [Index](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/benchmark/index.js): docs page.
+- [README](https://raw.githubusercontent.com/juliangarnier/anime/master/README.md): docs page.
+- [Rollup.Config](https://raw.githubusercontent.com/juliangarnier/anime/master/rollup.config.js): docs page.
+
+## .Github
+- [Bug Report](https://raw.githubusercontent.com/juliangarnier/anime/master/.github/ISSUE_TEMPLATE/bug_report.md): docs page.
+- [Documentation Update](https://raw.githubusercontent.com/juliangarnier/anime/master/.github/ISSUE_TEMPLATE/documentation-update.md): docs page.
+- [Feature Request](https://raw.githubusercontent.com/juliangarnier/anime/master/.github/ISSUE_TEMPLATE/feature_request.md): docs page.
+
+## Dist
+- [Anime.Esm](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/bundles/anime.esm.js): docs page.
+- [Anime.Esm.Min](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/bundles/anime.esm.min.js): docs page.
+- [Anime.Umd](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/bundles/anime.umd.js): docs page.
+- [Anime.Umd.Min](https://raw.githubusercontent.com/juliangarnier/anime/master/dist/bundles/anime.umd.min.js): docs page.
+
+## Src
+- [Index](https://raw.githubusercontent.com/juliangarnier/anime/master/src/index.js): docs page.
+- [Additive](https://raw.githubusercontent.com/juliangarnier/anime/master/src/animation/additive.js): docs page.
+- [Animatable](https://raw.githubusercontent.com/juliangarnier/anime/master/src/animatable/animatable.js): docs page.
+- [Animation](https://raw.githubusercontent.com/juliangarnier/anime/master/src/animation/animation.js): docs page.
+- [Chainable](https://raw.githubusercontent.com/juliangarnier/anime/master/src/utils/chainable.js): docs page.
+- [Clock](https://raw.githubusercontent.com/juliangarnier/anime/master/src/core/clock.js): docs page.
+- [Colors](https://raw.githubusercontent.com/juliangarnier/anime/master/src/core/colors.js): docs page.
+- [Composition](https://raw.githubusercontent.com/juliangarnier/anime/master/src/animation/composition.js): docs page.
+- [Consts](https://raw.githubusercontent.com/juliangarnier/anime/master/src/core/consts.js): docs page.
+- [Draggable](https://raw.githubusercontent.com/juliangarnier/anime/master/src/draggable/draggable.js): docs page.
+
+## Tests
+- [Tests](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/index.html): docs page.
+- [Keyframes](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/keyframes/index.html): docs page.
+- [Lerp](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/lerp/index.html): docs page.
+- [Playback](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/playback/index.html): docs page.
+- [Sandbox](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/sandbox/index.html): docs page.
+- [Scope](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/scope/index.html): docs page.
+- [Svg Motion Path](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/svg-motion-path/index.html): docs page.
+- [Timekeeper](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/timekeeper/index.html): docs page.
+- [Tl Seek Test](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/tl-seek-test/index.html): docs page.
+- [Callbacks](https://raw.githubusercontent.com/juliangarnier/anime/master/tests/playground/draggables/callbacks/index.html): docs page.

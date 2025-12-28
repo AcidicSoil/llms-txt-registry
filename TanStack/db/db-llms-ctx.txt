@@ -1,0 +1,2975 @@
+<project title="Db" summary="TanStack DB aims to give developers a fast, reactive, client‑side query layer that works alongside TanStack Query. It eliminates the need for custom API endpoints, reduces round‑trips, and provides live‑query capabilities, optimistic updates, and fine‑grained reactivity for modern UI frameworks.">**Remember:**
+- Live queries
+- Optimistic mutations
+- Reactive collections
+- Query optimizer
+- Paced mutations
+- Debounce / throttle strategies<docs><doc title="Installation" desc="install &amp; quickstart.">---
+title: Installation
+id: installation
+---
+
+Each supported framework comes with its own package. Each framework package re-exports everything from the core `@tanstack/db` package.
+
+## React
+
+```sh
+npm install @tanstack/react-db
+```
+
+TanStack DB is compatible with React v16.8+
+
+## Solid
+
+```sh
+npm install @tanstack/solid-db
+```
+
+## Svelte
+
+```sh
+npm install @tanstack/svelte-db
+```
+
+## Vue
+
+```sh
+npm install @tanstack/vue-db
+```
+
+TanStack DB is compatible with Vue v3.3.0+
+
+## Angular
+
+```sh
+npm install @tanstack/angular-db
+```
+
+TanStack DB is compatible with Angular v16.0.0+
+
+## Vanilla JS
+
+```sh
+npm install @tanstack/db
+```
+
+Install the the core `@tanstack/db` package to use DB without a framework.
+
+## Collection Packages
+
+TanStack DB also provides specialized collection packages for different data sources and storage needs:
+
+### Query Collection
+
+For loading data using TanStack Query:
+
+```sh
+npm install @tanstack/query-db-collection
+```
+
+Use `queryCollectionOptions` to fetch data into collections using TanStack Query. This is perfect for REST APIs and existing TanStack Query setups.
+
+### Local Collections
+
+Local storage and in-memory collections are included with the framework packages:
+
+- **LocalStorageCollection** - For persistent local data that syncs across browser tabs
+- **LocalOnlyCollection** - For temporary in-memory data and UI state
+
+Both use `localStorageCollectionOptions` and `localOnlyCollectionOptions` respectively, available from your framework package (e.g., `@tanstack/react-db`).
+
+### Sync Engines
+
+#### Electric Collection
+
+For real-time sync with [ElectricSQL](https://electric-sql.com):
+
+```sh
+npm install @tanstack/electric-db-collection
+```
+
+Use `electricCollectionOptions` to sync data from Postgres databases through ElectricSQL shapes. Ideal for real-time, local-first applications.
+
+#### TrailBase Collection
+
+For syncing with [TrailBase](https://trailbase.io) backends:
+
+```sh
+npm install @tanstack/trailbase-db-collection
+```
+
+Use `trailBaseCollectionOptions` to sync records from TrailBase's Record APIs with built-in subscription support.
+
+### RxDB Collection
+
+For offline-first apps and local persistence with [RxDB](https://rxdb.info):
+
+```sh
+npm install @tanstack/rxdb-db-collection
+```
+
+Use `rxdbCollectionOptions` to bridge an [RxDB collection](https://rxdb.info/rx-collection.html) into TanStack DB.
+This gives you reactive TanStack DB collections backed by RxDB's powerful local-first database, replication, and conflict handling features.</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: Overview
+id: overview
+---
+
+# TanStack DB - Documentation
+
+Welcome to the TanStack DB documentation.
+
+TanStack DB is the reactive client-first store for your API. Stop building custom endpoints for every view—TanStack DB lets you query your data however your components need it, with a blazing-fast local query engine, real-time reactivity, and instant optimistic updates.
+
+It extends TanStack Query with collections, live queries and optimistic mutations, working seamlessly with REST APIs, sync engines, or any data source.
+
+## Contents
+
+- [How it works](#how-it-works) &mdash; understand the TanStack DB development model and how the pieces fit together
+- [API reference](#api-reference) &mdash; for the primitives and function interfaces
+- [Usage examples](#usage-examples) &mdash; examples of common usage patterns
+- [More info](#more-info) &mdash; where to find support and more information
+
+## How it works
+
+TanStack DB works by:
+
+- [defining collections](#defining-collections) typed sets of objects that can be populated with data
+- [using live queries](#using-live-queries) to query data from/across collections
+- [making optimistic mutations](#making-optimistic-mutations) using transactional mutators
+
+```tsx
+// Define collections to load data into
+const todoCollection = createCollection({
+  // ...your config
+  onUpdate: updateMutationFn,
+})
+
+const Todos = () => {
+  // Bind data using live queries
+  const { data: todos } = useLiveQuery((q) =>
+    q.from({ todo: todoCollection }).where(({ todo }) => todo.completed)
+  )
+
+  const complete = (todo) => {
+    // Instantly applies optimistic state
+    todoCollection.update(todo.id, (draft) => {
+      draft.completed = true
+    })
+  }
+
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id} onClick={() => complete(todo)}>
+          {todo.text}
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+### Defining collections
+
+Collections are typed sets of objects that can be populated with data. They're designed to de-couple loading data into your app from binding data to your components.
+
+Collections can be populated in many ways, including:
+
+- fetching data, for example [from API endpoints using TanStack Query](https://tanstack.com/query/latest)
+- syncing data, for example [using a sync engine like ElectricSQL](https://electric-sql.com/)
+- storing local data, for example [using localStorage for user preferences and settings](../collections/local-storage-collection.md) or [in-memory client data or UI state](../collections/local-only-collection.md)
+- from live collection queries, creating [derived collections as materialised views](#using-live-queries)
+
+Once you have your data in collections, you can query across them using live queries in your components.
+
+### Using live queries
+
+Live queries are used to query data out of collections. Live queries are reactive: when the underlying data changes in a way that would affect the query result, the result is incrementally updated and returned from the query, triggering a re-render.
+
+TanStack DB live queries are implemented using [d2ts](https://github.com/electric-sql/d2ts), a Typescript implementation of differential dataflow. This allows the query results to update _incrementally_ (rather than by re-running the whole query). This makes them blazing fast, usually sub-millisecond, even for highly complex queries.
+
+Live queries support joins across collections. This allows you to:
+
+1. load normalised data into collections and then de-normalise it through queries; simplifying your backend by avoiding the need for bespoke API endpoints that match your client
+2. join data from multiple sources; for example, syncing some data out of a database, fetching some other data from an external API and then joining these into a unified data model for your front-end code
+
+Every query returns another collection which can _also_ be queried.
+
+For more details on live queries, see the [Live Queries](../guides/live-queries.md) documentation.
+
+### Making optimistic mutations
+
+Collections support `insert`, `update` and `delete` operations. When called, by default they trigger the corresponding `onInsert`, `onUpdate`, `onDelete` handlers which are responsible for writing the mutation to the backend.
+
+```ts
+// Define collection with persistence handlers
+const todoCollection = createCollection({
+  id: "todos",
+  // ... other config
+  onUpdate: async ({ transaction }) => {
+    const { original, changes } = transaction.mutations[0]
+    await api.todos.update(original.id, changes)
+  },
+})
+
+// Immediately applies optimistic state
+todoCollection.update(todo.id, (draft) => {
+  draft.completed = true
+})
+```
+
+The collection maintains optimistic state separately from synced data. When live queries read from the collection, they see a local view that overlays the optimistic mutations on top of the immutable synced data.
+
+The optimistic state is held until the handler resolves, at which point the data is persisted to the server and synced back. If the handler throws an error, the optimistic state is rolled back.
+
+For more complex mutations, you can create custom actions with `createOptimisticAction` or custom transactions with `createTransaction`. See the [Mutations guide](../guides/mutations.md) for details.
+
+### Uni-directional data flow
+
+This combines to support a model of uni-directional data flow, extending the redux/flux style state management pattern beyond the client, to take in the server as well:
+
+<figure>
+  <a href="https://raw.githubusercontent.com/TanStack/db/main/docs/unidirectional-data-flow.lg.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/TanStack/db/main/docs/unidirectional-data-flow.png" />
+  </a>
+</figure>
+
+With an instant inner loop of optimistic state, superseded in time by the slower outer loop of persisting to the server and syncing the updated server state back into the collection.
+
+## API reference
+
+### Collections
+
+TanStack DB provides several built-in collection types for different data sources and use cases. Each collection type has its own detailed documentation page:
+
+#### Built-in Collection Types
+
+**Fetch Collections**
+
+- **[QueryCollection](../collections/query-collection.md)** &mdash; Load data into collections using TanStack Query for REST APIs and data fetching.
+
+**Sync Collections**
+
+- **[ElectricCollection](../collections/electric-collection.md)** &mdash; Sync data into collections from Postgres using ElectricSQL's real-time sync engine.
+
+- **[TrailBaseCollection](../collections/trailbase-collection.md)** &mdash; Sync data into collections using TrailBase's self-hosted backend with real-time subscriptions.
+
+- **[RxDBCollection](../collections/rxdb-collection.md)** &mdash; Integrate with RxDB for offline-first local persistence with powerful replication and sync capabilities.
+
+- **[PowerSyncCollection](../collections/powersync-collection.md)** &mdash; Sync with PowerSync's SQLite-based database for offline-first persistence with real-time synchronization with PostgreSQL, MongoDB, and MySQL backends.
+
+**Local Collections**
+
+- **[LocalStorageCollection](../collections/local-storage-collection.md)** &mdash; Store small amounts of local-only state that persists across sessions and syncs across browser tabs.
+
+- **[LocalOnlyCollection](../collections/local-only-collection.md)** &mdash; Manage in-memory client data or UI state that doesn't need persistence or cross-tab sync.
+
+#### Collection Schemas
+
+All collections optionally (though strongly recommended) support adding a `schema`.
+
+If provided, this must be a [Standard Schema](https://standardschema.dev) compatible schema instance, such as [Zod](https://zod.dev), [Valibot](https://valibot.dev), [ArkType](https://arktype.io), or [Effect](https://effect.website/docs/schema/introduction/).
+
+**What schemas do:**
+
+1. **Runtime validation** - Ensures data meets your constraints before entering the collection
+2. **Type transformations** - Convert input types to rich output types (e.g., string → Date)
+3. **Default values** - Automatically populate missing fields
+4. **Type safety** - Infer TypeScript types from your schema
+
+**Example:**
+```typescript
+const todoSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  completed: z.boolean().default(false),
+  created_at: z.string().transform(val => new Date(val)),  // string → Date
+  priority: z.number().default(0)
+})
+
+const collection = createCollection(
+  queryCollectionOptions({
+    schema: todoSchema,
+    // ...
+  })
+)
+
+// Users provide simple inputs
+collection.insert({
+  id: "1",
+  text: "Buy groceries",
+  created_at: "2024-01-01T00:00:00Z"  // string
+  // completed and priority filled automatically
+})
+
+// Collection stores and returns rich types
+const todo = collection.get("1")
+console.log(todo.created_at.getFullYear())  // It's a Date!
+console.log(todo.completed)  // false (default)
+```
+
+The collection will use the schema for its type inference. If you provide a schema, you cannot also pass an explicit type parameter (e.g., `createCollection<Todo>()`).
+
+**Learn more:** See the [Schemas guide](./guides/schemas.md) for comprehensive documentation on schema validation, type transformations, and best practices.
+
+#### Creating Custom Collection Types
+
+You can create your own collection types by implementing the `Collection` interface found in [`../packages/db/src/collection.ts`](https://github.com/TanStack/db/blob/main/packages/db/src/collection.ts).
+
+See the existing implementations in [`../packages/db`](https://github.com/TanStack/db/tree/main/packages/db), [`../packages/query-db-collection`](https://github.com/TanStack/db/tree/main/packages/query-db-collection), [`../packages/electric-db-collection`](https://github.com/TanStack/db/tree/main/packages/electric-db-collection) and [`../packages/trailbase-db-collection`](https://github.com/TanStack/db/tree/main/packages/trailbase-db-collection) for reference. Also see the [Collection Options Creator guide](./guides/collection-options-creator.md) for a pattern to create reusable collection configuration factories.
+
+### Live queries
+
+#### `useLiveQuery` hook
+
+Use the `useLiveQuery` hook to assign live query results to a state variable in your React components:
+
+```ts
+import { useLiveQuery } from '@tanstack/react-db'
+import { eq } from '@tanstack/db'
+
+const Todos = () => {
+  const { data: todos } = useLiveQuery((q) =>
+    q
+      .from({ todo: todoCollection })
+      .where(({ todo }) => eq(todo.completed, false))
+      .orderBy(({ todo }) => todo.created_at, 'asc')
+      .select(({ todo }) => ({
+        id: todo.id,
+        text: todo.text
+      }))
+  )
+
+  return <List items={ todos } />
+}
+```
+
+You can also query across collections with joins:
+
+```ts
+import { useLiveQuery } from '@tanstack/react-db'
+import { eq } from '@tanstack/db'
+
+const Todos = () => {
+  const { data: todos } = useLiveQuery((q) =>
+    q
+      .from({ todos: todoCollection })
+      .join(
+        { lists: listCollection },
+        ({ todos, lists }) => eq(lists.id, todos.listId),
+        'inner'
+      )
+      .where(({ lists }) => eq(lists.active, true))
+      .select(({ todos, lists }) => ({
+        id: todos.id,
+        title: todos.title,
+        listName: lists.name
+      }))
+  )
+
+  return <List items={ todos } />
+}
+```
+
+#### `useLiveSuspenseQuery` hook
+
+For React Suspense support, use `useLiveSuspenseQuery`. This hook suspends rendering during initial data load and guarantees that `data` is always defined:
+
+```tsx
+import { useLiveSuspenseQuery } from '@tanstack/react-db'
+import { Suspense } from 'react'
+
+const Todos = () => {
+  // data is always defined - no need for optional chaining
+  const { data: todos } = useLiveSuspenseQuery((q) =>
+    q
+      .from({ todo: todoCollection })
+      .where(({ todo }) => eq(todo.completed, false))
+  )
+
+  return <List items={ todos } />
+}
+
+const App = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <Todos />
+  </Suspense>
+)
+```
+
+See the [React Suspense section in Live Queries](../guides/live-queries#using-with-react-suspense) for detailed usage patterns and when to use `useLiveSuspenseQuery` vs `useLiveQuery`.
+
+#### `queryBuilder`
+
+You can also build queries directly (outside of the component lifecycle) using the underlying `queryBuilder` API:
+
+```ts
+import { createLiveQueryCollection, eq } from "@tanstack/db"
+
+const completedTodos = createLiveQueryCollection({
+  startSync: true,
+  query: (q) =>
+    q
+      .from({ todo: todoCollection })
+      .where(({ todo }) => eq(todo.completed, true)),
+})
+
+const results = completedTodos.toArray
+```
+
+Note also that:
+
+1. the query results [are themselves a collection](#derived-collections)
+2. the `useLiveQuery` automatically starts and stops live query subscriptions when you mount and unmount your components; if you're creating queries manually, you need to manually manage the subscription lifecycle yourself
+
+See the [Live Queries](../guides/live-queries.md) documentation for more details.
+
+### Transactional mutators
+
+For more complex mutations beyond simple CRUD operations, TanStack DB provides `createOptimisticAction` and `createTransaction` for creating custom mutations with full control over the mutation lifecycle.
+
+See the [Mutations guide](../guides/mutations.md) for comprehensive documentation on:
+
+- Creating custom actions with `createOptimisticAction`
+- Manual transactions with `createTransaction`
+- Mutation merging behavior
+- Controlling optimistic vs non-optimistic updates
+- Handling temporary IDs
+- Transaction lifecycle states
+
+## Usage examples
+
+Here we illustrate two common ways of using TanStack DB:
+
+1. [using TanStack Query](#1-tanstack-query) with an existing REST API
+2. [using the ElectricSQL sync engine](#2-electricsql-sync) for real-time sync with your existing API
+
+> [!TIP]
+> You can combine these patterns. One of the benefits of TanStack DB is that you can integrate different ways of loading data and handling mutations into the same app. Your components don't need to know where the data came from or goes.
+
+### 1. TanStack Query
+
+You can use TanStack DB with your existing REST API via TanStack Query.
+
+The steps are to:
+
+1. create [QueryCollection](./collections/query-collection.md)s that load data using TanStack Query
+2. implement mutation handlers that handle mutations by posting them to your API endpoints
+
+```tsx
+import { useLiveQuery, createCollection } from "@tanstack/react-db"
+import { queryCollectionOptions } from "@tanstack/query-db-collection"
+
+// Load data into collections using TanStack Query.
+// It's common to define these in a `collections` module.
+const todoCollection = createCollection(
+  queryCollectionOptions({
+    queryKey: ["todos"],
+    queryFn: async () => fetch("/api/todos"),
+    getKey: (item) => item.id,
+    schema: todoSchema, // any standard schema
+    onInsert: async ({ transaction }) => {
+      const { changes: newTodo } = transaction.mutations[0]
+
+      // Handle the local write by sending it to your API.
+      await api.todos.create(newTodo)
+    },
+    // also add onUpdate, onDelete as needed.
+  })
+)
+const listCollection = createCollection(
+  queryCollectionOptions({
+    queryKey: ["todo-lists"],
+    queryFn: async () => fetch("/api/todo-lists"),
+    getKey: (item) => item.id,
+    schema: todoListSchema,
+    onInsert: async ({ transaction }) => {
+      const { changes: newTodo } = transaction.mutations[0]
+
+      // Handle the local write by sending it to your API.
+      await api.todoLists.create(newTodo)
+    },
+    // also add onUpdate, onDelete as needed.
+  })
+)
+
+const Todos = () => {
+  // Read the data using live queries. Here we show a live
+  // query that joins across two collections.
+  const { data: todos } = useLiveQuery((q) =>
+    q
+      .from({ todo: todoCollection })
+      .join(
+        { list: listCollection },
+        ({ todo, list }) => eq(list.id, todo.list_id),
+        "inner"
+      )
+      .where(({ list }) => eq(list.active, true))
+      .select(({ todo, list }) => ({
+        id: todo.id,
+        text: todo.text,
+        status: todo.status,
+        listName: list.name,
+      }))
+  )
+
+  // ...
+}
+```
+
+This pattern allows you to extend an existing TanStack Query application, or any application built on a REST API, with blazing fast, cross-collection live queries and local optimistic mutations with automatically managed optimistic state.
+
+### 2. ElectricSQL sync
+
+One of the most powerful ways of using TanStack DB is with a sync engine, for a fully local-first experience with real-time sync. This allows you to incrementally adopt sync into an existing app, whilst still handling writes with your existing API.
+
+Here, we illustrate this pattern using [ElectricSQL](https://electric-sql.com) as the sync engine.
+
+```tsx
+import type { Collection } from "@tanstack/db"
+import type {
+  MutationFn,
+  PendingMutation,
+  createCollection,
+} from "@tanstack/react-db"
+import { electricCollectionOptions } from "@tanstack/electric-db-collection"
+
+export const todoCollection = createCollection(
+  electricCollectionOptions({
+    id: "todos",
+    schema: todoSchema,
+    // Electric syncs data using "shapes". These are filtered views
+    // on database tables that Electric keeps in sync for you.
+    shapeOptions: {
+      url: "https://api.electric-sql.cloud/v1/shape",
+      params: {
+        table: "todos",
+      },
+    },
+    getKey: (item) => item.id,
+    schema: todoSchema,
+    onInsert: async ({ transaction }) => {
+      const response = await api.todos.create(transaction.mutations[0].modified)
+
+      return { txid: response.txid }
+    },
+    // You can also implement onUpdate, onDelete as needed.
+  })
+)
+
+const AddTodo = () => {
+  return (
+    <Button
+      onClick={() => todoCollection.insert({ text: "🔥 Make app faster" })}
+    />
+  )
+}
+```
+
+## React Native
+
+When using TanStack DB with React Native, you need to install and configure a UUID generation library since React Native doesn't include crypto.randomUUID() by default.
+
+Install the `react-native-random-uuid` package:
+
+```bash
+npm install react-native-random-uuid
+```
+
+Then import it at the entry point of your React Native app (e.g., in your `App.js` or `index.js`):
+
+```javascript
+import "react-native-random-uuid"
+```
+
+This polyfill provides the `crypto.randomUUID()` function that TanStack DB uses internally for generating unique identifiers.
+
+## More info
+
+If you have questions / need help using TanStack DB, let us know on the Discord or start a GitHub discussion:
+
+- [`#db` channel in the TanStack discord](https://discord.gg/yjUNbvbraC)
+- [GitHub discussions](https://github.com/tanstack/db/discussions)</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: TanStack DB Angular Adapter
+id: adapter
+---
+
+## Installation
+
+```sh
+npm install @tanstack/angular-db
+```
+
+## Angular inject function
+
+See the [Angular Functions Reference](../reference/index.md) to see the full list of functions available in the Angular Adapter.
+
+## Basic Usage</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: TanStack DB React Adapter
+id: adapter
+---
+
+## Installation
+
+```sh
+npm install @tanstack/react-db
+```
+
+## React Hooks
+
+See the [React Functions Reference](../reference/index.md) to see the full list of hooks available in the React Adapter.
+
+For comprehensive documentation on writing queries (filtering, joins, aggregations, etc.), see the [Live Queries Guide](../../guides/live-queries).
+
+## Basic Usage
+
+### useLiveQuery
+
+The `useLiveQuery` hook creates a live query that automatically updates your component when data changes:
+
+```tsx
+import { useLiveQuery } from '@tanstack/react-db'
+
+function TodoList() {
+  const { data, isLoading } = useLiveQuery((q) =>
+    q.from({ todos: todosCollection })
+     .where(({ todos }) => eq(todos.completed, false))
+     .select(({ todos }) => ({ id: todos.id, text: todos.text }))
+  )
+
+  if (isLoading) return <div>Loading...</div>
+
+  return (
+    <ul>
+      {data.map(todo => <li key={todo.id}>{todo.text}</li>)}
+    </ul>
+  )
+}
+```
+
+### Dependency Arrays
+
+All query hooks (`useLiveQuery`, `useLiveInfiniteQuery`, `useLiveSuspenseQuery`) accept an optional dependency array as their last parameter. This array works similarly to React's `useEffect` dependencies - when any value in the array changes, the query is recreated and re-executed.
+
+#### When to Use Dependency Arrays
+
+Use dependency arrays when your query depends on external reactive values (props, state, or other hooks):
+
+```tsx
+function FilteredTodos({ minPriority }: { minPriority: number }) {
+  const { data } = useLiveQuery(
+    (q) => q.from({ todos: todosCollection })
+           .where(({ todos }) => gt(todos.priority, minPriority)),
+    [minPriority] // Re-run when minPriority changes
+  )
+
+  return <div>{data.length} high-priority todos</div>
+}
+```
+
+#### What Happens When Dependencies Change
+
+When a dependency value changes:
+1. The previous live query collection is cleaned up
+2. A new query is created with the updated values
+3. The component re-renders with the new data
+4. The hook suspends (for `useLiveSuspenseQuery`) or shows loading state
+
+#### Best Practices
+
+**Include all external values used in the query:**
+
+```tsx
+// Good - all external values in deps
+const { data } = useLiveQuery(
+  (q) => q.from({ todos: todosCollection })
+         .where(({ todos }) => and(
+           eq(todos.userId, userId),
+           eq(todos.status, status)
+         )),
+  [userId, status]
+)
+
+// Bad - missing dependencies
+const { data } = useLiveQuery(
+  (q) => q.from({ todos: todosCollection })
+         .where(({ todos }) => eq(todos.userId, userId)),
+  [] // Missing userId!
+)
+```
+
+**Empty array for static queries:**
+
+```tsx
+// No external dependencies - query never changes
+const { data } = useLiveQuery(
+  (q) => q.from({ todos: todosCollection }),
+  []
+)
+```
+
+**Omit the array for queries with no external dependencies:**
+
+```tsx
+// Same as above - no deps needed
+const { data } = useLiveQuery(
+  (q) => q.from({ todos: todosCollection })
+)
+```
+
+### useLiveInfiniteQuery
+
+For paginated data with live updates, use `useLiveInfiniteQuery`:
+
+```tsx
+const { data, pages, fetchNextPage, hasNextPage } = useLiveInfiniteQuery(
+  (q) => q
+    .from({ posts: postsCollection })
+    .where(({ posts }) => eq(posts.category, category))
+    .orderBy(({ posts }) => posts.createdAt, 'desc'),
+  {
+    pageSize: 20,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === 20 ? allPages.length : undefined
+  },
+  [category] // Re-run when category changes
+)
+```
+
+**Note:** The dependency array is only available when using the query function variant, not when passing a pre-created collection.
+
+### useLiveSuspenseQuery
+
+For React Suspense integration, use `useLiveSuspenseQuery`:
+
+```tsx
+function TodoList({ filter }: { filter: string }) {
+  const { data } = useLiveSuspenseQuery(
+    (q) => q.from({ todos: todosCollection })
+           .where(({ todos }) => eq(todos.filter, filter)),
+    [filter] // Re-suspends when filter changes
+  )
+
+  return (
+    <ul>
+      {data.map(todo => <li key={todo.id}>{todo.text}</li>)}
+    </ul>
+  )
+}
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TodoList filter="active" />
+    </Suspense>
+  )
+}
+```
+
+When dependencies change, `useLiveSuspenseQuery` will re-suspend, showing your Suspense fallback until the new data is ready.</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: TanStack DB Solid Adapter
+ref: docs/framework/react/adapter.md
+replace: { "React": "Solid", "react": "solid" }
+---</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: TanStack DB Svelte Adapter
+ref: docs/framework/react/adapter.md
+replace: { "React": "Svelte", "react": "svelte" }
+---</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: TanStack DB Vue Adapter
+ref: docs/framework/react/adapter.md
+replace: { "React": "Vue", "react": "vue" }
+---</doc><doc title="Reference" desc="API reference.">---
+id: "@tanstack/db"
+title: "@tanstack/db"
+---
+
+# @tanstack/db
+
+## Namespaces
+
+- [IR](../@tanstack/namespaces/IR/index.md)
+
+## Classes
+
+- [AggregateFunctionNotInSelectError](../classes/AggregateFunctionNotInSelectError.md)
+- [AggregateNotSupportedError](../classes/AggregateNotSupportedError.md)
+- [BaseIndex](../classes/BaseIndex.md)
+- [BaseQueryBuilder](../classes/BaseQueryBuilder.md)
+- [BTreeIndex](../classes/BTreeIndex.md)
+- [CannotCombineEmptyExpressionListError](../classes/CannotCombineEmptyExpressionListError.md)
+- [CollectionConfigurationError](../classes/CollectionConfigurationError.md)
+- [CollectionImpl](../classes/CollectionImpl.md)
+- [CollectionInErrorStateError](../classes/CollectionInErrorStateError.md)
+- [CollectionInputNotFoundError](../classes/CollectionInputNotFoundError.md)
+- [CollectionIsInErrorStateError](../classes/CollectionIsInErrorStateError.md)
+- [CollectionOperationError](../classes/CollectionOperationError.md)
+- [CollectionRequiresConfigError](../classes/CollectionRequiresConfigError.md)
+- [CollectionRequiresSyncConfigError](../classes/CollectionRequiresSyncConfigError.md)
+- [CollectionStateError](../classes/CollectionStateError.md)
+- [DeduplicatedLoadSubset](../classes/DeduplicatedLoadSubset.md)
+- [DeleteKeyNotFoundError](../classes/DeleteKeyNotFoundError.md)
+- [DistinctRequiresSelectError](../classes/DistinctRequiresSelectError.md)
+- [DuplicateAliasInSubqueryError](../classes/DuplicateAliasInSubqueryError.md)
+- [DuplicateDbInstanceError](../classes/DuplicateDbInstanceError.md)
+- [DuplicateKeyError](../classes/DuplicateKeyError.md)
+- [DuplicateKeySyncError](../classes/DuplicateKeySyncError.md)
+- [EmptyReferencePathError](../classes/EmptyReferencePathError.md)
+- [GroupByError](../classes/GroupByError.md)
+- [HavingRequiresGroupByError](../classes/HavingRequiresGroupByError.md)
+- [IndexProxy](../classes/IndexProxy.md)
+- [InvalidCollectionStatusTransitionError](../classes/InvalidCollectionStatusTransitionError.md)
+- [InvalidJoinCondition](../classes/InvalidJoinCondition.md)
+- [InvalidJoinConditionLeftSourceError](../classes/InvalidJoinConditionLeftSourceError.md)
+- [InvalidJoinConditionRightSourceError](../classes/InvalidJoinConditionRightSourceError.md)
+- [InvalidJoinConditionSameSourceError](../classes/InvalidJoinConditionSameSourceError.md)
+- [InvalidJoinConditionSourceMismatchError](../classes/InvalidJoinConditionSourceMismatchError.md)
+- [InvalidSchemaError](../classes/InvalidSchemaError.md)
+- [InvalidSourceError](../classes/InvalidSourceError.md)
+- [InvalidStorageDataFormatError](../classes/InvalidStorageDataFormatError.md)
+- [InvalidStorageObjectFormatError](../classes/InvalidStorageObjectFormatError.md)
+- [JoinCollectionNotFoundError](../classes/JoinCollectionNotFoundError.md)
+- [JoinConditionMustBeEqualityError](../classes/JoinConditionMustBeEqualityError.md)
+- [JoinError](../classes/JoinError.md)
+- [KeyUpdateNotAllowedError](../classes/KeyUpdateNotAllowedError.md)
+- [LazyIndexWrapper](../classes/LazyIndexWrapper.md)
+- [LimitOffsetRequireOrderByError](../classes/LimitOffsetRequireOrderByError.md)
+- [LocalStorageCollectionError](../classes/LocalStorageCollectionError.md)
+- [MissingAliasInputsError](../classes/MissingAliasInputsError.md)
+- [MissingDeleteHandlerError](../classes/MissingDeleteHandlerError.md)
+- [MissingHandlerError](../classes/MissingHandlerError.md)
+- [MissingInsertHandlerError](../classes/MissingInsertHandlerError.md)
+- [MissingMutationFunctionError](../classes/MissingMutationFunctionError.md)
+- [MissingUpdateArgumentError](../classes/MissingUpdateArgumentError.md)
+- [MissingUpdateHandlerError](../classes/MissingUpdateHandlerError.md)
+- [NegativeActiveSubscribersError](../classes/NegativeActiveSubscribersError.md)
+- [NoKeysPassedToDeleteError](../classes/NoKeysPassedToDeleteError.md)
+- [NoKeysPassedToUpdateError](../classes/NoKeysPassedToUpdateError.md)
+- [NonAggregateExpressionNotInGroupByError](../classes/NonAggregateExpressionNotInGroupByError.md)
+- [NonRetriableError](../classes/NonRetriableError.md)
+- [NoPendingSyncTransactionCommitError](../classes/NoPendingSyncTransactionCommitError.md)
+- [NoPendingSyncTransactionWriteError](../classes/NoPendingSyncTransactionWriteError.md)
+- [OnlyOneSourceAllowedError](../classes/OnlyOneSourceAllowedError.md)
+- [OnMutateMustBeSynchronousError](../classes/OnMutateMustBeSynchronousError.md)
+- [QueryBuilderError](../classes/QueryBuilderError.md)
+- [QueryCompilationError](../classes/QueryCompilationError.md)
+- [QueryMustHaveFromClauseError](../classes/QueryMustHaveFromClauseError.md)
+- [QueryOptimizerError](../classes/QueryOptimizerError.md)
+- [SchemaMustBeSynchronousError](../classes/SchemaMustBeSynchronousError.md)
+- [SchemaValidationError](../classes/SchemaValidationError.md)
+- [SerializationError](../classes/SerializationError.md)
+- [SetWindowRequiresOrderByError](../classes/SetWindowRequiresOrderByError.md)
+- [SortedMap](../classes/SortedMap.md)
+- [StorageError](../classes/StorageError.md)
+- [StorageKeyRequiredError](../classes/StorageKeyRequiredError.md)
+- [SubQueryMustHaveFromClauseError](../classes/SubQueryMustHaveFromClauseError.md)
+- [SubscriptionNotFoundError](../classes/SubscriptionNotFoundError.md)
+- [SyncCleanupError](../classes/SyncCleanupError.md)
+- [SyncTransactionAlreadyCommittedError](../classes/SyncTransactionAlreadyCommittedError.md)
+- [SyncTransactionAlreadyCommittedWriteError](../classes/SyncTransactionAlreadyCommittedWriteError.md)
+- [TanStackDBError](../classes/TanStackDBError.md)
+- [TransactionAlreadyCompletedRollbackError](../classes/TransactionAlreadyCompletedRollbackError.md)
+- [TransactionError](../classes/TransactionError.md)
+- [TransactionNotPendingCommitError](../classes/TransactionNotPendingCommitError.md)
+- [TransactionNotPendingMutateError](../classes/TransactionNotPendingMutateError.md)
+- [UndefinedKeyError](../classes/UndefinedKeyError.md)
+- [UnknownExpressionTypeError](../classes/UnknownExpressionTypeError.md)
+- [UnknownFunctionError](../classes/UnknownFunctionError.md)
+- [UnknownHavingExpressionTypeError](../classes/UnknownHavingExpressionTypeError.md)
+- [UnsupportedAggregateFunctionError](../classes/UnsupportedAggregateFunctionError.md)
+- [UnsupportedFromTypeError](../classes/UnsupportedFromTypeError.md)
+- [UnsupportedJoinSourceTypeError](../classes/UnsupportedJoinSourceTypeError.md)
+- [UnsupportedJoinTypeError](../classes/UnsupportedJoinTypeError.md)
+- [UpdateKeyNotFoundError](../classes/UpdateKeyNotFoundError.md)
+- [WhereClauseConversionError](../classes/WhereClauseConversionError.md)
+
+## Interfaces
+
+- [BaseCollectionConfig](../interfaces/BaseCollectionConfig.md)
+- [BaseStrategy](../interfaces/BaseStrategy.md)
+- [BTreeIndexOptions](../interfaces/BTreeIndexOptions.md)
+- [ChangeMessage](../interfaces/ChangeMessage.md)
+- [Collection](../interfaces/Collection.md)
+- [CollectionConfig](../interfaces/CollectionConfig.md)
+- [CollectionLike](../interfaces/CollectionLike.md)
+- [Context](../interfaces/Context.md)
+- [CreateOptimisticActionsOptions](../interfaces/CreateOptimisticActionsOptions.md)
+- [CurrentStateAsChangesOptions](../interfaces/CurrentStateAsChangesOptions.md)
+- [DebounceStrategy](../interfaces/DebounceStrategy.md)
+- [DebounceStrategyOptions](../interfaces/DebounceStrategyOptions.md)
+- [IndexInterface](../interfaces/IndexInterface.md)
+- [IndexOptions](../interfaces/IndexOptions.md)
+- [IndexStats](../interfaces/IndexStats.md)
+- [InsertConfig](../interfaces/InsertConfig.md)
+- [LiveQueryCollectionConfig](../interfaces/LiveQueryCollectionConfig.md)
+- [LocalOnlyCollectionConfig](../interfaces/LocalOnlyCollectionConfig.md)
+- [LocalOnlyCollectionUtils](../interfaces/LocalOnlyCollectionUtils.md)
+- [LocalStorageCollectionConfig](../interfaces/LocalStorageCollectionConfig.md)
+- [LocalStorageCollectionUtils](../interfaces/LocalStorageCollectionUtils.md)
+- [OperationConfig](../interfaces/OperationConfig.md)
+- [OptimisticChangeMessage](../interfaces/OptimisticChangeMessage.md)
+- [PacedMutationsConfig](../interfaces/PacedMutationsConfig.md)
+- [ParsedOrderBy](../interfaces/ParsedOrderBy.md)
+- [Parser](../interfaces/Parser.md)
+- [ParseWhereOptions](../interfaces/ParseWhereOptions.md)
+- [PendingMutation](../interfaces/PendingMutation.md)
+- [QueueStrategy](../interfaces/QueueStrategy.md)
+- [QueueStrategyOptions](../interfaces/QueueStrategyOptions.md)
+- [RangeQueryOptions](../interfaces/RangeQueryOptions.md)
+- [SimpleComparison](../interfaces/SimpleComparison.md)
+- [SubscribeChangesOptions](../interfaces/SubscribeChangesOptions.md)
+- [SubscribeChangesSnapshotOptions](../interfaces/SubscribeChangesSnapshotOptions.md)
+- [Subscription](../interfaces/Subscription.md)
+- [SubscriptionStatusChangeEvent](../interfaces/SubscriptionStatusChangeEvent.md)
+- [SubscriptionStatusEvent](../interfaces/SubscriptionStatusEvent.md)
+- [SubscriptionUnsubscribedEvent](../interfaces/SubscriptionUnsubscribedEvent.md)
+- [SyncConfig](../interfaces/SyncConfig.md)
+- [ThrottleStrategy](../interfaces/ThrottleStrategy.md)
+- [ThrottleStrategyOptions](../interfaces/ThrottleStrategyOptions.md)
+- [Transaction](../interfaces/Transaction.md)
+- [TransactionConfig](../interfaces/TransactionConfig.md)
+
+## Type Aliases
+
+- [ChangeListener](../type-aliases/ChangeListener.md)
+- [ChangesPayload](../type-aliases/ChangesPayload.md)
+- [CleanupFn](../type-aliases/CleanupFn.md)
+- [ClearStorageFn](../type-aliases/ClearStorageFn.md)
+- [CollectionConfigSingleRowOption](../type-aliases/CollectionConfigSingleRowOption.md)
+- [CollectionStatus](../type-aliases/CollectionStatus.md)
+- [DeleteMutationFn](../type-aliases/DeleteMutationFn.md)
+- [DeleteMutationFnParams](../type-aliases/DeleteMutationFnParams.md)
+- [FieldPath](../type-aliases/FieldPath.md)
+- [Fn](../type-aliases/Fn.md)
+- [GetResult](../type-aliases/GetResult.md)
+- [GetStorageSizeFn](../type-aliases/GetStorageSizeFn.md)
+- [IndexConstructor](../type-aliases/IndexConstructor.md)
+- [IndexOperation](../type-aliases/IndexOperation.md)
+- [IndexResolver](../type-aliases/IndexResolver.md)
+- [InferResultType](../type-aliases/InferResultType.md)
+- [InferSchemaInput](../type-aliases/InferSchemaInput.md)
+- [InferSchemaOutput](../type-aliases/InferSchemaOutput.md)
+- [InitialQueryBuilder](../type-aliases/InitialQueryBuilder.md)
+- [InputRow](../type-aliases/InputRow.md)
+- [InsertMutationFn](../type-aliases/InsertMutationFn.md)
+- [InsertMutationFnParams](../type-aliases/InsertMutationFnParams.md)
+- [KeyedNamespacedRow](../type-aliases/KeyedNamespacedRow.md)
+- [KeyedStream](../type-aliases/KeyedStream.md)
+- [LiveQueryCollectionUtils](../type-aliases/LiveQueryCollectionUtils.md)
+- [LoadSubsetFn](../type-aliases/LoadSubsetFn.md)
+- [LoadSubsetOptions](../type-aliases/LoadSubsetOptions.md)
+- [MaybeSingleResult](../type-aliases/MaybeSingleResult.md)
+- [MutationFn](../type-aliases/MutationFn.md)
+- [MutationFnParams](../type-aliases/MutationFnParams.md)
+- [NamespacedAndKeyedStream](../type-aliases/NamespacedAndKeyedStream.md)
+- [NamespacedRow](../type-aliases/NamespacedRow.md)
+- [NonEmptyArray](../type-aliases/NonEmptyArray.md)
+- [NonSingleResult](../type-aliases/NonSingleResult.md)
+- [OperationType](../type-aliases/OperationType.md)
+- [OperatorName](../type-aliases/OperatorName.md)
+- [QueryBuilder](../type-aliases/QueryBuilder.md)
+- [Ref](../type-aliases/Ref.md)
+- [ResolveTransactionChanges](../type-aliases/ResolveTransactionChanges.md)
+- [ResultStream](../type-aliases/ResultStream.md)
+- [Row](../type-aliases/Row.md)
+- [SingleResult](../type-aliases/SingleResult.md)
+- [Source](../type-aliases/Source.md)
+- [StandardSchema](../type-aliases/StandardSchema.md)
+- [StandardSchemaAlias](../type-aliases/StandardSchemaAlias.md)
+- [StorageApi](../type-aliases/StorageApi.md)
+- [StorageEventApi](../type-aliases/StorageEventApi.md)
+- [Strategy](../type-aliases/Strategy.md)
+- [StrategyOptions](../type-aliases/StrategyOptions.md)
+- [StringCollationConfig](../type-aliases/StringCollationConfig.md)
+- [SubscriptionEvents](../type-aliases/SubscriptionEvents.md)
+- [SubscriptionStatus](../type-aliases/SubscriptionStatus.md)
+- [SyncConfigRes](../type-aliases/SyncConfigRes.md)
+- [SyncMode](../type-aliases/SyncMode.md)
+- [TransactionState](../type-aliases/TransactionState.md)
+- [TransactionWithMutations](../type-aliases/TransactionWithMutations.md)
+- [UpdateMutationFn](../type-aliases/UpdateMutationFn.md)
+- [UpdateMutationFnParams](../type-aliases/UpdateMutationFnParams.md)
+- [UtilsRecord](../type-aliases/UtilsRecord.md)
+- [WritableDeep](../type-aliases/WritableDeep.md)
+
+## Variables
+
+- [IndexOperation](../variables/IndexOperation.md)
+- [operators](../variables/operators.md)
+- [Query](../variables/Query.md)
+
+## Functions
+
+- [add](../functions/add.md)
+- [and](../functions/and.md)
+- [avg](../functions/avg.md)
+- [coalesce](../functions/coalesce.md)
+- [compileQuery](../functions/compileQuery.md)
+- [concat](../functions/concat.md)
+- [count](../functions/count.md)
+- [createArrayChangeProxy](../functions/createArrayChangeProxy.md)
+- [createChangeProxy](../functions/createChangeProxy.md)
+- [createCollection](../functions/createCollection.md)
+- [createLiveQueryCollection](../functions/createLiveQueryCollection.md)
+- [createOptimisticAction](../functions/createOptimisticAction.md)
+- [createPacedMutations](../functions/createPacedMutations.md)
+- [createTransaction](../functions/createTransaction.md)
+- [debounceStrategy](../functions/debounceStrategy.md)
+- [eq](../functions/eq.md)
+- [extractFieldPath](../functions/extractFieldPath.md)
+- [extractSimpleComparisons](../functions/extractSimpleComparisons.md)
+- [extractValue](../functions/extractValue.md)
+- [getActiveTransaction](../functions/getActiveTransaction.md)
+- [gt](../functions/gt.md)
+- [gte](../functions/gte.md)
+- [ilike](../functions/ilike.md)
+- [inArray](../functions/inArray.md)
+- [isLimitSubset](../functions/isLimitSubset.md)
+- [isNull](../functions/isNull.md)
+- [isOrderBySubset](../functions/isOrderBySubset.md)
+- [isPredicateSubset](../functions/isPredicateSubset.md)
+- [isUndefined](../functions/isUndefined.md)
+- [isWhereSubset](../functions/isWhereSubset.md)
+- [length](../functions/length.md)
+- [like](../functions/like.md)
+- [liveQueryCollectionOptions](../functions/liveQueryCollectionOptions.md)
+- [localOnlyCollectionOptions](../functions/localOnlyCollectionOptions.md)
+- [localStorageCollectionOptions](../functions/localStorageCollectionOptions.md)
+- [lower](../functions/lower.md)
+- [lt](../functions/lt.md)
+- [lte](../functions/lte.md)
+- [max](../functions/max.md)
+- [min](../functions/min.md)
+- [minusWherePredicates](../functions/minusWherePredicates.md)
+- [not](../functions/not.md)
+- [or](../functions/or.md)
+- [parseLoadSubsetOptions](../functions/parseLoadSubsetOptions.md)
+- [parseOrderByExpression](../functions/parseOrderByExpression.md)
+- [parseWhereExpression](../functions/parseWhereExpression.md)
+- [queueStrategy](../functions/queueStrategy.md)
+- [sum](../functions/sum.md)
+- [throttleStrategy](../functions/throttleStrategy.md)
+- [unionWherePredicates](../functions/unionWherePredicates.md)
+- [upper](../functions/upper.md)
+- [walkExpression](../functions/walkExpression.md)
+- [withArrayChangeTracking](../functions/withArrayChangeTracking.md)
+- [withChangeTracking](../functions/withChangeTracking.md)</doc><doc title="Electric Db Collection" desc="API reference.">---
+id: "@tanstack/electric-db-collection"
+title: "@tanstack/electric-db-collection"
+---
+
+# @tanstack/electric-db-collection
+
+## Classes
+
+- [ElectricDBCollectionError](../classes/ElectricDBCollectionError.md)
+- [ExpectedNumberInAwaitTxIdError](../classes/ExpectedNumberInAwaitTxIdError.md)
+- [StreamAbortedError](../classes/StreamAbortedError.md)
+- [TimeoutWaitingForMatchError](../classes/TimeoutWaitingForMatchError.md)
+- [TimeoutWaitingForTxIdError](../classes/TimeoutWaitingForTxIdError.md)
+
+## Interfaces
+
+- [ElectricCollectionConfig](../interfaces/ElectricCollectionConfig.md)
+- [ElectricCollectionUtils](../interfaces/ElectricCollectionUtils.md)
+
+## Type Aliases
+
+- [AwaitTxIdFn](../type-aliases/AwaitTxIdFn.md)
+- [Txid](../type-aliases/Txid.md)
+
+## Functions
+
+- [electricCollectionOptions](../functions/electricCollectionOptions.md)</doc><doc title="Powersync Db Collection" desc="API reference.">---
+id: "@tanstack/powersync-db-collection"
+title: "@tanstack/powersync-db-collection"
+---
+
+# @tanstack/powersync-db-collection
+
+## Classes
+
+- [PowerSyncTransactor](../classes/PowerSyncTransactor.md)
+
+## Type Aliases
+
+- [BasePowerSyncCollectionConfig](../type-aliases/BasePowerSyncCollectionConfig.md)
+- [ConfigWithArbitraryCollectionTypes](../type-aliases/ConfigWithArbitraryCollectionTypes.md)
+- [ConfigWithSQLiteInputType](../type-aliases/ConfigWithSQLiteInputType.md)
+- [ConfigWithSQLiteTypes](../type-aliases/ConfigWithSQLiteTypes.md)
+- [CustomSQLiteSerializer](../type-aliases/CustomSQLiteSerializer.md)
+- [EnhancedPowerSyncCollectionConfig](../type-aliases/EnhancedPowerSyncCollectionConfig.md)
+- [InferPowerSyncOutputType](../type-aliases/InferPowerSyncOutputType.md)
+- [PowerSyncCollectionConfig](../type-aliases/PowerSyncCollectionConfig.md)
+- [PowerSyncCollectionMeta](../type-aliases/PowerSyncCollectionMeta.md)
+- [PowerSyncCollectionUtils](../type-aliases/PowerSyncCollectionUtils.md)
+- [SerializerConfig](../type-aliases/SerializerConfig.md)
+- [TransactorOptions](../type-aliases/TransactorOptions.md)
+
+## Variables
+
+- [DEFAULT\_BATCH\_SIZE](../variables/DEFAULT_BATCH_SIZE.md)
+
+## Functions
+
+- [powerSyncCollectionOptions](../functions/powerSyncCollectionOptions.md)</doc></docs><tutorials><doc title="README" desc="install &amp; quickstart."># Todos
+
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+
+## Development server
+
+To start a local development server, run:
+
+```bash
+ng serve
+```
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.</doc><doc title="README" desc="install &amp; quickstart."># Welcome to TanStack.com!
+
+This site is built with TanStack Router!
+
+- [TanStack Router Docs](https://tanstack.com/router)
+
+It's deployed automagically with Netlify!
+
+- [Netlify](https://netlify.com/)
+
+## Development
+
+From your terminal:
+
+```sh
+pnpm install
+pnpm dev
+```
+
+This starts your app in development mode, rebuilding assets on file changes.
+
+## Editing and previewing the docs of TanStack projects locally
+
+The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
+In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
+
+Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
+
+1. Create a new directory called `tanstack`.
+
+```sh
+mkdir tanstack
+```
+
+2. Enter the directory and clone this repo and the repo of the project there.
+
+```sh
+cd tanstack
+git clone git@github.com:TanStack/tanstack.com.git
+git clone git@github.com:TanStack/form.git
+```
+
+> [!NOTE]
+> Your `tanstack` directory should look like this:
+>
+> ```
+> tanstack/
+>    |
+>    +-- form/
+>    |
+>    +-- tanstack.com/
+> ```
+
+> [!WARNING]
+> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
+
+3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
+
+```sh
+cd tanstack.com
+pnpm i
+# The app will run on https://localhost:3000 by default
+pnpm dev
+```
+
+4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
+
+> [!NOTE]
+> The updated pages need to be manually reloaded in the browser.
+
+> [!WARNING]
+> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!</doc><doc title="README" desc="install &amp; quickstart.">This is a TanStack Start project with tRPC API running on Start's server functions so it's easily deployable to many hosting platforms.
+
+All reads from the Postgres database are done via tRPC queries which populate TanStack DB query collections.
+
+We sync normalized data from tables into TanStack DB collections in the client & then write client-side queries for displaying data in components.
+
+# Getting Started
+
+## Create a new project
+
+To create a new project based on this starter, run the following commands:
+
+```
+npx gitpick tanstack/db/tree/main/examples/react/projects my-tanstack-db-project
+cd my-tanstack-db-project
+```
+
+Copy the .env.example file to .env and fill in the values.
+
+_The database url will be set by default to development postgres docker container, and during development the better-auth secret is not required._
+
+```
+cp .env.example .env
+```
+
+## Running the Application
+
+**Note: Docker is required to run this starter**
+
+To run this application:
+
+```bash
+npm install
+npm run dev
+
+# From a separate terminal
+npm run migrate
+```
+
+# Building For Production
+
+To build this application for production:
+
+```bash
+npm run build
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+
+```bash
+npm run test
+```
+
+## AI
+
+The starter includes an `AGENT.md`. Depending on which AI coding tool you use, you may need to copy/move it to the right file name e.g. `.cursor/rules`.
+
+## Styling
+
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+## Routing
+
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add another a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from "@tanstack/react-router"
+```
+
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+
+import { Link } from "@tanstack/react-router"
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack DB to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people")
+    return response.json() as Promise<{
+      results: {
+        name: string
+      }[]
+    }>
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData()
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    )
+  },
+})
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+### TanStack DB with Query Collections
+
+TanStack DB gives you robust support for live queries and optimistic mutations. With no stale data, super fast re-rendering and sub-millisecond cross-collection queries — even for large complex apps.
+
+Built on a TypeScript implementation of differential dataflow, TanStack DB provides:
+
+- 🔥 **Blazing fast query engine** - sub-millisecond live queries, even for complex queries with joins and aggregates
+- 🎯 **Fine-grained reactivity** - minimize component re-rendering
+- 💪 **Robust transaction primitives** - easy optimistic mutations with sync and lifecycle support
+- 🌟 **Normalized data** - keep your backend simple
+
+#### Core Concepts
+
+**Collections** - Typed sets of objects that can mirror a backend table or be populated with filtered views like `pendingTodos` or `decemberNewTodos`. Collections are just JavaScript data that you can load on demand.
+
+**Live Queries** - Run reactively against and across collections with support for joins, filters and aggregates. Powered by differential dataflow, query results update incrementally without re-running the whole query.
+
+**Transactional Optimistic Mutations** - Batch and stage local changes across collections with immediate application of local optimistic updates. Sync transactions to the backend with automatic rollbacks and management of optimistic state.
+
+#### Usage with Query Collections
+
+This example uses Query Collections for server-state synchronization with tRPC:
+
+```tsx
+import { createCollection } from "@tanstack/react-db"
+import { queryCollectionOptions } from "@tanstack/query-db-collection"
+import { QueryClient } from "@tanstack/query-core"
+
+const queryClient = new QueryClient()
+
+export const todoCollection = createCollection(
+  queryCollectionOptions<Todo>({
+    id: "todos",
+    queryKey: ["todos"],
+    queryFn: async () => {
+      const todos = await trpc.todos.getAll.query()
+      return todos.map((todo) => ({
+        ...todo,
+        created_at: new Date(todo.created_at),
+        updated_at: new Date(todo.updated_at),
+      }))
+    },
+    queryClient,
+    schema: todoSchema,
+    getKey: (item) => item.id,
+    onInsert: async ({ transaction }) => {
+      const { modified: newTodo } = transaction.mutations[0]
+      const result = await trpc.todos.create.mutate({
+        text: newTodo.text,
+        completed: newTodo.completed,
+        project_id: newTodo.project_id,
+      })
+      return { txid: result.txid }
+    },
+    // You can also implement onUpdate, onDelete as needed
+  })
+)
+```
+
+Apply mutations with local optimistic state that automatically syncs:
+
+```tsx
+const AddTodo = () => {
+  return (
+    <Button
+      onClick={() =>
+        todoCollection.insert({
+          id: crypto.randomUUID(),
+          text: "🔥 Make app faster",
+          completed: false,
+        })
+      }
+    />
+  )
+}
+```
+
+#### Live Queries with Cross-Collection Joins
+
+Use live queries to read data reactively across collections:
+
+```tsx
+import { useLiveQuery } from "@tanstack/react-db"
+
+const Todos = () => {
+  // Read data using live queries with cross-collection joins
+  const { data: todos } = useLiveQuery((query) =>
+    query
+      .from({ t: todoCollection })
+      .join({
+        type: "inner",
+        from: { l: listCollection },
+        on: [`@l.id`, `=`, `@t.list_id`],
+      })
+      .where("@l.active", "=", true)
+      .select("@t.id", "@t.text", "@t.status", "@l.name")
+  )
+
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>
+          {todo.text} - {todo.name}
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+This pattern provides blazing fast, cross-collection live queries and local optimistic mutations with automatically managed optimistic state, all synced with your backend via tRPC.
+
+You can learn more about TanStack DB in the [TanStack DB documentation](https://tanstack.com/db/latest/docs/overview).
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).</doc><doc title="README" desc="install &amp; quickstart."># Todo example app
+
+## How to run
+
+- Go to the root of the repository and run:
+  - `pnpm install`
+  - `pnpm build`
+
+- Install packages
+  `pnpm install`
+
+- Start dev server & Docker containers: Postgres, Electric, TrailBase
+  `pnpm dev`
+
+- Run Postgres DB migrations
+  `pnpm db:push`
+
+- Optionally, check out the TrailBase admin UI @ http://localhost:4000/\_/admin
+  (email: admin@localhost, password: secret)</doc><doc title="README" desc="install &amp; quickstart."># Todo example app
+
+## How to run
+
+- Go to the root of the repository and run:
+  - `pnpm install`
+  - `pnpm build`
+
+- Install packages
+  `pnpm install`
+
+- Start dev server & Docker containers: Postgres, Electric, TrailBase
+  `pnpm dev`
+
+- Run Postgres DB migrations
+  `pnpm db:push`
+
+- Optionally, check out the TrailBase admin UI @ http://localhost:4000/\_/admin
+  (email: admin@localhost, password: secret)</doc><doc title="Paced Mutations Demo" desc="worked example."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paced Mutations Demo</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Todo" desc="worked example."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/src/styles.css" rel="stylesheet" />
+    <title>TODO App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Todo" desc="worked example."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/src/styles.css" rel="stylesheet" />
+    <title>TODO App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Src" desc="worked example."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Todos</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html></doc><doc title="Agent" desc="worked example."># TanStack Start + DB Projects Example
+
+This is a TanStack Start project with tRPC API running on Start's server functions so it's easily deployable to many hosting platforms.
+
+All reads from the Postgres database are done via tRPC queries which populate TanStack DB query collections.
+
+We sync normalized data from tables into TanStack DB collections in the client & then write client-side queries for displaying data in components.
+
+## Initial setup
+
+Before you started, all necessary package install is done via `pnpm install` and a dev server is started with `pnpm dev`.
+
+## Linting and formatting
+
+Human devs have IDEs that autoformat code on every file save. After you edit files, you must do the equivalent by running `pnpm lint`.
+
+This command will also report linter errors that were not automatically fixable. Use your judgement as to which of the linter violations should be fixed.
+
+## Build/Test Commands
+
+- `pnpm run dev` - Start development server with Docker services
+- `pnpm run build` - Build for production
+- `pnpm run test` - Run all Vitest tests
+- `vitest run <test-file>` - Run single test file
+- `pnpm run start` - Start production server
+
+## Architecture
+
+- **Frontend**: TanStack Start (SSR framework for React and other frameworks) with file-based routing in `src/routes/`
+- **Database**: PostgreSQL with Drizzle ORM, schema in `src/db/schema.ts`
+- **Services**: Docker Compose setup (Postgres on 54321)
+- **Styling**: Tailwind CSS v4
+- **Authentication**: better-auth
+- **API**: tRPC for full e2e typesafety.
+
+## Code Style
+
+- **TypeScript**: Strict mode, ES2022 target, bundler module resolution
+- **Imports**: Use `@/*` path aliases for `src/` directory imports
+- **Components**: React 19 with JSX transform, functional components preferred
+- **Server DB**: Drizzle ORM with PostgreSQL dialect, schema-first approach
+- **Client DB**: TanStack DB with Query Collections
+- **Routing**: File-based with TanStack Router, use `Link` component for navigation
+- **Testing**: Vitest with @testing-library/react for component tests
+- **file names** should always use kebab-case</doc></tutorials><api><doc title="Offlineaction" desc="API reference.">import { OnMutateMustBeSynchronousError } from "@tanstack/db"
+import { OfflineTransaction } from "./OfflineTransaction"
+import type { Transaction } from "@tanstack/db"
+import type {
+  CreateOfflineActionOptions,
+  OfflineMutationFn,
+  OfflineTransaction as OfflineTransactionType,
+} from "../types"
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return (
+    !!value &&
+    (typeof value === `object` || typeof value === `function`) &&
+    typeof (value as { then?: unknown }).then === `function`
+  )
+}
+
+export function createOfflineAction<T>(
+  options: CreateOfflineActionOptions<T>,
+  mutationFn: OfflineMutationFn,
+  persistTransaction: (tx: OfflineTransactionType) => Promise<void>,
+  executor: any
+): (variables: T) => Transaction {
+  const { mutationFnName, onMutate } = options
+  console.log(`createOfflineAction 2`, options)
+
+  return (variables: T): Transaction => {
+    const offlineTransaction = new OfflineTransaction(
+      {
+        mutationFnName,
+        autoCommit: false,
+      },
+      mutationFn,
+      persistTransaction,
+      executor
+    )
+
+    const transaction = offlineTransaction.mutate(() => {
+      console.log(`mutate`)
+      const maybePromise = onMutate(variables) as unknown
+
+      if (isPromiseLike(maybePromise)) {
+        throw new OnMutateMustBeSynchronousError()
+      }
+    })
+
+    // Immediately commit
+    const commitPromise = (async () => {
+      try {
+        await transaction.commit()
+        console.log(`offlineAction committed - success`)
+      } catch {
+        console.log(`offlineAction commit failed - error`)
+      }
+    })()
+
+    // Don't await - this is fire-and-forget for optimistic actions
+    // But catch to prevent unhandled rejection
+    commitPromise.catch(() => {
+      // Already handled in try/catch above
+    })
+
+    return transaction
+  }
+}</doc><doc title="Offlinetransaction" desc="API reference.">import { createTransaction } from "@tanstack/db"
+import { NonRetriableError } from "../types"
+import type { PendingMutation, Transaction } from "@tanstack/db"
+import type {
+  CreateOfflineTransactionOptions,
+  OfflineMutationFn,
+  OfflineTransaction as OfflineTransactionType,
+} from "../types"
+
+export class OfflineTransaction {
+  private offlineId: string
+  private mutationFnName: string
+  private autoCommit: boolean
+  private idempotencyKey: string
+  private metadata: Record<string, any>
+  private transaction: Transaction | null = null
+  private persistTransaction: (tx: OfflineTransactionType) => Promise<void>
+  private executor: any // Will be typed properly - reference to OfflineExecutor
+
+  constructor(
+    options: CreateOfflineTransactionOptions,
+    mutationFn: OfflineMutationFn,
+    persistTransaction: (tx: OfflineTransactionType) => Promise<void>,
+    executor: any
+  ) {
+    this.offlineId = crypto.randomUUID()
+    this.mutationFnName = options.mutationFnName
+    this.autoCommit = options.autoCommit ?? true
+    this.idempotencyKey = options.idempotencyKey ?? crypto.randomUUID()
+    this.metadata = options.metadata ?? {}
+    this.persistTransaction = persistTransaction
+    this.executor = executor
+  }
+
+  mutate(callback: () => void): Transaction {
+    this.transaction = createTransaction({
+      id: this.offlineId,
+      autoCommit: false,
+      mutationFn: async () => {
+        // This is the blocking mutationFn that waits for the executor
+        // First persist the transaction to the outbox
+        const offlineTransaction: OfflineTransactionType = {
+          id: this.offlineId,
+          mutationFnName: this.mutationFnName,
+          mutations: this.transaction!.mutations,
+          keys: this.extractKeys(this.transaction!.mutations),
+          idempotencyKey: this.idempotencyKey,
+          createdAt: new Date(),
+          retryCount: 0,
+          nextAttemptAt: Date.now(),
+          metadata: this.metadata,
+          spanContext: undefined,
+          version: 1,
+        }
+
+        const completionPromise = this.executor.waitForTransactionCompletion(
+          this.offlineId
+        )
+
+        try {
+          await this.persistTransaction(offlineTransaction)
+          // Now block and wait for the executor to complete the real mutation
+          await completionPromise
+        } catch (error) {
+          const normalizedError =
+            error instanceof Error ? error : new Error(String(error))
+          this.executor.rejectTransaction(this.offlineId, normalizedError)
+          throw error
+        }
+
+        return
+      },
+      metadata: this.metadata,
+    })
+
+    this.transaction.mutate(() => {
+      callback()
+    })
+
+    if (this.autoCommit) {
+      // Auto-commit for direct OfflineTransaction usage
+      this.commit().catch((error) => {
+        console.error(`Auto-commit failed:`, error)
+        throw error
+      })
+    }
+
+    return this.transaction
+  }
+
+  async commit(): Promise<Transaction> {
+    if (!this.transaction) {
+      throw new Error(`No mutations to commit. Call mutate() first.`)
+    }
+
+    try {
+      // Commit the TanStack DB transaction
+      // This will trigger the mutationFn which handles persistence and waiting
+      await this.transaction.commit()
+      return this.transaction
+    } catch (error) {
+      // Only rollback for NonRetriableError - other errors should allow retry
+      if (error instanceof NonRetriableError) {
+        this.transaction.rollback()
+      }
+      throw error
+    }
+  }
+
+  rollback(): void {
+    if (this.transaction) {
+      this.transaction.rollback()
+    }
+  }
+
+  private extractKeys(mutations: Array<PendingMutation>): Array<string> {
+    return mutations.map((mutation) => mutation.globalKey)
+  }
+
+  get id(): string {
+    return this.offlineId
+  }
+}</doc></api><.github><doc title="Pull Request Template" desc="docs page.">## 🎯 Changes
+
+
+## ✅ Checklist
+
+- [ ] I have followed the steps in the [Contributing guide](https://github.com/TanStack/db/blob/main/CONTRIBUTING.md).
+- [ ] I have tested this code locally with `pnpm test:pr`.
+
+## 🚀 Release Impact
+
+- [ ] This change affects published code, and I have generated a [changeset](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+- [ ] This change is docs/CI/dev-only (no release).</doc><doc title="Bug Report" desc="docs page.">---
+name: 🐛 Bug Report
+about: Create a report to help us improve
+title: ""
+labels: ""
+assignees: ""
+---
+
+- [ ] I've validated the bug against the latest version of DB packages
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information):**
+
+- OS: [e.g. iOS]
+- Browser [e.g. chrome, safari]
+- Version [e.g. 22]
+
+**Smartphone (please complete the following information):**
+
+- Device: [e.g. iPhone6]
+- OS: [e.g. iOS8.1]
+- Browser [e.g. stock browser, safari]
+- Version [e.g. 22]
+
+**Additional context**
+Add any other context about the problem here.</doc></.github><packages><doc title="README" desc="install &amp; quickstart."># @tanstack/angular-db
+
+Angular hooks for TanStack DB. See [TanStack/db](https://github.com/TanStack/db) for more details.
+
+Installation
+
+    npm install @tanstack/angular-db @tanstack/db
+
+Usage
+
+Basic Setup
+
+First, create a collection:
+
+    import { createCollection, localOnlyCollectionOptions } from "@tanstack/db"
+
+    interface Todo {
+      id: number
+      text: string
+      completed: boolean
+      projectID: number
+      created_at: Date
+    }
+
+    export const todosCollection = createCollection(
+      localOnlyCollectionOptions<Todo>({
+        getKey: (todo: Todo) => todo.id,
+        initialData: [
+          {
+            id: 1,
+            text: "Learn Angular",
+            completed: false,
+            projectID: 1,
+            created_at: new Date(),
+          },
+        ],
+      })
+    )
+
+Using injectLiveQuery in Components
+
+Direct Collection Usage
+
+The simplest way to use injectLiveQuery is to pass a collection directly:
+
+    import { Component } from "@angular/core"
+    import { injectLiveQuery } from "@tanstack/angular-db"
+    import { todosCollection } from "./collections/todos-collection"
+
+    @Component({
+      selector: "app-all-todos",
+      template: `
+        @if (allTodos.isReady()) {
+          <div>Total todos: {{ allTodos.data().length }}</div>
+          @for (todo of allTodos.data(); track todo.id) {
+            <div>{{ todo.text }}</div>
+          }
+        } @else {
+          <div>Loading todos...</div>
+        }
+      `,
+    })
+    export class AllTodosComponent {
+      // Direct collection usage - gets all items
+      allTodos = injectLiveQuery(todosCollection)
+    }
+
+Static Query Functions
+
+You can create filtered queries using a query function. Note: The query function is evaluated once and is not reactive to signal changes:
+
+    import { Component } from "@angular/core"
+    import { injectLiveQuery } from "@tanstack/angular-db"
+    import { eq } from "@tanstack/db"
+    import { todosCollection } from "./collections/todos-collection"
+
+    @Component({
+      selector: "app-todos",
+      template: `
+        @if (todoQuery.isReady()) {
+          @for (todo of todoQuery.data(); track todo.id) {
+            <div class="todo-item">
+              {{ todo.text }}
+              <button (click)="toggleTodo(todo.id)">
+                {{ todo.completed ? "Undo" : "Complete" }}
+              </button>
+            </div>
+          }
+        } @else {
+          <div>Loading todos...</div>
+        }
+      `,
+    })
+    export class TodosComponent {
+      // Static query - filters for incomplete todos
+      // This will not react to signal changes within the function
+      todoQuery = injectLiveQuery((q) =>
+        q
+          .from({ todo: todosCollection })
+          .where(({ todo }) => eq(todo.completed, false))
+      )
+
+      toggleTodo(id: number) {
+        todosCollection.utils.begin()
+        todosCollection.utils.write({
+          type: 'update',
+          key: id,
+          value: { completed: true }
+        })
+        todosCollection.utils.commit()
+      }
+    }
+
+Reactive Queries with Parameters
+
+For queries that need to react to component state changes, use the reactive parameters overload:
+
+    import { Component, signal } from "@angular/core"
+    import { injectLiveQuery } from "@tanstack/angular-db"
+    import { eq } from "@tanstack/db"
+    import { todosCollection } from "./collections/todos-collection"
+
+    @Component({
+      selector: "app-project-todos",
+      template: `
+        <select (change)="selectedProjectId.set(+$any($event).target.value)">
+          <option [value]="1">Project 1</option>
+          <option [value]="2">Project 2</option>
+          <option [value]="3">Project 3</option>
+        </select>
+
+        @if (todoQuery.isReady()) {
+          <div>Todos for project {{ selectedProjectId() }}:</div>
+          @for (todo of todoQuery.data(); track todo.id) {
+            <div class="todo-item">
+              {{ todo.text }}
+            </div>
+          }
+        } @else {
+          <div>Loading todos...</div>
+        }
+      `,
+    })
+    export class ProjectTodosComponent {
+      selectedProjectId = signal(1)
+
+      // Reactive query - automatically recreates when selectedProjectId changes
+      todoQuery = injectLiveQuery({
+        params: () => ({ projectID: this.selectedProjectId() }),
+        query: ({ params, q }) =>
+          q
+            .from({ todo: todosCollection })
+            .where(({ todo }) => eq(todo.completed, false))
+            .where(({ todo }) => eq(todo.projectID, params.projectID)),
+      })
+    }
+
+Advanced Configuration
+
+You can also pass a full configuration object:
+
+    import { Component } from "@angular/core"
+    import { injectLiveQuery } from "@tanstack/angular-db"
+    import { eq } from "@tanstack/db"
+    import { todosCollection } from "./collections/todos-collection"
+
+    @Component({
+      selector: "app-configured-todos",
+      template: `
+        @if (todoQuery.isReady()) {
+          @for (todo of todoQuery.data(); track todo.id) {
+            <div>{{ todo.text }}</div>
+          }
+        }
+      `,
+    })
+    export class ConfiguredTodosComponent {
+      todoQuery = injectLiveQuery({
+        query: (q) =>
+          q
+            .from({ todo: todosCollection })
+            .where(({ todo }) => eq(todo.completed, false))
+            .select(({ todo }) => ({
+              id: todo.id,
+              text: todo.text,
+            })),
+        startSync: true,
+        gcTime: 5000,
+      })
+    }
+
+Important Notes
+
+Reactivity Behavior
+
+- Direct collection: Automatically reactive to collection changes
+- Static query function: Query is built once and is not reactive to signals read within the function
+- Reactive parameters: Query rebuilds when any signal read in params() changes
+- Collection configuration: Static, not reactive to external signals
+
+Lifecycle Management
+
+- injectLiveQuery automatically handles subscription cleanup when the component is destroyed
+- Each call to injectLiveQuery creates a new collection instance (no caching/reuse)
+- Collections are started immediately and will sync according to their configuration
+
+Template Usage
+
+Use Angular's new control flow syntax for best performance:
+
+    @if (query.isReady()) {
+      @for (item of query.data(); track item.id) {
+        <div>{{ item.text }}</div>
+      }
+    } @else if (query.isError()) {
+      <div>Error loading data</div>
+    } @else {
+      <div>Loading...</div>
+    }
+
+API
+
+injectLiveQuery()
+
+Angular injection function for TanStack DB live queries. Must be called within an injection context (e.g., component constructor, inject(), or field initializer).
+
+Overloads
+
+    // Direct collection - reactive to collection changes
+    function injectLiveQuery<TResult, TKey, TUtils>(
+      collection: Collection<TResult, TKey, TUtils>
+    ): LiveQueryResult<TResult>
+
+    // Static query function - NOT reactive to signals within function
+    function injectLiveQuery<TContext>(
+      queryFn: (q: InitialQueryBuilder) => QueryBuilder<TContext>
+    ): LiveQueryResult<TContext>
+
+    // Reactive query with parameters - recreates when params() signals change
+    function injectLiveQuery<TContext, TParams>(options: {
+      params: () => TParams
+      query: (args: {
+        params: TParams
+        q: InitialQueryBuilder
+      }) => QueryBuilder<TContext>
+    }): LiveQueryResult<TContext>
+
+    // Collection configuration - static configuration
+    function injectLiveQuery<TContext>(
+      config: LiveQueryCollectionConfig<TContext>
+    ): LiveQueryResult<TContext>
+
+Returns
+
+An object with Angular signals:
+
+- data: Signal<Array<T>> - Array of query results, automatically updates
+- state: Signal<Map<Key, T>> - Map of results by key, automatically updates
+- collection: Signal<Collection> - The underlying collection instance
+- status: Signal<CollectionStatus> - Current status ('idle' | 'loading' | 'ready' | 'error' | 'cleaned-up')
+- isLoading: Signal<boolean> - true when status is 'loading'
+- isReady: Signal<boolean> - true when status is 'ready'
+- isIdle: Signal<boolean> - true when status is 'idle'
+- isError: Signal<boolean> - true when status is 'error'
+- isCleanedUp: Signal<boolean> - true when status is 'cleaned-up'
+
+Parameters
+
+- collection - Existing collection to observe directly
+- queryFn - Function that builds a static query using the query builder
+- options.params - Reactive function that returns parameters; triggers query rebuild when accessed signals change
+- options.query - Function that builds a query using parameters and query builder
+- config - Configuration object for creating a live query collection
+
+Requirements
+
+- Angular 16+ (requires signals support)
+- Must be called within an Angular injection context
+- Automatically handles cleanup when the injector is destroyed</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/db-collection-e2e
+
+Shared end-to-end test suite for TanStack DB collections with query-driven sync and on-demand loading.
+
+## Overview
+
+This package provides a comprehensive e2e test suite that can be reused across different collection implementations (Electric, Query, etc.). It tests:
+
+- Predicate push-down and filtering
+- Pagination, ordering, and window management
+- Multi-collection joins with mixed syncModes
+- Deduplication of concurrent loadSubset calls
+- String collation configurations
+- Mutations with on-demand mode
+- Live updates (for sync-enabled collections)
+
+## Architecture
+
+### Package Structure
+
+```
+db-collection-e2e/
+├── docker/                   # Docker Compose for test infrastructure
+│   ├── docker-compose.yml    # Postgres + Electric
+│   └── postgres.conf         # Optimized for fast tests
+├── src/
+│   ├── types.ts              # TypeScript interfaces
+│   ├── fixtures/             # Test data and schemas
+│   │   ├── seed-data.ts      # Generate ~100 records per table
+│   │   └── test-schema.ts    # SQL schema definitions
+│   ├── suites/               # Test suite modules
+│   │   ├── predicates.test.ts
+│   │   ├── pagination.test.ts
+│   │   ├── joins.test.ts
+│   │   ├── deduplication.test.ts
+│   │   ├── collation.test.ts
+│   │   ├── mutations.test.ts
+│   │   ├── live-updates.test.ts
+│   │   └── regressions.test.ts
+│   └── utils/                # Helper functions
+│       ├── helpers.ts        # Common utilities
+│       └── assertions.ts     # Custom assertions
+└── support/                  # Vitest setup
+    ├── global-setup.ts       # Health checks, DB init
+    └── test-context.ts       # Vitest fixtures
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Node.js 20+
+- pnpm 10+
+
+### Installation
+
+From the repository root:
+
+```bash
+pnpm install
+```
+
+### Running Tests Locally
+
+1. **Start Docker services:**
+
+```bash
+cd packages/db-collection-e2e/docker
+docker compose up -d
+```
+
+2. **Run tests:**
+
+```bash
+cd packages/db-collection-e2e
+pnpm test
+```
+
+3. **Stop Docker services:**
+
+```bash
+cd packages/db-collection-e2e/docker
+docker compose down
+```
+
+## Test Data Schema
+
+The test suite uses three related tables:
+
+### Users Table (~100 records)
+
+```typescript
+interface User {
+  id: string // UUID
+  name: string // For collation testing
+  email: string | null
+  age: number
+  isActive: boolean
+  createdAt: Date
+  metadata: object | null // JSON field
+  deletedAt: Date | null // Soft delete
+}
+```
+
+### Posts Table (~100 records)
+
+```typescript
+interface Post {
+  id: string
+  userId: string // FK to User
+  title: string
+  content: string | null
+  viewCount: number
+  publishedAt: Date | null
+  deletedAt: Date | null
+}
+```
+
+### Comments Table (~100 records)
+
+```typescript
+interface Comment {
+  id: string
+  postId: string // FK to Post
+  userId: string // FK to User
+  text: string
+  createdAt: Date
+  deletedAt: Date | null
+}
+```
+
+### Data Distributions
+
+Seed data includes:
+
+- Mix of null/non-null values
+- Various string cases (uppercase, lowercase, special chars)
+- Date ranges (past, present, future)
+- Numeric ranges (negative, zero, positive)
+- Some soft-deleted records (~10%)
+
+## Integrating with Your Collection
+
+### 1. Create Setup File
+
+Create `e2e/setup.ts` in your collection package. See real examples:
+
+- Electric: `packages/electric-db-collection/e2e/setup.ts`
+- Query: `packages/query-db-collection/e2e/setup.ts`
+
+Example structure:
+
+```typescript
+import { createCollection } from "@tanstack/db"
+import { yourCollectionOptions } from "../src"
+import type {
+  E2ETestConfig,
+  User,
+  Post,
+  Comment,
+} from "../../db-collection-e2e/src/types"
+
+export async function createYourE2EConfig(options: {
+  schema: string
+  usersTable: string
+  postsTable: string
+  commentsTable: string
+}): Promise<E2ETestConfig> {
+  // Create collections for both syncModes (eager and on-demand)
+  const eagerUsers = createCollection(
+    yourCollectionOptions({
+      id: `your-e2e-users-eager-${Date.now()}`,
+      syncMode: "eager",
+      getKey: (item: User) => item.id,
+      startSync: false,
+    })
+  )
+
+  const onDemandUsers = createCollection(
+    yourCollectionOptions({
+      id: `your-e2e-users-ondemand-${Date.now()}`,
+      syncMode: "on-demand",
+      getKey: (item: User) => item.id,
+      startSync: false,
+    })
+  )
+
+  // ... create posts and comments collections similarly
+
+  return {
+    collections: {
+      eager: { users: eagerUsers, posts: eagerPosts, comments: eagerComments },
+      onDemand: {
+        users: onDemandUsers,
+        posts: onDemandPosts,
+        comments: onDemandComments,
+      },
+    },
+    setup: async () => {
+      // Optional setup hook
+    },
+    teardown: async () => {
+      await Promise.all([
+        eagerUsers.cleanup(),
+        eagerPosts.cleanup(),
+        eagerComments.cleanup(),
+        onDemandUsers.cleanup(),
+        onDemandPosts.cleanup(),
+        onDemandComments.cleanup(),
+      ])
+    },
+  }
+}
+```
+
+### 2. Create E2E Test File
+
+Create `e2e/your-collection.e2e.test.ts`:
+
+```typescript
+import { describe, it, expect } from "vitest"
+import { createCollection } from "@tanstack/db"
+import { yourCollectionOptions } from "../src"
+
+describe("Your Collection E2E", () => {
+  it("should create collection", async () => {
+    const collection = createCollection(
+      yourCollectionOptions({
+        id: "test-collection",
+        getKey: (item: any) => item.id,
+        startSync: false,
+      })
+    )
+
+    expect(collection).toBeDefined()
+    expect(collection._sync.loadSubset).toBeDefined()
+
+    await collection.cleanup()
+  })
+})
+```
+
+### 3. Update Vitest Config
+
+Update your `vite.config.ts` to include e2e tests:
+
+```typescript
+const config = defineConfig({
+  test: {
+    include: ["tests/**/*.test.ts", "e2e/**/*.e2e.test.ts"],
+    // Remove dir: './tests' if present
+  },
+})
+```
+
+### 4. Run Tests
+
+```bash
+cd packages/your-collection
+pnpm test
+```
+
+The e2e tests will run alongside your regular tests.
+
+## Test Suites
+
+All test suites are implemented in `src/suites/*.suite.ts` files and exported as factory functions.
+
+### Predicates Suite (`predicates.suite.ts`)
+
+Tests basic where clause functionality with ~20 test scenarios:
+
+**Example Test:**
+
+```typescript
+it("should filter with eq() on number field", async () => {
+  const query = createLiveQueryCollection((q) =>
+    q.from({ user: usersCollection }).where(({ user }) => eq(user.age, 25))
+  )
+  await query.preload()
+
+  const results = Array.from(query.state.values())
+  assertAllItemsMatch(query, (u) => u.age === 25)
+})
+```
+
+**Covers:**
+
+- `eq()`, `gt()`, `gte()`, `lt()`, `lte()` with all data types
+- `inArray()` with arrays
+- `isNull()`, `not(isNull())` for null checks
+- Complex boolean logic with `and()`, `or()`, `not()`
+- Predicate pushdown verification
+
+### Pagination Suite (`pagination.suite.ts`)
+
+Tests ordering and pagination with ~15 test scenarios:
+
+**Example Test:**
+
+```typescript
+it("should sort ascending by single field", async () => {
+  const query = createLiveQueryCollection((q) =>
+    q.from({ user: usersCollection }).orderBy(({ user }) => user.age, "asc")
+  )
+  await query.preload()
+
+  const results = Array.from(query.state.values())
+  assertSorted(results, "age", "asc")
+})
+```
+
+**Covers:**
+
+- Basic `orderBy` (asc/desc) on various field types
+- Multiple `orderBy` fields
+- `limit` and `offset` for pagination
+- Edge cases (limit=0, offset beyond dataset)
+- Performance verification (only requested page loaded)
+
+### Joins Suite (`joins.suite.ts`)
+
+Tests multi-collection joins with ~12 test scenarios:
+
+**Example Test:**
+
+```typescript
+it("should join Users and Posts", async () => {
+  const query = createLiveQueryCollection((q) =>
+    q
+      .from({ user: usersCollection })
+      .join({ post: postsCollection }, ({ user, post }) =>
+        eq(user.id, post.userId)
+      )
+      .select(({ user, post }) => ({
+        id: post.id,
+        userName: user.name,
+        postTitle: post.title,
+      }))
+  )
+  await query.preload()
+
+  expect(query.size).toBeGreaterThan(0)
+})
+```
+
+**Covers:**
+
+- Two-collection joins (Users + Posts)
+- Three-collection joins (Users + Posts + Comments)
+- Mixed syncModes (eager + on-demand)
+- Predicates on joined collections
+- Left joins and ordering on joined results
+- Pagination on joined results
+
+### Deduplication Suite
+
+Tests concurrent loadSubset calls:
+
+- Identical predicates called simultaneously
+- Overlapping predicates (subset relationships)
+- Queries during active loading
+- Deduplication callback verification
+
+### Collation Suite
+
+Tests string collation:
+
+- Default collation behavior
+- Custom `defaultStringCollation`
+- Query-level collation override
+- Case-sensitive vs case-insensitive
+
+### Mutations Suite
+
+Tests data mutations:
+
+- Insert, update, delete operations
+- Soft delete pattern
+- Concurrent mutations
+- Reactive query updates
+
+### Live Updates Suite (Optional)
+
+Tests reactive updates (for sync-enabled collections):
+
+- Backend data changes
+- Updates during loadSubset
+- Multiple watchers
+- Subscription lifecycle
+
+### Regression Suite
+
+Tests for known bugs:
+
+- Initial state sent multiple times (#7214245)
+- Race conditions in multi-join
+- Missing data in change tracking
+- LoadSubset naming changes (#9874949)
+
+## Configuration
+
+### Environment Variables
+
+- `ELECTRIC_URL` - Electric server URL (default: `http://localhost:3000`)
+- `POSTGRES_HOST` - Postgres host (default: `localhost`)
+- `POSTGRES_PORT` - Postgres port (default: `54321`)
+- `POSTGRES_USER` - Postgres user (default: `postgres`)
+- `POSTGRES_PASSWORD` - Postgres password (default: `password`)
+- `POSTGRES_DB` - Postgres database (default: `e2e_test`)
+
+### Docker Configuration
+
+The Docker Compose setup uses:
+
+- Postgres 16 Alpine with tmpfs for speed
+- Electric canary image
+- Health checks with 10s timeout
+- Optimized postgres.conf for testing
+
+## Troubleshooting
+
+### Docker services not starting
+
+```bash
+# Check service status
+docker compose ps
+
+# View logs
+docker compose logs
+
+# Restart services
+docker compose restart
+```
+
+### Tests timing out
+
+- Increase `timeout` in `vite.config.ts`
+- Check Docker resource limits
+- Verify network connectivity
+
+### Database connection errors
+
+- Ensure Docker services are healthy
+- Check environment variables
+- Verify ports are not in use
+
+### Test isolation issues
+
+Tests use unique table names per test to prevent collisions:
+
+```
+"users_taskId_random"
+```
+
+If you see data from other tests, check that cleanup is working properly.
+
+## Performance
+
+Target execution time: **< 5 minutes** for entire suite
+
+Optimizations:
+
+- tmpfs for Postgres data directory
+- Serial execution (`fileParallelism: false`)
+- Minimal test data (~300 records total)
+- Optimized Postgres configuration
+- Health checks with fast intervals
+
+## Contributing
+
+When adding new test suites:
+
+1. Create new file in `src/suites/`
+2. Export test factory function
+3. Add to main exports in `src/index.ts`
+4. Update README with test suite description
+5. Ensure execution time stays < 5 minutes
+
+## License
+
+MIT
+
+## Related
+
+- [RFC #676](https://github.com/TanStack/db/discussions/676) - Query-driven sync RFC
+- [PR #763](https://github.com/TanStack/db/pull/763) - Implementation PR
+- [TanStack DB Documentation](https://tanstack.com/db)</doc><doc title="README" desc="install &amp; quickstart."># IVM implementation for TanStack DB based on Differential Dataflow
+
+This is an implementation of differential dataflow used by TanStack DB, forked from [@electric-sql/d2ts](https://github.com/electric-sql/d2ts), but simplified and without the complexities of multi-dimensional versioning.
+
+It is used internally by the TanStack DB with the live queries compiled to a D2 graph. This library doesn't depend on the TanStack DB and so could be used in other projects.
+
+The API is almost identical to D2TS, but without the need to specify a version when sending data, or to send a frontier to mark the end of a version.
+
+### Basic Usage
+
+Here's a simple example that demonstrates the core concepts:
+
+```typescript
+import { D2, map, filter, debug, MultiSet } from "@tanstack/db-ivm"
+
+// Create a new D2 graph
+const graph = new D2()
+
+// Create an input stream
+// We can specify the type of the input stream, here we are using number.
+const input = graph.newInput<number>()
+
+// Build a simple pipeline that:
+// 1. Takes numbers as input
+// 2. Adds 5 to each number
+// 3. Filters to keep only even numbers
+// Pipelines can have multiple inputs and outputs.
+const output = input.pipe(
+  map((x) => x + 5),
+  filter((x) => x % 2 === 0),
+  debug("output")
+)
+
+// Finalize the pipeline, after this point we can no longer add operators or
+// inputs
+graph.finalize()
+
+// Send some data
+// Data is sent as a MultiSet, which is a map of values to their multiplicity
+// Here we are sending 3 numbers (1-3), each with a multiplicity of 1
+// The key thing to understand is that the MultiSet represents a *change* to
+// the data, not the data itself. "Inserts" and "Deletes" are represented as
+// an element with a multiplicity of 1 or -1 respectively.
+input.sendData(
+  new MultiSet([
+    [1, 1],
+    [2, 1],
+    [3, 1],
+  ])
+)
+
+// Process the data
+graph.run()
+
+// Output will show:
+// 6 (from 1 + 5)
+// 8 (from 3 + 5)
+```</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/db
+
+**A reactive client store for building super fast apps on sync**
+
+TanStack DB extends TanStack Query with collections, live queries and optimistic mutations that keep your UI reactive, consistent and blazing fast 🔥
+
+<p>
+  <a href="https://x.com/intent/post?text=TanStack%20DB&url=https://tanstack.com/db">
+    <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack" /></a>
+  <a href="#status">
+    <img src="https://img.shields.io/badge/status-alpha-orange" alt="Status - Alpha"></a>
+  <a href="https://npmjs.com/package/@tanstack/db">
+    <img alt="" src="https://img.shields.io/npm/dm/@tanstack/db.svg" /></a>
+  <a href="https://discord.gg/yjUNbvbraC">
+    <img alt="" src="https://img.shields.io/badge/Discord-TanStack-%235865F2" /></a>
+  <a href="https://github.com/tanstack/db/discussions">
+    <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Discussions-Chat%20now!-green" /></a>
+  <a href="https://x.com/tan_stack">
+    <img alt="" src="https://img.shields.io/twitter/follow/tan_stack.svg?style=social&label=Follow @TanStack" /></a>
+</p>
+
+## 💥 Visit the [TanStack/db](https://github.com/TanStack/db) repo for docs and details!
+
+- 🔥 **blazing fast query engine**<br />
+  for sub-millisecond live queries &mdash; even for complex queries with joins and aggregates
+- 🎯 **fine-grained reactivity**<br />
+  to minimize component re-rendering
+- 💪 **robust transaction primitives**<br />
+  for easy optimistic mutations with sync and lifecycle support
+- 🌟 **normalized data**<br />
+  to keep your backend simple
+
+---
+
+### [Become a Sponsor!](https://github.com/sponsors/tannerlinsley/)
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com), including [TanStack Query](https://tanstack.com/query), [TanStack Store](https://tanstack.com/store), etc.</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/offline-transactions
+
+Offline-first transaction capabilities for TanStack DB that provides durable persistence of mutations with automatic retry when connectivity is restored.
+
+## Features
+
+- **Outbox Pattern**: Persist mutations before dispatch for zero data loss
+- **Automatic Retry**: Exponential backoff with jitter for failed transactions
+- **Multi-tab Coordination**: Leader election ensures safe storage access
+- **FIFO Sequential Processing**: Transactions execute one at a time in creation order
+- **Flexible Storage**: IndexedDB with localStorage fallback
+- **Type Safe**: Full TypeScript support with TanStack DB integration
+
+## Installation
+
+```bash
+npm install @tanstack/offline-transactions
+```
+
+## Quick Start
+
+```typescript
+import { startOfflineExecutor } from "@tanstack/offline-transactions"
+
+// Setup offline executor
+const offline = startOfflineExecutor({
+  collections: { todos: todoCollection },
+  mutationFns: {
+    syncTodos: async ({ transaction, idempotencyKey }) => {
+      await api.saveBatch(transaction.mutations, { idempotencyKey })
+    },
+  },
+  onLeadershipChange: (isLeader) => {
+    if (!isLeader) {
+      console.warn("Running in online-only mode (another tab is the leader)")
+    }
+  },
+})
+
+// Create offline transactions
+const offlineTx = offline.createOfflineTransaction({
+  mutationFnName: "syncTodos",
+  autoCommit: false,
+})
+
+offlineTx.mutate(() => {
+  todoCollection.insert({
+    id: crypto.randomUUID(),
+    text: "Buy milk",
+    completed: false,
+  })
+})
+
+// Execute with automatic offline support
+await offlineTx.commit()
+```
+
+## Core Concepts
+
+### Outbox-First Persistence
+
+Mutations are persisted to a durable outbox before being applied, ensuring zero data loss during offline periods:
+
+1. Mutation is persisted to IndexedDB/localStorage
+2. Optimistic update is applied locally
+3. When online, mutation is sent to server
+4. On success, mutation is removed from outbox
+
+### Multi-tab Coordination
+
+Only one tab acts as the "leader" to safely manage the outbox:
+
+- **Leader tab**: Full offline support with outbox persistence
+- **Non-leader tabs**: Online-only mode for safety
+- **Leadership transfer**: Automatic failover when leader tab closes
+
+### FIFO Sequential Processing
+
+Transactions are processed one at a time in the order they were created:
+
+- **Sequential execution**: All transactions execute in FIFO order
+- **Dependency safety**: Avoids conflicts between transactions that may reference each other
+- **Predictable behavior**: Transactions complete in the exact order they were created
+
+## API Reference
+
+### startOfflineExecutor(config)
+
+Creates and starts an offline executor instance.
+
+```typescript
+interface OfflineConfig {
+  collections: Record<string, Collection>
+  mutationFns: Record<string, MutationFn>
+  storage?: StorageAdapter
+  maxConcurrency?: number
+  jitter?: boolean
+  beforeRetry?: (transactions: OfflineTransaction[]) => OfflineTransaction[]
+  onUnknownMutationFn?: (name: string, tx: OfflineTransaction) => void
+  onLeadershipChange?: (isLeader: boolean) => void
+}
+```
+
+### OfflineExecutor
+
+#### Properties
+
+- `isOfflineEnabled: boolean` - Whether this tab can persist offline transactions
+
+#### Methods
+
+- `createOfflineTransaction(options)` - Create a manual offline transaction
+- `waitForTransactionCompletion(id)` - Wait for a specific transaction to complete
+- `removeFromOutbox(id)` - Manually remove transaction from outbox
+- `peekOutbox()` - View all pending transactions
+- `notifyOnline()` - Manually trigger retry execution
+- `dispose()` - Clean up resources
+
+### Error Handling
+
+Use `NonRetriableError` for permanent failures:
+
+```typescript
+import { NonRetriableError } from "@tanstack/offline-transactions"
+
+const mutationFn = async ({ transaction }) => {
+  try {
+    await api.save(transaction.mutations)
+  } catch (error) {
+    if (error.status === 422) {
+      throw new NonRetriableError("Invalid data - will not retry")
+    }
+    throw error // Will retry with backoff
+  }
+}
+```
+
+## Advanced Usage
+
+### Custom Storage Adapter
+
+```typescript
+import {
+  IndexedDBAdapter,
+  LocalStorageAdapter,
+} from "@tanstack/offline-transactions"
+
+const executor = startOfflineExecutor({
+  // Use custom storage
+  storage: new IndexedDBAdapter("my-app", "transactions"),
+  // ... other config
+})
+```
+
+### Custom Retry Policy
+
+```typescript
+const executor = startOfflineExecutor({
+  maxConcurrency: 5,
+  jitter: true,
+  beforeRetry: (transactions) => {
+    // Filter out old transactions
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000 // 24 hours
+    return transactions.filter((tx) => tx.createdAt.getTime() > cutoff)
+  },
+  // ... other config
+})
+```
+
+### Manual Transaction Control
+
+```typescript
+const tx = executor.createOfflineTransaction({
+  mutationFnName: "syncData",
+  autoCommit: false,
+})
+
+tx.mutate(() => {
+  collection.insert({ id: "1", text: "Item 1" })
+  collection.insert({ id: "2", text: "Item 2" })
+})
+
+// Commit when ready
+await tx.commit()
+```
+
+## Migration from TanStack DB
+
+This package uses explicit offline transactions to provide offline capabilities:
+
+```typescript
+// Before: Standard TanStack DB (online only)
+todoCollection.insert({ id: "1", text: "Buy milk" })
+
+// After: Explicit offline transactions
+const offline = startOfflineExecutor({
+  collections: { todos: todoCollection },
+  mutationFns: {
+    syncTodos: async ({ transaction }) => {
+      await api.sync(transaction.mutations)
+    },
+  },
+})
+
+const tx = offline.createOfflineTransaction({ mutationFnName: "syncTodos" })
+tx.mutate(() => todoCollection.insert({ id: "1", text: "Buy milk" }))
+await tx.commit() // Works offline!
+```
+
+## Browser Support
+
+- **IndexedDB**: Modern browsers (primary storage)
+- **localStorage**: Fallback for limited environments
+- **Web Locks API**: Chrome 69+, Firefox 96+ (preferred leader election)
+- **BroadcastChannel**: All modern browsers (fallback leader election)
+
+## License
+
+MIT</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/react-db
+
+React hooks for TanStack DB. See [TanStack/db](https://github.com/TanStack/db) for more details.</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/solid-db
+
+Solidjs hooks for TanStack DB. See [TanStack/db](https://github.com/TanStack/db) for more details.</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/svelte-db
+
+Svelte helpers for TanStack DB. See [TanStack/db](https://github.com/TanStack/db) for more details.</doc><doc title="README" desc="install &amp; quickstart."># @tanstack/vue-db
+
+Vue composables for TanStack DB. See [TanStack/db](https://github.com/TanStack/db) for more details.</doc><doc title="Svelte.Config" desc="docs page.">import { vitePreprocess } from "@sveltejs/vite-plugin-svelte"
+
+const config = {
+  preprocess: vitePreprocess(),
+}
+
+export default config</doc></packages></project>

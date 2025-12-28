@@ -1,0 +1,3394 @@
+<project title="Langchain Mcp Adapters" summary="The purpose of this project is to enable LangChain and LangGraph agents to interact with MCP-compliant tools via lightweight adapters. It facilitates the conversion of MCP tools into LangChain-compatible tools, allowing users to leverage external services (e.g., math or weather APIs) through a unified agent framework. The project also supports advanced use cases like multi-server connections and streaming HTTP transports, making it suitable for both local and distributed agent environments.">**Remember:**
+- Anthropic Model Context Protocol (MCP)
+- LangChain tools
+- LangGraph agents
+- MultiServerMCPClient
+- Streamable HTTP transport
+- ClientSession<tutorials><doc title="README" desc="install &amp; quickstart."># MCP Simple StreamableHttp Stateless Server Example
+
+> Adapted from the [official Python MCP SDK example](https://github.com/modelcontextprotocol/python-sdk/tree/main/examples/servers/simple-streamablehttp-stateless)
+
+A stateless MCP server example demonstrating the StreamableHttp transport without maintaining session state. This example is ideal for understanding how to deploy MCP servers in multi-node environments where requests can be routed to any instance.
+
+## Features
+
+- Uses the StreamableHTTP transport in stateless mode (mcp_session_id=None)
+- Each request creates a new ephemeral connection
+- No session state maintained between requests
+- Task lifecycle scoped to individual requests
+- Suitable for deployment in multi-node environments
+
+
+## Usage
+
+Start the server:
+
+```bash
+# Using default port 3000
+uv run mcp-simple-streamablehttp-stateless
+
+# Using custom port
+uv run mcp-simple-streamablehttp-stateless --port 3000
+
+# Custom logging level
+uv run mcp-simple-streamablehttp-stateless --log-level DEBUG
+
+# Enable JSON responses instead of SSE streams
+uv run mcp-simple-streamablehttp-stateless --json-response
+```
+
+The server exposes a tool named "start-notification-stream" that accepts three arguments:
+
+- `interval`: Time between notifications in seconds (e.g., 1.0)
+- `count`: Number of notifications to send (e.g., 5)
+- `caller`: Identifier string for the caller
+
+
+## Client
+
+You can connect to this server using an HTTP client. For now, only the TypeScript SDK has streamable HTTP client examples, or you can use [Inspector](https://github.com/modelcontextprotocol/inspector) for testing.</doc><doc title="Init" desc="worked example."></doc><doc title="Main" desc="worked example.">from .server import main
+
+if __name__ == "__main__":
+    main()</doc><doc title="Server" desc="worked example.">"""Simple MCP server example using streamable HTTP transport.
+
+This module demonstrates a basic MCP server implementation using streamable HTTP
+transport with basic math operations (add and multiply).
+"""
+
+import contextlib
+import logging
+from collections.abc import AsyncIterator
+
+import click
+import mcp.types as types
+from mcp.server.lowlevel import Server
+from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+from starlette.applications import Starlette
+from starlette.routing import Mount
+from starlette.types import Receive, Scope, Send
+
+logger = logging.getLogger(__name__)
+
+
+@click.command()
+@click.option("--port", default=3000, help="Port to listen on for HTTP")
+@click.option(
+    "--log-level",
+    default="INFO",
+    help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+)
+@click.option(
+    "--json-response",
+    is_flag=True,
+    default=False,
+    help="Enable JSON responses instead of SSE streams",
+)
+def main(
+    port: int,
+    log_level: str,
+    json_response: bool,
+) -> int:
+    """Run the MCP server with streamable HTTP transport.
+
+    Args:
+        port: Port to listen on for HTTP requests.
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        json_response: Whether to enable JSON responses instead of SSE streams.
+
+    Returns:
+        Exit code (0 for success).
+    """
+    # Configure logging
+    logging.basicConfig(
+        level=getattr(logging, log_level.upper()),
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+    app = Server("mcp-streamable-http-stateless-demo")
+
+    @app.call_tool()
+    async def call_tool(
+        name: str, arguments: dict
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Handle tool calls for math operations.
+
+        Args:
+            name: Name of the tool to call.
+            arguments: Dictionary of arguments for the tool.
+
+        Returns:
+            List of content objects with the tool result.
+
+        Raises:
+            ValueError: If the tool name is not recognized.
+        """
+        if name == "add":
+            return [
+                types.TextContent(
+                    type="text",
+                    text=str(arguments["a"] + arguments["b"])
+                )
+            ]
+        elif name == "multiply":
+            return [
+                types.TextContent(
+                    type="text",
+                    text=str(arguments["a"] * arguments["b"])
+                )
+            ]
+        else:
+            raise ValueError(f"Tool {name} not found")
+
+    @app.list_tools()
+    async def list_tools() -> list[types.Tool]:
+        """List all available tools provided by this server.
+
+        Returns:
+            List of tool definitions for add and multiply operations.
+        """
+        return [
+            types.Tool(
+                name="add",
+                description="Adds two numbers",
+                inputSchema={
+                    "type": "object",
+                    "required": ["a", "b"],
+                    "properties": {
+                        "a": {
+                            "type": "number",
+                            "description": "First number to add",
+                        },
+                        "b": {
+                            "type": "number",
+                            "description": "Second number to add",
+                        },
+                    },
+                },
+            ),
+            types.Tool(
+                name="multiply",
+                description="Multiplies two numbers",
+                inputSchema={
+                    "type": "object",
+                    "required": ["a", "b"],
+                    "properties": {
+                        "a": {
+                            "type": "number",
+                            "description": "First number to multiply",
+                        },
+                        "b": {
+                            "type": "number",
+                            "description": "Second number to multiply",
+                        },
+                    },
+                },
+            )
+        ]
+
+    # Create the session manager with true stateless mode
+    session_manager = StreamableHTTPSessionManager(
+        app=app,
+        event_store=None,
+        json_response=json_response,
+        stateless=True,
+    )
+
+    async def handle_streamable_http(
+        scope: Scope, receive: Receive, send: Send
+    ) -> None:
+        """Handle streamable HTTP requests through the session manager.
+
+        Args:
+            scope: ASGI scope object.
+            receive: ASGI receive callable.
+            send: ASGI send callable.
+        """
+        await session_manager.handle_request(scope, receive, send)
+
+    @contextlib.asynccontextmanager
+    async def lifespan(app: Starlette) -> AsyncIterator[None]:
+        """Context manager for session manager lifecycle.
+
+        Args:
+            app: The Starlette application instance.
+
+        Yields:
+            None during the application lifetime.
+        """
+        async with session_manager.run():
+            logger.info("Application started with StreamableHTTP session manager!")
+            try:
+                yield
+            finally:
+                logger.info("Application shutting down...")
+
+    # Create an ASGI application using the transport
+    starlette_app = Starlette(
+        debug=True,
+        routes=[
+            Mount("/mcp", app=handle_streamable_http),
+        ],
+        lifespan=lifespan,
+    )
+
+    import uvicorn
+
+    uvicorn.run(starlette_app, host="0.0.0.0", port=port)
+
+    return 0</doc></tutorials><langchain mcp adapters><doc title="Callbacks" desc="docs page.">"""Types for callbacks."""
+
+from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
+
+from mcp.client.session import LoggingFnT as MCPLoggingFnT
+from mcp.shared.session import ProgressFnT as MCPProgressFnT
+from mcp.types import (
+    LoggingMessageNotificationParams as MCPLoggingMessageNotificationParams,
+)
+
+# Type aliases to avoid direct MCP type dependencies
+LoggingFnT = MCPLoggingFnT
+ProgressFnT = MCPProgressFnT
+LoggingMessageNotificationParams = MCPLoggingMessageNotificationParams
+
+
+@dataclass
+class CallbackContext:
+    """LangChain MCP client callback context."""
+
+    server_name: str
+    tool_name: str | None = None
+
+
+@runtime_checkable
+class LoggingMessageCallback(Protocol):
+    """Light wrapper around the mcp.client.session.LoggingFnT.
+
+    Injects callback context as the last argument.
+    """
+
+    async def __call__(
+        self,
+        params: LoggingMessageNotificationParams,
+        context: CallbackContext,
+    ) -> None:
+        """Execute callback on logging message notification."""
+        ...
+
+
+@runtime_checkable
+class ProgressCallback(Protocol):
+    """Light wrapper around the mcp.shared.session.ProgressFnT.
+
+    Injects callback context as the last argument.
+    """
+
+    async def __call__(
+        self,
+        progress: float,
+        total: float | None,
+        message: str | None,
+        context: CallbackContext,
+    ) -> None:
+        """Execute callback on progress notification."""
+        ...
+
+
+@dataclass
+class _MCPCallbacks:
+    """Callbacks compatible with the MCP SDK. For internal use only."""
+
+    logging_callback: LoggingFnT | None = None
+    progress_callback: ProgressFnT | None = None
+
+
+@dataclass
+class Callbacks:
+    """Callbacks for the LangChain MCP client."""
+
+    on_logging_message: LoggingMessageCallback | None = None
+    on_progress: ProgressCallback | None = None
+
+    def to_mcp_format(self, *, context: CallbackContext) -> _MCPCallbacks:
+        """Convert the LangChain MCP client callbacks to MCP SDK callbacks.
+
+        Injects the LangChain CallbackContext as the last argument.
+        """
+        if (on_logging_message := self.on_logging_message) is not None:
+
+            async def mcp_logging_callback(
+                params: LoggingMessageNotificationParams,
+            ) -> None:
+                await on_logging_message(params, context)
+        else:
+            mcp_logging_callback = None
+
+        if (on_progress := self.on_progress) is not None:
+
+            async def mcp_progress_callback(
+                progress: float, total: float | None, message: str | None
+            ) -> None:
+                await on_progress(progress, total, message, context)
+        else:
+            mcp_progress_callback = None
+
+        return _MCPCallbacks(
+            logging_callback=mcp_logging_callback,
+            progress_callback=mcp_progress_callback,
+        )</doc><doc title="Client" desc="docs page.">"""Client for connecting to multiple MCP servers and loading LangChain tools/resources.
+
+This module provides the `MultiServerMCPClient` class for managing connections to multiple
+MCP servers and loading tools, prompts, and resources from them.
+"""
+
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from types import TracebackType
+from typing import Any
+
+from langchain_core.documents.base import Blob
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.tools import BaseTool
+from mcp import ClientSession
+
+from langchain_mcp_adapters.callbacks import CallbackContext, Callbacks
+from langchain_mcp_adapters.interceptors import ToolCallInterceptor
+from langchain_mcp_adapters.prompts import load_mcp_prompt
+from langchain_mcp_adapters.resources import load_mcp_resources
+from langchain_mcp_adapters.sessions import (
+    Connection,
+    McpHttpClientFactory,
+    SSEConnection,
+    StdioConnection,
+    StreamableHttpConnection,
+    WebsocketConnection,
+    create_session,
+)
+from langchain_mcp_adapters.tools import load_mcp_tools
+
+ASYNC_CONTEXT_MANAGER_ERROR = (
+    "As of langchain-mcp-adapters 0.1.0, MultiServerMCPClient cannot be used as a "
+    "context manager (e.g., async with MultiServerMCPClient(...)). "
+    "Instead, you can do one of the following:\n"
+    "1. client = MultiServerMCPClient(...)\n"
+    "   tools = await client.get_tools()\n"
+    "2. client = MultiServerMCPClient(...)\n"
+    "   async with client.session(server_name) as session:\n"
+    "       tools = await load_mcp_tools(session)"
+)
+
+
+class MultiServerMCPClient:
+    """Client for connecting to multiple MCP servers.
+
+    Loads LangChain-compatible tools, prompts and resources from MCP servers.
+    """
+
+    def __init__(
+        self,
+        connections: dict[str, Connection] | None = None,
+        *,
+        callbacks: Callbacks | None = None,
+        tool_interceptors: list[ToolCallInterceptor] | None = None,
+    ) -> None:
+        """Initialize a `MultiServerMCPClient` with MCP servers connections.
+
+        Args:
+            connections: A `dict` mapping server names to connection configurations. If
+                `None`, no initial connections are established.
+            callbacks: Optional callbacks for handling notifications and events.
+            tool_interceptors: Optional list of tool call interceptors for modifying
+                requests and responses.
+
+        !!! example "Basic usage (starting a new session on each tool call)"
+
+            ```python
+            from langchain_mcp_adapters.client import MultiServerMCPClient
+
+            client = MultiServerMCPClient(
+                {
+                    "math": {
+                        "command": "python",
+                        # Make sure to update to the full absolute path to your
+                        # math_server.py file
+                        "args": ["/path/to/math_server.py"],
+                        "transport": "stdio",
+                    },
+                    "weather": {
+                        # Make sure you start your weather server on port 8000
+                        "url": "http://localhost:8000/mcp",
+                        "transport": "streamable_http",
+                    }
+                }
+            )
+            all_tools = await client.get_tools()
+            ```
+
+        !!! example "Explicitly starting a session"
+
+            ```python
+            from langchain_mcp_adapters.client import MultiServerMCPClient
+            from langchain_mcp_adapters.tools import load_mcp_tools
+
+            client = MultiServerMCPClient({...})
+            async with client.session("math") as session:
+                tools = await load_mcp_tools(session)
+            ```
+        """
+        self.connections: dict[str, Connection] = (
+            connections if connections is not None else {}
+        )
+        self.callbacks = callbacks or Callbacks()
+        self.tool_interceptors = tool_interceptors or []
+
+    @asynccontextmanager
+    async def session(
+        self,
+        server_name: str,
+        *,
+        auto_initialize: bool = True,
+    ) -> AsyncIterator[ClientSession]:
+        """Connect to an MCP server and initialize a session.
+
+        Args:
+            server_name: Name to identify this server connection
+            auto_initialize: Whether to automatically initialize the session
+
+        Raises:
+            ValueError: If the server name is not found in the connections
+
+        Yields:
+            An initialized `ClientSession`
+
+        """
+        if server_name not in self.connections:
+            msg = (
+                f"Couldn't find a server with name '{server_name}', "
+                f"expected one of '{list(self.connections.keys())}'"
+            )
+            raise ValueError(msg)
+
+        mcp_callbacks = self.callbacks.to_mcp_format(
+            context=CallbackContext(server_name=server_name)
+        )
+
+        async with create_session(
+            self.connections[server_name], mcp_callbacks=mcp_callbacks
+        ) as session:
+            if auto_initialize:
+                await session.initialize()
+            yield session
+
+    async def get_tools(self, *, server_name: str | None = None) -> list[BaseTool]:
+        """Get a list of all tools from all connected servers.
+
+        Args:
+            server_name: Optional name of the server to get tools from.
+                If `None`, all tools from all servers will be returned.
+
+        !!! note
+
+            A new session will be created for each tool call
+
+        Returns:
+            A list of LangChain [tools](https://docs.langchain.com/oss/python/langchain/tools)
+
+        """
+        if server_name is not None:
+            if server_name not in self.connections:
+                msg = (
+                    f"Couldn't find a server with name '{server_name}', "
+                    f"expected one of '{list(self.connections.keys())}'"
+                )
+                raise ValueError(msg)
+            return await load_mcp_tools(
+                None,
+                connection=self.connections[server_name],
+                callbacks=self.callbacks,
+                server_name=server_name,
+                tool_interceptors=self.tool_interceptors,
+            )
+
+        all_tools: list[BaseTool] = []
+        load_mcp_tool_tasks = []
+        for name, connection in self.connections.items():
+            load_mcp_tool_task = asyncio.create_task(
+                load_mcp_tools(
+                    None,
+                    connection=connection,
+                    callbacks=self.callbacks,
+                    server_name=name,
+                    tool_interceptors=self.tool_interceptors,
+                )
+            )
+            load_mcp_tool_tasks.append(load_mcp_tool_task)
+        tools_list = await asyncio.gather(*load_mcp_tool_tasks)
+        for tools in tools_list:
+            all_tools.extend(tools)
+        return all_tools
+
+    async def get_prompt(
+        self,
+        server_name: str,
+        prompt_name: str,
+        *,
+        arguments: dict[str, Any] | None = None,
+    ) -> list[HumanMessage | AIMessage]:
+        """Get a prompt from a given MCP server."""
+        async with self.session(server_name) as session:
+            return await load_mcp_prompt(session, prompt_name, arguments=arguments)
+
+    async def get_resources(
+        self,
+        server_name: str,
+        *,
+        uris: str | list[str] | None = None,
+    ) -> list[Blob]:
+        """Get resources from a given MCP server.
+
+        Args:
+            server_name: Name of the server to get resources from
+            uris: Optional resource URI or list of URIs to load. If not provided,
+                all resources will be loaded.
+
+        Returns:
+            A list of LangChain [Blob][langchain_core.documents.base.Blob] objects.
+
+        """
+        async with self.session(server_name) as session:
+            return await load_mcp_resources(session, uris=uris)
+
+    async def __aenter__(self) -> "MultiServerMCPClient":
+        """Async context manager entry point.
+
+        Raises:
+            NotImplementedError: Context manager support has been removed.
+        """
+        raise NotImplementedError(ASYNC_CONTEXT_MANAGER_ERROR)
+
+    def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        """Async context manager exit point.
+
+        Args:
+            exc_type: Exception type if an exception occurred.
+            exc_val: Exception value if an exception occurred.
+            exc_tb: Exception traceback if an exception occurred.
+
+        Raises:
+            NotImplementedError: Context manager support has been removed.
+        """
+        raise NotImplementedError(ASYNC_CONTEXT_MANAGER_ERROR)
+
+
+__all__ = [
+    "Callbacks",
+    "McpHttpClientFactory",
+    "MultiServerMCPClient",
+    "SSEConnection",
+    "StdioConnection",
+    "StreamableHttpConnection",
+    "WebsocketConnection",
+]</doc><doc title="Init" desc="docs page.">"""LangChain MCP Adapters - Connect MCP servers with LangChain applications.
+
+This package provides adapters to connect MCP (Model Context Protocol) servers
+with LangChain applications, converting MCP tools, prompts, and resources into
+LangChain-compatible formats.
+"""</doc><doc title="Interceptors" desc="docs page.">"""Interceptor interfaces and types for MCP client tool call lifecycle management.
+
+This module provides an interceptor interface for wrapping and controlling
+MCP tool call execution with a handler callback pattern.
+
+In the future, we might add more interceptors for other parts of the
+request / result lifecycle, for example to support elicitation.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+
+from mcp.types import CallToolResult
+from typing_extensions import NotRequired, TypedDict, Unpack
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+
+MCPToolCallResult = CallToolResult
+
+
+class _MCPToolCallRequestOverrides(TypedDict, total=False):
+    """Possible overrides for MCPToolCallRequest.override() method.
+
+    Only includes modifiable request fields, not context fields like
+    server_name and runtime which are read-only.
+    """
+
+    name: NotRequired[str]
+    args: NotRequired[dict[str, Any]]
+    headers: NotRequired[dict[str, Any] | None]
+
+
+@dataclass
+class MCPToolCallRequest:
+    """Tool execution request passed to MCP tool call interceptors.
+
+    This tool call request follows a similar pattern to LangChain's
+    ToolCallRequest (flat namespace) rather than separating the call data
+    and context into nested objects.
+
+    Modifiable fields (override these to change behavior):
+        name: Tool name to invoke.
+        args: Tool arguments as key-value pairs.
+        headers: HTTP headers for applicable transports (SSE, HTTP).
+
+    Context fields (read-only, use for routing/logging):
+        server_name: Name of the MCP server handling the tool.
+        runtime: LangGraph runtime context (optional, None if outside graph).
+    """
+
+    name: str
+    args: dict[str, Any]
+    server_name: str  # Context: MCP server name
+    headers: dict[str, Any] | None = None  # Modifiable: HTTP headers
+    runtime: object | None = None  # Context: LangGraph runtime (if any)
+
+    def override(
+        self, **overrides: Unpack[_MCPToolCallRequestOverrides]
+    ) -> MCPToolCallRequest:
+        """Replace the request with a new request with the given overrides.
+
+        Returns a new `MCPToolCallRequest` instance with the specified
+        attributes replaced. This follows an immutable pattern, leaving the
+        original request unchanged.
+
+        Args:
+            **overrides: Keyword arguments for attributes to override.
+                Supported keys:
+                - name: Tool name
+                - args: Tool arguments
+                - headers: HTTP headers
+
+        Returns:
+            New MCPToolCallRequest instance with specified overrides
+            applied.
+
+        Note:
+            Context fields (server_name, runtime) cannot be overridden as
+            they are read-only.
+
+        Examples:
+            ```python
+            # Modify tool arguments
+            new_request = request.override(args={"value": 10})
+
+            # Change tool name
+            new_request = request.override(name="different_tool")
+            ```
+        """
+        return replace(self, **overrides)
+
+
+@runtime_checkable
+class ToolCallInterceptor(Protocol):
+    """Protocol for tool call interceptors using handler callback pattern.
+
+    Interceptors wrap tool execution to enable request/response modification,
+    retry logic, caching, rate limiting, and other cross-cutting concerns.
+    Multiple interceptors compose in "onion" pattern (first is outermost).
+
+    The handler can be called multiple times (retry), skipped (caching/short-circuit),
+    or wrapped with error handling. Each handler call is independent.
+
+    Similar to LangChain's middleware pattern but adapted for MCP remote tools.
+    """
+
+    async def __call__(
+        self,
+        request: MCPToolCallRequest,
+        handler: Callable[[MCPToolCallRequest], Awaitable[MCPToolCallResult]],
+    ) -> MCPToolCallResult:
+        """Intercept tool execution with control over handler invocation.
+
+        Args:
+            request: Tool call request containing name, args, headers, and context
+                (server_name, runtime). Access context fields like request.server_name.
+            handler: Async callable executing the tool. Can be called multiple
+                times, skipped, or wrapped for error handling.
+
+        Returns:
+            Final MCPToolCallResult from tool execution or interceptor logic.
+        """
+        ...</doc><doc title="Prompts" desc="docs page.">"""Prompts adapter for converting MCP prompts to LangChain [messages](https://docs.langchain.com/oss/python/langchain/messages).
+
+This module provides functionality to convert MCP prompt messages into LangChain
+message objects, handling both user and assistant message types.
+"""
+
+from typing import Any
+
+from langchain_core.messages import AIMessage, HumanMessage
+from mcp import ClientSession
+from mcp.types import PromptMessage
+
+
+def convert_mcp_prompt_message_to_langchain_message(
+    message: PromptMessage,
+) -> HumanMessage | AIMessage:
+    """Convert an MCP prompt message to a LangChain message.
+
+    Args:
+        message: MCP prompt message to convert
+
+    Returns:
+        A LangChain message
+
+    """
+    if message.content.type == "text":
+        if message.role == "user":
+            return HumanMessage(content=message.content.text)
+        if message.role == "assistant":
+            return AIMessage(content=message.content.text)
+        msg = f"Unsupported prompt message role: {message.role}"
+        raise ValueError(msg)
+
+    msg = f"Unsupported prompt message content type: {message.content.type}"
+    raise ValueError(msg)
+
+
+async def load_mcp_prompt(
+    session: ClientSession,
+    name: str,
+    *,
+    arguments: dict[str, Any] | None = None,
+) -> list[HumanMessage | AIMessage]:
+    """Load MCP prompt and convert to LangChain [messages](https://docs.langchain.com/oss/python/langchain/messages).
+
+    Args:
+        session: The MCP client session.
+        name: Name of the prompt to load.
+        arguments: Optional arguments to pass to the prompt.
+
+    Returns:
+        A list of LangChain [messages](https://docs.langchain.com/oss/python/langchain/messages)
+            converted from the MCP prompt.
+    """
+    response = await session.get_prompt(name, arguments)
+    return [
+        convert_mcp_prompt_message_to_langchain_message(message)
+        for message in response.messages
+    ]</doc><doc title="Resources" desc="docs page.">"""Resources adapter for converting MCP resources to LangChain [Blob objects][langchain_core.documents.base.Blob].
+
+This module provides functionality to convert MCP resources into LangChain Blob
+objects, handling both text and binary resource content types.
+"""  # noqa: E501
+
+import base64
+
+from langchain_core.documents.base import Blob
+from mcp import ClientSession
+from mcp.types import BlobResourceContents, ResourceContents, TextResourceContents
+
+
+def convert_mcp_resource_to_langchain_blob(
+    resource_uri: str, contents: ResourceContents
+) -> Blob:
+    """Convert an MCP resource content to a LangChain Blob.
+
+    Args:
+        resource_uri: URI of the resource
+        contents: The resource contents
+
+    Returns:
+        A LangChain Blob
+
+    """
+    if isinstance(contents, TextResourceContents):
+        data = contents.text
+    elif isinstance(contents, BlobResourceContents):
+        data = base64.b64decode(contents.blob)
+    else:
+        msg = f"Unsupported content type for URI {resource_uri}"
+        raise TypeError(msg)
+
+    return Blob.from_data(
+        data=data, mime_type=contents.mimeType, metadata={"uri": resource_uri}
+    )
+
+
+async def get_mcp_resource(session: ClientSession, uri: str) -> list[Blob]:
+    """Fetch a single MCP resource and convert it to LangChain [Blob objects][langchain_core.documents.base.Blob].
+
+    Args:
+        session: MCP client session.
+        uri: URI of the resource to fetch.
+
+    Returns:
+        A list of LangChain [Blob][langchain_core.documents.base.Blob] objects.
+    """  # noqa: E501
+    contents_result = await session.read_resource(uri)
+    if not contents_result.contents or len(contents_result.contents) == 0:
+        return []
+
+    return [
+        convert_mcp_resource_to_langchain_blob(uri, content)
+        for content in contents_result.contents
+    ]
+
+
+async def load_mcp_resources(
+    session: ClientSession,
+    *,
+    uris: str | list[str] | None = None,
+) -> list[Blob]:
+    """Load MCP resources and convert them to LangChain [Blob objects][langchain_core.documents.base.Blob].
+
+    Args:
+        session: MCP client session.
+        uris: List of URIs to load. If `None`, all resources will be loaded.
+
+            !!! note
+
+                Dynamic resources will NOT be loaded when `None` is specified,
+                as they require parameters and are ignored by the MCP SDK's
+                `session.list_resources()` method.
+
+    Returns:
+        A list of LangChain [Blob][langchain_core.documents.base.Blob] objects.
+
+    Raises:
+        RuntimeError: If an error occurs while fetching a resource.
+    """  # noqa: E501
+    blobs = []
+
+    if uris is None:
+        resources_list = await session.list_resources()
+        uri_list = [r.uri for r in resources_list.resources]
+    elif isinstance(uris, str):
+        uri_list = [uris]
+    else:
+        uri_list = uris
+
+    current_uri = None
+    try:
+        for uri in uri_list:
+            current_uri = uri
+            resource_blobs = await get_mcp_resource(session, uri)
+            blobs.extend(resource_blobs)
+    except Exception as e:
+        msg = f"Error fetching resource {current_uri}"
+        raise RuntimeError(msg) from e
+
+    return blobs</doc><doc title="Sessions" desc="docs page.">"""Session management for different MCP transport types.
+
+This module provides connection configurations and session management for various
+MCP transport types including stdio, SSE, WebSocket, and streamable HTTP.
+"""
+
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+from datetime import timedelta
+from typing import TYPE_CHECKING, Any, Literal, Protocol
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.sse import sse_client
+from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamablehttp_client
+from typing_extensions import NotRequired, TypedDict
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from pathlib import Path
+
+    import httpx
+
+    from langchain_mcp_adapters.callbacks import _MCPCallbacks
+
+EncodingErrorHandler = Literal["strict", "ignore", "replace"]
+
+DEFAULT_ENCODING = "utf-8"
+DEFAULT_ENCODING_ERROR_HANDLER: EncodingErrorHandler = "strict"
+
+DEFAULT_HTTP_TIMEOUT = 5
+DEFAULT_SSE_READ_TIMEOUT = 60 * 5
+
+DEFAULT_STREAMABLE_HTTP_TIMEOUT = timedelta(seconds=30)
+DEFAULT_STREAMABLE_HTTP_SSE_READ_TIMEOUT = timedelta(seconds=60 * 5)
+
+
+class McpHttpClientFactory(Protocol):
+    """Protocol for creating httpx.AsyncClient instances for MCP connections."""
+
+    def __call__(
+        self,
+        headers: dict[str, str] | None = None,
+        timeout: httpx.Timeout | None = None,
+        auth: httpx.Auth | None = None,
+    ) -> httpx.AsyncClient:
+        """Create an httpx.AsyncClient instance.
+
+        Args:
+            headers: HTTP headers to include in requests.
+            timeout: Request timeout configuration.
+            auth: Authentication configuration.
+
+        Returns:
+            Configured httpx.AsyncClient instance.
+        """
+        ...
+
+
+class StdioConnection(TypedDict):
+    """Configuration for stdio transport connections to MCP servers."""
+
+    transport: Literal["stdio"]
+
+    command: str
+    """The executable to run to start the server."""
+
+    args: list[str]
+    """Command line arguments to pass to the executable."""
+
+    env: NotRequired[dict[str, str] | None]
+    """The environment to use when spawning the process.
+
+    If not specified or set to None, a subset of the default environment
+    variables from the current process will be used.
+
+    Please refer to the MCP SDK documentation for details on which
+    environment variables are included by default. The behavior
+    varies by operating system.
+
+    https://github.com/modelcontextprotocol/python-sdk/blob/c47c767ff437ee88a19e6b9001e2472cb6f7d5ed/src/mcp/client/stdio/__init__.py#L51
+    """
+
+    cwd: NotRequired[str | Path | None]
+    """The working directory to use when spawning the process."""
+
+    encoding: NotRequired[str]
+    """The text encoding used when sending/receiving messages to the server.
+
+    Default is 'utf-8'.
+    """
+
+    encoding_error_handler: NotRequired[EncodingErrorHandler]
+    """
+    The text encoding error handler.
+
+    See https://docs.python.org/3/library/codecs.html#codec-base-classes for
+    explanations of possible values.
+
+    Default is 'strict', which raises an error on encoding/decoding errors.
+    """
+
+    session_kwargs: NotRequired[dict[str, Any] | None]
+    """Additional keyword arguments to pass to the ClientSession."""
+
+
+class SSEConnection(TypedDict):
+    """Configuration for Server-Sent Events (SSE) transport connections to MCP."""
+
+    transport: Literal["sse"]
+
+    url: str
+    """The URL of the SSE endpoint to connect to."""
+
+    headers: NotRequired[dict[str, Any] | None]
+    """HTTP headers to send to the SSE endpoint."""
+
+    timeout: NotRequired[float]
+    """HTTP timeout.
+
+    Default is 5 seconds. If the server takes longer to respond,
+    you can increase this value.
+    """
+
+    sse_read_timeout: NotRequired[float]
+    """SSE read timeout.
+
+    Default is 300 seconds (5 minutes). This is how long the client will
+    wait for a new event before disconnecting.
+    """
+
+    session_kwargs: NotRequired[dict[str, Any] | None]
+    """Additional keyword arguments to pass to the ClientSession."""
+
+    httpx_client_factory: NotRequired[McpHttpClientFactory | None]
+    """Custom factory for httpx.AsyncClient (optional)."""
+
+    auth: NotRequired[httpx.Auth]
+    """Optional authentication for the HTTP client."""
+
+
+class StreamableHttpConnection(TypedDict):
+    """Connection configuration for Streamable HTTP transport."""
+
+    transport: Literal["streamable_http"]
+
+    url: str
+    """The URL of the endpoint to connect to."""
+
+    headers: NotRequired[dict[str, Any] | None]
+    """HTTP headers to send to the endpoint."""
+
+    timeout: NotRequired[timedelta]
+    """HTTP timeout."""
+
+    sse_read_timeout: NotRequired[timedelta]
+    """How long (in seconds) the client will wait for a new event before disconnecting.
+    All other HTTP operations are controlled by `timeout`."""
+
+    terminate_on_close: NotRequired[bool]
+    """Whether to terminate the session on close."""
+
+    session_kwargs: NotRequired[dict[str, Any] | None]
+    """Additional keyword arguments to pass to the ClientSession."""
+
+    httpx_client_factory: NotRequired[McpHttpClientFactory | None]
+    """Custom factory for httpx.AsyncClient (optional)."""
+
+    auth: NotRequired[httpx.Auth]
+    """Optional authentication for the HTTP client."""
+
+
+class WebsocketConnection(TypedDict):
+    """Configuration for WebSocket transport connections to MCP servers."""
+
+    transport: Literal["websocket"]
+
+    url: str
+    """The URL of the Websocket endpoint to connect to."""
+
+    session_kwargs: NotRequired[dict[str, Any] | None]
+    """Additional keyword arguments to pass to the ClientSession"""
+
+
+Connection = (
+    StdioConnection | SSEConnection | StreamableHttpConnection | WebsocketConnection
+)
+
+
+@asynccontextmanager
+async def _create_stdio_session(
+    *,
+    command: str,
+    args: list[str],
+    env: dict[str, str] | None = None,
+    cwd: str | Path | None = None,
+    encoding: str = DEFAULT_ENCODING,
+    encoding_error_handler: Literal[
+        "strict", "ignore", "replace"
+    ] = DEFAULT_ENCODING_ERROR_HANDLER,
+    session_kwargs: dict[str, Any] | None = None,
+) -> AsyncIterator[ClientSession]:
+    """Create a new session to an MCP server using stdio.
+
+    Args:
+        command: Command to execute.
+        args: Arguments for the command.
+        env: Environment variables for the command.
+            If not specified, inherits a subset of the current environment.
+            The details are implemented in the MCP sdk.
+        cwd: Working directory for the command.
+        encoding: Character encoding.
+        encoding_error_handler: How to handle encoding errors.
+        session_kwargs: Additional keyword arguments to pass to the ClientSession.
+
+    Yields:
+        An initialized ClientSession.
+    """
+    server_params = StdioServerParameters(
+        command=command,
+        args=args,
+        env=env,
+        cwd=cwd,
+        encoding=encoding,
+        encoding_error_handler=encoding_error_handler,
+    )
+
+    # Create and store the connection
+    async with (
+        stdio_client(server_params) as (read, write),
+        ClientSession(read, write, **(session_kwargs or {})) as session,
+    ):
+        yield session
+
+
+@asynccontextmanager
+async def _create_sse_session(
+    *,
+    url: str,
+    headers: dict[str, Any] | None = None,
+    timeout: float = DEFAULT_HTTP_TIMEOUT,
+    sse_read_timeout: float = DEFAULT_SSE_READ_TIMEOUT,
+    session_kwargs: dict[str, Any] | None = None,
+    httpx_client_factory: McpHttpClientFactory | None = None,
+    auth: httpx.Auth | None = None,
+) -> AsyncIterator[ClientSession]:
+    """Create a new session to an MCP server using SSE.
+
+    Args:
+        url: URL of the SSE server.
+        headers: HTTP headers to send to the SSE endpoint.
+        timeout: HTTP timeout.
+        sse_read_timeout: SSE read timeout.
+        session_kwargs: Additional keyword arguments to pass to the ClientSession.
+        httpx_client_factory: Custom factory for httpx.AsyncClient (optional).
+        auth: Authentication for the HTTP client.
+
+    Yields:
+        An initialized ClientSession.
+    """
+    # Create and store the connection
+    kwargs = {}
+    if httpx_client_factory is not None:
+        kwargs["httpx_client_factory"] = httpx_client_factory
+
+    async with (
+        sse_client(url, headers, timeout, sse_read_timeout, auth=auth, **kwargs) as (
+            read,
+            write,
+        ),
+        ClientSession(read, write, **(session_kwargs or {})) as session,
+    ):
+        yield session
+
+
+@asynccontextmanager
+async def _create_streamable_http_session(
+    *,
+    url: str,
+    headers: dict[str, Any] | None = None,
+    timeout: timedelta = DEFAULT_STREAMABLE_HTTP_TIMEOUT,
+    sse_read_timeout: timedelta = DEFAULT_STREAMABLE_HTTP_SSE_READ_TIMEOUT,
+    terminate_on_close: bool = True,
+    session_kwargs: dict[str, Any] | None = None,
+    httpx_client_factory: McpHttpClientFactory | None = None,
+    auth: httpx.Auth | None = None,
+) -> AsyncIterator[ClientSession]:
+    """Create a new session to an MCP server using Streamable HTTP.
+
+    Args:
+        url: URL of the endpoint to connect to.
+        headers: HTTP headers to send to the endpoint.
+        timeout: HTTP timeout.
+        sse_read_timeout: How long the client will wait for a new event before
+            disconnecting.
+        terminate_on_close: Whether to terminate the session on close.
+        session_kwargs: Additional keyword arguments to pass to the ClientSession.
+        httpx_client_factory: Custom factory for httpx.AsyncClient (optional).
+        auth: Authentication for the HTTP client.
+
+    Yields:
+        An initialized ClientSession.
+    """
+    # Create and store the connection
+    kwargs = {}
+    if httpx_client_factory is not None:
+        kwargs["httpx_client_factory"] = httpx_client_factory
+
+    async with (
+        streamablehttp_client(
+            url,
+            headers,
+            timeout,
+            sse_read_timeout,
+            terminate_on_close,
+            auth=auth,
+            **kwargs,
+        ) as (read, write, _),
+        ClientSession(read, write, **(session_kwargs or {})) as session,
+    ):
+        yield session
+
+
+@asynccontextmanager
+async def _create_websocket_session(
+    *,
+    url: str,
+    session_kwargs: dict[str, Any] | None = None,
+) -> AsyncIterator[ClientSession]:
+    """Create a new session to an MCP server using Websockets.
+
+    Args:
+        url: URL of the Websocket endpoint.
+        session_kwargs: Additional keyword arguments to pass to the ClientSession.
+
+    Yields:
+        An initialized ClientSession.
+
+    Raises:
+        ImportError: If websockets package is not installed.
+    """
+    try:
+        from mcp.client.websocket import websocket_client  # noqa: PLC0415
+    except ImportError:
+        msg = (
+            "Could not import websocket_client. "
+            "To use Websocket connections, please install the required dependency: "
+            "'pip install mcp[ws]' or 'pip install websockets'"
+        )
+        raise ImportError(msg) from None
+
+    async with (
+        websocket_client(url) as (read, write),
+        ClientSession(read, write, **(session_kwargs or {})) as session,
+    ):
+        yield session
+
+
+@asynccontextmanager
+async def create_session(
+    connection: Connection, *, mcp_callbacks: _MCPCallbacks | None = None
+) -> AsyncIterator[ClientSession]:
+    """Create a new session to an MCP server.
+
+    Args:
+        connection: Connection config to use to connect to the server
+        mcp_callbacks: mcp sdk compatible callbacks to use for the ClientSession
+
+    Raises:
+        ValueError: If transport is not recognized
+        ValueError: If required parameters for the specified transport are missing
+
+    Yields:
+        A ClientSession
+    """
+    if "transport" not in connection:
+        msg = (
+            "Configuration error: Missing 'transport' key in server configuration. "
+            "Each server must include 'transport' with one of: "
+            "'stdio', 'sse', 'websocket', 'streamable_http'. "
+            "Please refer to the langchain-mcp-adapters documentation for more details."
+        )
+        raise ValueError(msg)
+
+    transport = connection["transport"]
+    params = {k: v for k, v in connection.items() if k != "transport"}
+
+    if mcp_callbacks is not None:
+        params["session_kwargs"] = params.get("session_kwargs", {})
+        # right now the only callback supported on the ClientSession
+        # is the logging callback, but long term we'll also want to
+        # support sampling, elicitation, list roots, etc.
+        if mcp_callbacks.logging_callback is not None:
+            params["session_kwargs"]["logging_callback"] = (
+                mcp_callbacks.logging_callback
+            )
+
+    if transport == "sse":
+        if "url" not in params:
+            msg = "'url' parameter is required for SSE connection"
+            raise ValueError(msg)
+        async with _create_sse_session(**params) as session:
+            yield session
+    elif transport == "streamable_http":
+        if "url" not in params:
+            msg = "'url' parameter is required for Streamable HTTP connection"
+            raise ValueError(msg)
+        async with _create_streamable_http_session(**params) as session:
+            yield session
+    elif transport == "stdio":
+        if "command" not in params:
+            msg = "'command' parameter is required for stdio connection"
+            raise ValueError(msg)
+        if "args" not in params:
+            msg = "'args' parameter is required for stdio connection"
+            raise ValueError(msg)
+        async with _create_stdio_session(**params) as session:
+            yield session
+    elif transport == "websocket":
+        if "url" not in params:
+            msg = "'url' parameter is required for Websocket connection"
+            raise ValueError(msg)
+        async with _create_websocket_session(**params) as session:
+            yield session
+    else:
+        msg = (
+            f"Unsupported transport: {transport}. "
+            f"Must be one of: 'stdio', 'sse', 'websocket', 'streamable_http'"
+        )
+        raise ValueError(msg)</doc><doc title="Tools" desc="docs page.">"""Tools adapter for converting MCP tools to LangChain tools.
+
+This module provides functionality to convert MCP tools into LangChain-compatible
+tools, handle tool execution, and manage tool conversion between the two formats.
+"""
+
+from collections.abc import Awaitable, Callable
+from typing import Any, get_args
+
+from langchain_core.tools import (
+    BaseTool,
+    InjectedToolArg,
+    StructuredTool,
+    ToolException,
+)
+from langchain_core.tools.base import get_all_basemodel_annotations
+from mcp import ClientSession
+from mcp.server.fastmcp.tools import Tool as FastMCPTool
+from mcp.server.fastmcp.utilities.func_metadata import ArgModelBase, FuncMetadata
+from mcp.types import (
+    AudioContent,
+    EmbeddedResource,
+    ImageContent,
+    ResourceLink,
+    TextContent,
+)
+from mcp.types import Tool as MCPTool
+from pydantic import BaseModel, create_model
+
+from langchain_mcp_adapters.callbacks import CallbackContext, Callbacks, _MCPCallbacks
+from langchain_mcp_adapters.interceptors import (
+    MCPToolCallRequest,
+    MCPToolCallResult,
+    ToolCallInterceptor,
+)
+from langchain_mcp_adapters.sessions import Connection, create_session
+
+try:
+    from langgraph.runtime import get_runtime
+except ImportError:
+
+    def get_runtime() -> None:
+        """no-op runtime getter."""
+        return
+
+
+NonTextContent = ImageContent | AudioContent | ResourceLink | EmbeddedResource
+MAX_ITERATIONS = 1000
+
+
+def _convert_call_tool_result(
+    call_tool_result: MCPToolCallResult,
+) -> tuple[str | list[str], list[NonTextContent] | None]:
+    """Convert MCP MCPToolCallResult to LangChain tool result format.
+
+    Args:
+        call_tool_result: The result from calling an MCP tool.
+
+    Returns:
+        A tuple containing the text content and any non-text content.
+
+    Raises:
+        ToolException: If the tool call resulted in an error.
+    """
+    text_contents: list[TextContent] = []
+    non_text_contents = []
+    for content in call_tool_result.content:
+        if isinstance(content, TextContent):
+            text_contents.append(content)
+        else:
+            non_text_contents.append(content)
+
+    tool_content: str | list[str] = [content.text for content in text_contents]
+    if not text_contents:
+        tool_content = ""
+    elif len(text_contents) == 1:
+        tool_content = tool_content[0]
+
+    if call_tool_result.isError:
+        raise ToolException(tool_content)
+
+    return tool_content, non_text_contents or None
+
+
+def _build_interceptor_chain(
+    base_handler: Callable[[MCPToolCallRequest], Awaitable[MCPToolCallResult]],
+    tool_interceptors: list[ToolCallInterceptor] | None,
+) -> Callable[[MCPToolCallRequest], Awaitable[MCPToolCallResult]]:
+    """Build composed handler chain with interceptors in onion pattern.
+
+    Args:
+        base_handler: Innermost handler executing the actual tool call.
+        tool_interceptors: Optional list of interceptors to wrap the handler.
+
+    Returns:
+        Composed handler with all interceptors applied. First interceptor
+        in list becomes outermost layer.
+    """
+    handler = base_handler
+
+    if tool_interceptors:
+        for interceptor in reversed(tool_interceptors):
+            current_handler = handler
+
+            async def wrapped_handler(
+                req: MCPToolCallRequest,
+                _interceptor: ToolCallInterceptor = interceptor,
+                _handler: Callable[
+                    [MCPToolCallRequest], Awaitable[MCPToolCallResult]
+                ] = current_handler,
+            ) -> MCPToolCallResult:
+                return await _interceptor(req, _handler)
+
+            handler = wrapped_handler
+
+    return handler
+
+
+async def _list_all_tools(session: ClientSession) -> list[MCPTool]:
+    """List all available tools from an MCP session with pagination support.
+
+    Args:
+        session: The MCP client session.
+
+    Returns:
+        A list of all available MCP tools.
+
+    Raises:
+        RuntimeError: If maximum iterations exceeded while listing tools.
+    """
+    current_cursor: str | None = None
+    all_tools: list[MCPTool] = []
+
+    iterations = 0
+
+    while True:
+        iterations += 1
+        if iterations > MAX_ITERATIONS:
+            msg = "Reached max of 1000 iterations while listing tools."
+            raise RuntimeError(msg)
+
+        list_tools_page_result = await session.list_tools(cursor=current_cursor)
+
+        if list_tools_page_result.tools:
+            all_tools.extend(list_tools_page_result.tools)
+
+        # Pagination spec: https://modelcontextprotocol.io/specification/2025-06-18/server/utilities/pagination
+        # compatible with None or ""
+        if not list_tools_page_result.nextCursor:
+            break
+
+        current_cursor = list_tools_page_result.nextCursor
+    return all_tools
+
+
+def convert_mcp_tool_to_langchain_tool(
+    session: ClientSession | None,
+    tool: MCPTool,
+    *,
+    connection: Connection | None = None,
+    callbacks: Callbacks | None = None,
+    tool_interceptors: list[ToolCallInterceptor] | None = None,
+    server_name: str | None = None,
+) -> BaseTool:
+    """Convert an MCP tool to a LangChain tool.
+
+    NOTE: this tool can be executed only in a context of an active MCP client session.
+
+    Args:
+        session: MCP client session
+        tool: MCP tool to convert
+        connection: Optional connection config to use to create a new session
+                    if a `session` is not provided
+        callbacks: Optional callbacks for handling notifications and events
+        tool_interceptors: Optional list of interceptors for tool call processing
+        server_name: Name of the server this tool belongs to
+
+    Returns:
+        a LangChain tool
+
+    """
+    if session is None and connection is None:
+        msg = "Either a session or a connection config must be provided"
+        raise ValueError(msg)
+
+    async def call_tool(
+        **arguments: dict[str, Any],
+    ) -> tuple[str | list[str], list[NonTextContent] | None]:
+        """Execute tool call with interceptor chain and return formatted result.
+
+        Args:
+            **arguments: Tool arguments as keyword args.
+
+        Returns:
+            Tuple of (text_content, non_text_content).
+        """
+        mcp_callbacks = (
+            callbacks.to_mcp_format(
+                context=CallbackContext(server_name=server_name, tool_name=tool.name)
+            )
+            if callbacks is not None
+            else _MCPCallbacks()
+        )
+
+        # try to get runtime if we're in a langgraph context
+        try:
+            runtime = get_runtime()
+        except Exception:  # noqa: BLE001
+            runtime = None
+
+        # Create the innermost handler that actually executes the tool call
+        async def execute_tool(request: MCPToolCallRequest) -> MCPToolCallResult:
+            """Execute the actual MCP tool call with optional session creation.
+
+            Args:
+                request: Tool call request with name, args, headers, and context.
+
+            Returns:
+                MCPToolCallResult from MCP SDK.
+
+            Raises:
+                ValueError: If neither session nor connection provided.
+                RuntimeError: If tool call returns None.
+            """
+            tool_name = request.name
+            tool_args = request.args
+            effective_connection = connection
+
+            # If headers were modified, create a new connection with updated headers
+            modified_headers = request.headers
+            if modified_headers is not None and connection is not None:
+                # Create a new connection config with updated headers
+                updated_connection = dict(connection)
+                if connection["transport"] in ("sse", "streamable_http"):
+                    existing_headers = connection.get("headers", {})
+                    updated_connection["headers"] = {
+                        **existing_headers,
+                        **modified_headers,
+                    }
+                    effective_connection = updated_connection
+
+            captured_exception = None
+
+            if session is None:
+                # If a session is not provided, we will create one on the fly
+                if effective_connection is None:
+                    msg = "Either session or connection must be provided"
+                    raise ValueError(msg)
+
+                async with create_session(
+                    effective_connection, mcp_callbacks=mcp_callbacks
+                ) as tool_session:
+                    await tool_session.initialize()
+                    try:
+                        call_tool_result = await tool_session.call_tool(
+                            tool_name,
+                            tool_args,
+                            progress_callback=mcp_callbacks.progress_callback,
+                        )
+                    except Exception as e:  # noqa: BLE001
+                        # Capture exception to re-raise outside context manager
+                        captured_exception = e
+
+                # Re-raise the exception outside the context manager
+                # This is necessary because the context manager may suppress exceptions
+                # This change was introduced to work-around an issue in MCP SDK
+                # that may suppress exceptions when the client disconnects.
+                # If this is causing an issue, with your use case, please file an issue
+                # on the langchain-mcp-adapters GitHub repo.
+                if captured_exception is not None:
+                    raise captured_exception
+            else:
+                call_tool_result = await session.call_tool(
+                    tool_name,
+                    tool_args,
+                    progress_callback=mcp_callbacks.progress_callback,
+                )
+
+            return call_tool_result
+
+        # Build and execute the interceptor chain
+        handler = _build_interceptor_chain(execute_tool, tool_interceptors)
+        request = MCPToolCallRequest(
+            name=tool.name,
+            args=arguments,
+            server_name=server_name or "unknown",
+            headers=None,
+            runtime=runtime,
+        )
+        call_tool_result = await handler(request)
+
+        return _convert_call_tool_result(call_tool_result)
+
+    meta = getattr(tool, "meta", None)
+    base = tool.annotations.model_dump() if tool.annotations is not None else {}
+    meta = {"_meta": meta} if meta is not None else {}
+    metadata = {**base, **meta} or None
+
+    return StructuredTool(
+        name=tool.name,
+        description=tool.description or "",
+        args_schema=tool.inputSchema,
+        coroutine=call_tool,
+        response_format="content_and_artifact",
+        metadata=metadata,
+    )
+
+
+async def load_mcp_tools(
+    session: ClientSession | None,
+    *,
+    connection: Connection | None = None,
+    callbacks: Callbacks | None = None,
+    tool_interceptors: list[ToolCallInterceptor] | None = None,
+    server_name: str | None = None,
+) -> list[BaseTool]:
+    """Load all available MCP tools and convert them to LangChain [tools](https://docs.langchain.com/oss/python/langchain/tools).
+
+    Args:
+        session: The MCP client session. If `None`, connection must be provided.
+        connection: Connection config to create a new session if session is `None`.
+        callbacks: Optional `Callbacks` for handling notifications and events.
+        tool_interceptors: Optional list of interceptors for tool call processing.
+        server_name: Name of the server these tools belong to.
+
+    Returns:
+        List of LangChain [tools](https://docs.langchain.com/oss/python/langchain/tools).
+            Tool annotations are returned as part of the tool metadata object.
+
+    Raises:
+        ValueError: If neither session nor connection is provided.
+    """
+    if session is None and connection is None:
+        msg = "Either a session or a connection config must be provided"
+        raise ValueError(msg)
+
+    mcp_callbacks = (
+        callbacks.to_mcp_format(context=CallbackContext(server_name=server_name))
+        if callbacks is not None
+        else _MCPCallbacks()
+    )
+
+    if session is None:
+        # If a session is not provided, we will create one on the fly
+        if connection is None:
+            msg = "Either session or connection must be provided"
+            raise ValueError(msg)
+        async with create_session(
+            connection, mcp_callbacks=mcp_callbacks
+        ) as tool_session:
+            await tool_session.initialize()
+            tools = await _list_all_tools(tool_session)
+    else:
+        tools = await _list_all_tools(session)
+
+    return [
+        convert_mcp_tool_to_langchain_tool(
+            session,
+            tool,
+            connection=connection,
+            callbacks=callbacks,
+            tool_interceptors=tool_interceptors,
+            server_name=server_name,
+        )
+        for tool in tools
+    ]
+
+
+def _get_injected_args(tool: BaseTool) -> list[str]:
+    """Extract field names with InjectedToolArg annotation from tool schema.
+
+    Args:
+        tool: LangChain tool to inspect.
+
+    Returns:
+        List of field names marked as injected arguments.
+    """
+
+    def _is_injected_arg_type(type_: type) -> bool:
+        """Check if type annotation contains InjectedToolArg."""
+        return any(
+            isinstance(arg, InjectedToolArg)
+            or (isinstance(arg, type) and issubclass(arg, InjectedToolArg))
+            for arg in get_args(type_)[1:]
+        )
+
+    return [
+        field
+        for field, field_info in get_all_basemodel_annotations(tool.args_schema).items()
+        if _is_injected_arg_type(field_info)
+    ]
+
+
+def to_fastmcp(tool: BaseTool) -> FastMCPTool:
+    """Convert LangChain tool to FastMCP tool.
+
+    Args:
+        tool: LangChain tool to convert.
+
+    Returns:
+        FastMCP tool equivalent.
+
+    Raises:
+        TypeError: If args_schema is not BaseModel subclass.
+        NotImplementedError: If tool has injected arguments.
+    """
+    if not issubclass(tool.args_schema, BaseModel):
+        msg = (
+            "Tool args_schema must be a subclass of pydantic.BaseModel. "
+            "Tools with dict args schema are not supported."
+        )
+        raise TypeError(msg)
+
+    parameters = tool.tool_call_schema.model_json_schema()
+    field_definitions = {
+        field: (field_info.annotation, field_info)
+        for field, field_info in tool.tool_call_schema.model_fields.items()
+    }
+    arg_model = create_model(
+        f"{tool.name}Arguments", **field_definitions, __base__=ArgModelBase
+    )
+    fn_metadata = FuncMetadata(arg_model=arg_model)
+
+    # We'll use an Any type for the function return type.
+    # We're providing the parameters separately
+    async def fn(**arguments: dict[str, Any]) -> Any:  # noqa: ANN401
+        return await tool.ainvoke(arguments)
+
+    injected_args = _get_injected_args(tool)
+    if len(injected_args) > 0:
+        msg = "LangChain tools with injected arguments are not supported"
+        raise NotImplementedError(msg)
+
+    return FastMCPTool(
+        fn=fn,
+        name=tool.name,
+        description=tool.description,
+        parameters=parameters,
+        fn_metadata=fn_metadata,
+        is_async=True,
+    )</doc></langchain mcp adapters><tests><doc title="Conftest" desc="docs page.">import multiprocessing
+import socket
+import time
+from collections.abc import Generator
+
+import pytest
+import pytest_socket
+
+from tests.utils import run_server
+
+
+@pytest.fixture
+def websocket_server_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+    raise ValueError("Free port not found!")
+
+
+@pytest.fixture
+def websocket_server(websocket_server_port: int) -> Generator[None, None, None]:
+    proc = multiprocessing.Process(
+        target=run_server,
+        kwargs={"server_port": websocket_server_port},
+        daemon=True,
+    )
+    proc.start()
+
+    # Wait for server to be running
+    max_attempts = 20
+    attempt = 0
+
+    while attempt < max_attempts:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("127.0.0.1", websocket_server_port))
+                break
+        except ConnectionRefusedError:
+            time.sleep(0.1)
+            attempt += 1
+    else:
+        raise RuntimeError(f"Server failed to start after {max_attempts} attempts")
+
+    yield
+
+    # Signal the server to stop
+    proc.kill()
+    proc.join(timeout=2)
+    if proc.is_alive():
+        raise RuntimeError(
+            "Server process is still alive after attempting to terminate it"
+        )
+
+
+@pytest.fixture
+def socket_enabled():
+    """Temporarily enable socket connections for websocket tests."""
+    try:
+        pytest_socket.enable_socket()
+        previous_state = pytest_socket.socket_allow_hosts()
+        # Only allow connections to localhost
+        pytest_socket.socket_allow_hosts(
+            ["127.0.0.1", "localhost"], allow_unix_socket=True
+        )
+        yield
+    finally:
+        # Restore previous state
+        pytest_socket.socket_allow_hosts(previous_state)</doc><doc title="Init" desc="docs page."></doc><doc title="Test Callbacks" desc="docs page.">"""Tests for callback functionality."""
+
+import asyncio
+
+from mcp.server import FastMCP
+from mcp.server.fastmcp import Context
+from mcp.server.session import ServerSession
+from mcp.types import LoggingMessageNotificationParams
+
+from langchain_mcp_adapters.callbacks import (
+    CallbackContext,
+    Callbacks,
+)
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from tests.utils import run_streamable_http
+
+
+async def test_to_mcp_format_with_callbacks() -> None:
+    """Test converting to MCP format with callbacks."""
+    logging_calls = []
+    progress_calls = []
+
+    async def logging_callback(
+        params: LoggingMessageNotificationParams, context: CallbackContext
+    ):
+        logging_calls.append((params, context))
+
+    async def progress_callback(
+        progress: float,
+        total: float | None,
+        message: str | None,
+        context: CallbackContext,
+    ):
+        progress_calls.append((progress, total, message, context))
+
+    callbacks = Callbacks(
+        on_logging_message=logging_callback,
+        on_progress=progress_callback,
+    )
+    context = CallbackContext(server_name="test_server", tool_name="test_tool")
+
+    mcp_callbacks = callbacks.to_mcp_format(context=context)
+
+    assert mcp_callbacks.logging_callback is not None
+    assert mcp_callbacks.progress_callback is not None
+
+    # Test logging callback
+    params = LoggingMessageNotificationParams(
+        level="info", data={"message": "test log"}
+    )
+    await mcp_callbacks.logging_callback(params)
+    assert len(logging_calls) == 1
+    assert logging_calls[0][0] == params
+    assert logging_calls[0][1].server_name == "test_server"
+
+    # Test progress callback
+    await mcp_callbacks.progress_callback(0.75, 1.0, "Almost done...")
+    assert len(progress_calls) == 1
+    assert progress_calls[0] == (0.75, 1.0, "Almost done...", context)
+
+
+def _create_callback_server():
+    """Create a server with a tool for testing callbacks."""
+    server = FastMCP(port=8186)
+
+    @server.tool()
+    async def execute_task(task: str, ctx: Context[ServerSession, None]) -> str:
+        """Execute a task with progress and logging"""
+        await ctx.info(f"Starting task: {task}")
+        await ctx.report_progress(progress=0.0, total=1.0)
+        await asyncio.sleep(0.01)
+
+        await ctx.debug("Executing task...")
+        await ctx.report_progress(progress=0.5, total=1.0)
+        await asyncio.sleep(0.01)
+
+        await ctx.info(f"Completed task: {task}")
+        await ctx.report_progress(progress=1.0, total=1.0)
+        await asyncio.sleep(0.01)
+
+        return f"Executed: {task}"
+
+    return server
+
+
+async def test_callbacks_with_mcp_tool_execution(socket_enabled) -> None:
+    """Test callbacks integration during MCP tool execution."""
+    progress_calls = []
+    logging_calls = []
+
+    async def progress_callback(progress, total, message, context):
+        progress_calls.append((progress, message, context.tool_name))
+
+    async def logging_callback(params, context):
+        logging_calls.append((params.level, context.tool_name))
+
+    callbacks = Callbacks(
+        on_progress=progress_callback,
+        on_logging_message=logging_callback,
+    )
+
+    with run_streamable_http(_create_callback_server, 8186):
+        client = MultiServerMCPClient(
+            {
+                "callback_test": {
+                    "url": "http://localhost:8186/mcp",
+                    "transport": "streamable_http",
+                }
+            },
+            callbacks=callbacks,
+        )
+
+        tools = await client.get_tools(server_name="callback_test")
+        assert len(tools) == 1
+        tool = tools[0]
+        assert tool.name == "execute_task"
+
+        result = await tool.ainvoke(
+            {"args": {"task": "test"}, "id": "1", "type": "tool_call"}
+        )
+        assert "Executed: test" in result.content
+
+        # Verify both progress and logging callbacks were called
+        await asyncio.sleep(0.05)  # Give time for callbacks to complete
+        assert len(progress_calls) >= 3, (
+            f"Expected at least 3 progress calls, got {len(progress_calls)}"
+        )
+        assert len(logging_calls) >= 2, (
+            f"Expected at least 2 logging calls, got {len(logging_calls)}"
+        )
+
+        # Verify progress values
+        progress_values = [call[0] for call in progress_calls]
+        assert 0.0 in progress_values
+        assert 1.0 in progress_values
+
+        # Verify log levels
+        log_levels = [call[0] for call in logging_calls]
+        assert "info" in log_levels</doc><doc title="Test Client" desc="docs page.">import os
+from pathlib import Path
+
+from langchain_core.messages import AIMessage
+from langchain_core.tools import BaseTool
+
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import load_mcp_tools
+
+
+async def test_multi_server_mcp_client(
+    socket_enabled,
+    websocket_server,
+    websocket_server_port: int,
+):
+    """Test that MultiServerMCPClient can connect to multiple servers and load tools."""
+    # Get the absolute path to the server scripts
+    current_dir = Path(__file__).parent
+    math_server_path = os.path.join(current_dir, "servers/math_server.py")
+    weather_server_path = os.path.join(current_dir, "servers/weather_server.py")
+
+    client = MultiServerMCPClient(
+        {
+            "math": {
+                "command": "python3",
+                "args": [math_server_path],
+                "transport": "stdio",
+            },
+            "weather": {
+                "command": "python3",
+                "args": [weather_server_path],
+                "transport": "stdio",
+            },
+            "time": {
+                "url": f"ws://127.0.0.1:{websocket_server_port}/ws",
+                "transport": "websocket",
+            },
+        },
+    )
+    # Check that we have tools from both servers
+    all_tools = await client.get_tools()
+
+    # Should have 3 tools (add, multiply, get_weather)
+    assert len(all_tools) == 4
+
+    # Check that tools are BaseTool instances
+    for tool in all_tools:
+        assert isinstance(tool, BaseTool)
+
+    # Verify tool names
+    tool_names = {tool.name for tool in all_tools}
+    assert tool_names == {"add", "multiply", "get_weather", "get_time"}
+
+    # Check math server tools
+    math_tools = await client.get_tools(server_name="math")
+    assert len(math_tools) == 2
+    math_tool_names = {tool.name for tool in math_tools}
+    assert math_tool_names == {"add", "multiply"}
+
+    # Check weather server tools
+    weather_tools = await client.get_tools(server_name="weather")
+    assert len(weather_tools) == 1
+    assert weather_tools[0].name == "get_weather"
+
+    # Check time server tools
+    time_tools = await client.get_tools(server_name="time")
+    assert len(time_tools) == 1
+    assert time_tools[0].name == "get_time"
+
+    # Test that we can call a math tool
+    add_tool = next(tool for tool in all_tools if tool.name == "add")
+    result = await add_tool.ainvoke({"a": 2, "b": 3})
+    assert result == "5"
+
+    # Test that we can call a weather tool
+    weather_tool = next(tool for tool in all_tools if tool.name == "get_weather")
+    result = await weather_tool.ainvoke({"location": "London"})
+    assert result == "It's always sunny in London"
+
+    # Test the multiply tool
+    multiply_tool = next(tool for tool in all_tools if tool.name == "multiply")
+    result = await multiply_tool.ainvoke({"a": 4, "b": 5})
+    assert result == "20"
+
+    # Test that we can call a time tool
+    time_tool = next(tool for tool in all_tools if tool.name == "get_time")
+    result = await time_tool.ainvoke({"args": ""})
+    assert result == "5:20:00 PM EST"
+
+
+async def test_multi_server_connect_methods(
+    socket_enabled,
+    websocket_server,
+    websocket_server_port: int,
+):
+    """Test the different connect methods for MultiServerMCPClient."""
+    # Get the absolute path to the server scripts
+    current_dir = Path(__file__).parent
+    math_server_path = os.path.join(current_dir, "servers/math_server.py")
+
+    # Initialize client without initial connections
+    client = MultiServerMCPClient(
+        {
+            "math": {
+                "command": "python3",
+                "args": [math_server_path],
+                "transport": "stdio",
+            },
+            "time": {
+                "url": f"ws://127.0.0.1:{websocket_server_port}/ws",
+                "transport": "websocket",
+            },
+        },
+    )
+    tool_names = set()
+    async with client.session("math") as session:
+        tools = await load_mcp_tools(session)
+        assert len(tools) == 2
+        result = await tools[0].ainvoke({"a": 2, "b": 3})
+        assert result == "5"
+
+        for tool in tools:
+            tool_names.add(tool.name)
+
+    async with client.session("time") as session:
+        tools = await load_mcp_tools(session)
+        assert len(tools) == 1
+        result = await tools[0].ainvoke({"args": ""})
+        assert result == "5:20:00 PM EST"
+
+        for tool in tools:
+            tool_names.add(tool.name)
+
+    assert tool_names == {"add", "multiply", "get_time"}
+
+
+async def test_get_prompt():
+    """Test retrieving prompts from MCP servers."""
+    # Get the absolute path to the server scripts
+    current_dir = Path(__file__).parent
+    math_server_path = os.path.join(current_dir, "servers/math_server.py")
+
+    client = MultiServerMCPClient(
+        {
+            "math": {
+                "command": "python3",
+                "args": [math_server_path],
+                "transport": "stdio",
+            }
+        },
+    )
+    # Test getting a prompt from the math server
+    messages = await client.get_prompt(
+        "math",
+        "configure_assistant",
+        arguments={"skills": "math, addition, multiplication"},
+    )
+
+    # Check that we got an AIMessage back
+    assert len(messages) == 1
+    assert isinstance(messages[0], AIMessage)
+    assert "You are a helpful assistant" in messages[0].content
+    assert "math, addition, multiplication" in messages[0].content</doc><doc title="Test Import" desc="docs page.">def test_import() -> None:
+    """Test that the code can be imported"""
+    from langchain_mcp_adapters import (  # noqa: F401, PLC0415
+        callbacks,
+        client,
+        prompts,
+        resources,
+        tools,
+    )</doc><doc title="Test Interceptors" desc="docs page.">"""Tests for the interceptor system functionality."""
+
+import pytest
+from mcp.server import FastMCP
+from mcp.types import (
+    CallToolResult,
+    TextContent,
+)
+
+from langchain_mcp_adapters.interceptors import (
+    MCPToolCallRequest,
+)
+from langchain_mcp_adapters.tools import load_mcp_tools
+from tests.utils import run_streamable_http
+
+
+def _create_math_server(port: int = 8200):
+    """Create a math server with add and multiply tools."""
+    server = FastMCP(port=port)
+
+    @server.tool()
+    def add(a: int, b: int) -> int:
+        """Add two numbers"""
+        return a + b
+
+    @server.tool()
+    def multiply(a: int, b: int) -> int:
+        """Multiply two numbers"""
+        return a * b
+
+    return server
+
+
+class TestInterceptorModifiesRequest:
+    """Tests for interceptors that modify the request."""
+
+    async def test_interceptor_modifies_arguments(self, socket_enabled):
+        """Test that interceptor can modify tool arguments."""
+
+        async def modify_args_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            # Double the arguments
+            modified_args = {k: v * 2 for k, v in request.args.items()}
+            modified_request = request.override(args=modified_args)
+            return await handler(modified_request)
+
+        with run_streamable_http(_create_math_server, 8200):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8200/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[modify_args_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            # Original call would be 2 + 3 = 5, but interceptor doubles it to 4 + 6 = 10
+            result = await add_tool.ainvoke({"a": 2, "b": 3})
+            assert "10" in str(result)
+
+    async def test_interceptor_modifies_tool_name(self, socket_enabled):
+        """Test that interceptor can redirect to different tool."""
+
+        async def redirect_tool_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            # Redirect add to multiply
+            if request.name == "add":
+                modified_request = request.override(name="multiply")
+                return await handler(modified_request)
+            return await handler(request)
+
+        with run_streamable_http(_create_math_server, 8201):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8201/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[redirect_tool_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            # Call add but interceptor redirects to multiply: 5 * 2 = 10
+            result = await add_tool.ainvoke({"a": 5, "b": 2})
+            assert result == "10"
+
+
+class TestInterceptorModifiesResponse:
+    """Tests for interceptors that modify the response."""
+
+    async def test_interceptor_modifies_result(self, socket_enabled):
+        """Test that interceptor can modify tool result."""
+
+        async def modify_result_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            # Execute the tool first
+            result = await handler(request)
+
+            # Prepend "Modified: " to all text content
+            modified_content = []
+            for content in result.content:
+                if isinstance(content, TextContent):
+                    modified_content.append(
+                        TextContent(type="text", text=f"Modified: {content.text}")
+                    )
+                else:
+                    modified_content.append(content)
+
+            return CallToolResult(
+                content=modified_content,
+                isError=result.isError,
+            )
+
+        with run_streamable_http(_create_math_server, 8203):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8203/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[modify_result_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            result = await add_tool.ainvoke({"a": 2, "b": 3})
+            # The interceptor modifies the result
+            assert result == "Modified: 5"
+
+    async def test_interceptor_returns_custom_result(self, socket_enabled):
+        """Test that interceptor can return a completely custom CallToolResult."""
+
+        async def return_custom_result_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            # Don't call handler, just return custom result
+            return CallToolResult(
+                content=[TextContent(type="text", text="Custom tool response")],
+                isError=False,
+            )
+
+        with run_streamable_http(_create_math_server, 8204):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8204/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[return_custom_result_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            result = await add_tool.ainvoke({"a": 2, "b": 3})
+            # The interceptor returns a custom result without calling handler
+            assert result == "Custom tool response"
+
+
+class TestInterceptorAdvancedPatterns:
+    """Tests for advanced interceptor patterns like caching."""
+
+    async def test_interceptor_caching(self, socket_enabled):
+        """Test that interceptor can implement caching."""
+        cache = {}
+        call_count = 0
+
+        async def caching_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            nonlocal call_count
+            cache_key = f"{request.name}:{request.args}"
+
+            if cache_key in cache:
+                return cache[cache_key]
+
+            call_count += 1
+            result = await handler(request)
+            cache[cache_key] = result
+            return result
+
+        with run_streamable_http(_create_math_server, 8206):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8206/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[caching_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+
+            # First call - should execute
+            result1 = await add_tool.ainvoke({"a": 2, "b": 3})
+            assert result1 == "5"
+            assert call_count == 1
+
+            # Second call with same args - should use cache
+            result2 = await add_tool.ainvoke({"a": 2, "b": 3})
+            assert result2 == "5"
+            assert call_count == 1  # Should not increment
+
+            # Third call with different args - should execute
+            result3 = await add_tool.ainvoke({"a": 5, "b": 7})
+            assert result3 == "12"
+            assert call_count == 2
+
+
+class TestInterceptorComposition:
+    """Tests for composing multiple interceptors."""
+
+    async def test_multiple_interceptors_compose(self, socket_enabled):
+        """Test that multiple interceptors compose in the correct order."""
+        execution_order = []
+
+        async def logging_interceptor_1(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            execution_order.append("before_1")
+            result = await handler(request)
+            execution_order.append("after_1")
+            return result
+
+        async def logging_interceptor_2(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            execution_order.append("before_2")
+            result = await handler(request)
+            execution_order.append("after_2")
+            return result
+
+        # First in list should be outermost layer
+        with run_streamable_http(_create_math_server, 8207):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8207/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[logging_interceptor_1, logging_interceptor_2],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            result = await add_tool.ainvoke({"a": 2, "b": 3})
+            assert result == "5"
+
+            # Should execute in onion order: 1 before, 2 before, execute, 2 after,
+            # 1 after
+            assert execution_order == ["before_1", "before_2", "after_2", "after_1"]
+
+
+class TestInterceptorErrorHandling:
+    """Tests for interceptor error handling."""
+
+    async def test_interceptor_exception_propagates(self, socket_enabled):
+        """Test that exceptions in interceptors propagate correctly."""
+
+        async def failing_interceptor(
+            request: MCPToolCallRequest,
+            handler,
+        ) -> CallToolResult:
+            raise ValueError("Interceptor failed")
+
+        with run_streamable_http(_create_math_server, 8208):
+            tools = await load_mcp_tools(
+                None,
+                connection={
+                    "url": "http://localhost:8208/mcp",
+                    "transport": "streamable_http",
+                },
+                tool_interceptors=[failing_interceptor],
+            )
+
+            add_tool = next(tool for tool in tools if tool.name == "add")
+            with pytest.raises(ValueError, match="Interceptor failed"):
+                await add_tool.ainvoke({"a": 2, "b": 3})</doc><doc title="Test Prompts" desc="docs page.">from unittest.mock import AsyncMock
+
+import pytest
+from langchain_core.messages import AIMessage, HumanMessage
+from mcp.types import (
+    EmbeddedResource,
+    ImageContent,
+    PromptMessage,
+    TextContent,
+    TextResourceContents,
+)
+
+from langchain_mcp_adapters.prompts import (
+    convert_mcp_prompt_message_to_langchain_message,
+    load_mcp_prompt,
+)
+
+
+@pytest.mark.parametrize(
+    "role,text,expected_cls",
+    [("assistant", "Hello", AIMessage), ("user", "Hello", HumanMessage)],
+)
+def test_convert_mcp_prompt_message_to_langchain_message_with_text_content(
+    role: str,
+    text: str,
+    expected_cls: type,
+):
+    message = PromptMessage(role=role, content=TextContent(type="text", text=text))
+    result = convert_mcp_prompt_message_to_langchain_message(message)
+    assert isinstance(result, expected_cls)
+    assert result.content == text
+
+
+@pytest.mark.parametrize("role", ["assistant", "user"])
+def test_convert_mcp_prompt_message_to_langchain_message_with_resource_content(
+    role: str,
+):
+    message = PromptMessage(
+        role=role,
+        content=EmbeddedResource(
+            type="resource",
+            resource=TextResourceContents(
+                uri="message://greeting",
+                mimeType="text/plain",
+                text="hi",
+            ),
+        ),
+    )
+    with pytest.raises(ValueError):
+        convert_mcp_prompt_message_to_langchain_message(message)
+
+
+@pytest.mark.parametrize("role", ["assistant", "user"])
+def test_convert_mcp_prompt_message_to_langchain_message_with_image_content(role: str):
+    message = PromptMessage(
+        role=role,
+        content=ImageContent(type="image", mimeType="image/png", data="base64data"),
+    )
+    with pytest.raises(ValueError):
+        convert_mcp_prompt_message_to_langchain_message(message)
+
+
+async def test_load_mcp_prompt():
+    session = AsyncMock()
+    session.get_prompt = AsyncMock(
+        return_value=AsyncMock(
+            messages=[
+                PromptMessage(
+                    role="user", content=TextContent(type="text", text="Hello")
+                ),
+                PromptMessage(
+                    role="assistant", content=TextContent(type="text", text="Hi")
+                ),
+            ],
+        ),
+    )
+    result = await load_mcp_prompt(session, "test_prompt")
+    assert len(result) == 2
+    assert isinstance(result[0], HumanMessage)
+    assert result[0].content == "Hello"
+    assert isinstance(result[1], AIMessage)
+    assert result[1].content == "Hi"</doc><doc title="Test Resources" desc="docs page.">import base64
+from unittest.mock import AsyncMock
+
+import pytest
+from langchain_core.documents.base import Blob
+from mcp.types import (
+    BlobResourceContents,
+    ListResourcesResult,
+    ReadResourceResult,
+    Resource,
+    ResourceContents,
+    TextResourceContents,
+)
+
+from langchain_mcp_adapters.resources import (
+    convert_mcp_resource_to_langchain_blob,
+    get_mcp_resource,
+    load_mcp_resources,
+)
+
+
+def test_convert_mcp_resource_to_langchain_blob_with_text():
+    uri = "file:///test.txt"
+    contents = TextResourceContents(
+        uri=uri, mimeType="text/plain", text="Hello, world!"
+    )
+
+    blob = convert_mcp_resource_to_langchain_blob(uri, contents)
+
+    assert isinstance(blob, Blob)
+    assert blob.data == "Hello, world!"
+    assert blob.mimetype == "text/plain"
+    assert blob.metadata["uri"] == uri
+
+
+def test_convert_mcp_resource_to_langchain_blob():
+    uri = "file:///test.png"
+    original_data = b"binary-image-data"
+    base64_blob = base64.b64encode(original_data).decode()
+
+    contents = BlobResourceContents(uri=uri, mimeType="image/png", blob=base64_blob)
+
+    blob = convert_mcp_resource_to_langchain_blob(uri, contents)
+
+    assert isinstance(blob, Blob)
+    assert blob.data == original_data
+    assert blob.mimetype == "image/png"
+    assert blob.metadata["uri"] == uri
+
+
+def test_convert_mcp_resource_to_langchain_blob_with_invalid_type():
+    class DummyContent(ResourceContents):
+        pass
+
+    with pytest.raises(ValueError):
+        convert_mcp_resource_to_langchain_blob("file:///dummy", DummyContent())
+
+
+async def test_get_mcp_resource_with_contents():
+    session = AsyncMock()
+    uri = "file:///test.txt"
+
+    session.read_resource = AsyncMock(
+        return_value=ReadResourceResult(
+            contents=[
+                TextResourceContents(uri=uri, mimeType="text/plain", text="Content 1"),
+                TextResourceContents(uri=uri, mimeType="text/plain", text="Content 2"),
+            ],
+        ),
+    )
+
+    blobs = await get_mcp_resource(session, uri)
+
+    assert len(blobs) == 2
+    assert all(isinstance(d, Blob) for d in blobs)
+    assert blobs[0].data == "Content 1"
+    assert blobs[1].data == "Content 2"
+
+
+async def test_get_mcp_resource_with_text_and_blob():
+    session = AsyncMock()
+    uri = "file:///mixed"
+
+    original_data = b"some-binary-content"
+    base64_blob = base64.b64encode(original_data).decode()
+
+    session.read_resource = AsyncMock(
+        return_value=ReadResourceResult(
+            contents=[
+                TextResourceContents(uri=uri, mimeType="text/plain", text="Hello Text"),
+                BlobResourceContents(
+                    uri=uri,
+                    mimeType="application/octet-stream",
+                    blob=base64_blob,
+                ),
+            ],
+        ),
+    )
+
+    results = await get_mcp_resource(session, uri)
+
+    assert len(results) == 2
+
+    assert isinstance(results[0], Blob)
+    assert results[0].data == "Hello Text"
+    assert results[0].mimetype == "text/plain"
+
+    assert isinstance(results[1], Blob)
+    assert results[1].data == original_data
+    assert results[1].mimetype == "application/octet-stream"
+
+
+async def test_get_mcp_resource_with_empty_contents():
+    session = AsyncMock()
+    uri = "file:///empty.txt"
+
+    session.read_resource = AsyncMock(return_value=ReadResourceResult(contents=[]))
+
+    blobs = await get_mcp_resource(session, uri)
+
+    assert len(blobs) == 0
+    session.read_resource.assert_called_once_with(uri)
+
+
+async def test_load_mcp_resources_with_list_of_uris():
+    session = AsyncMock()
+    uri1 = "file:///test1.txt"
+    uri2 = "file:///test2.txt"
+
+    session.read_resource = AsyncMock()
+    session.read_resource.side_effect = [
+        ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri=uri1, mimeType="text/plain", text="Content from test1"
+                ),
+            ],
+        ),
+        ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri=uri2, mimeType="text/plain", text="Content from test2"
+                ),
+            ],
+        ),
+    ]
+
+    blobs = await load_mcp_resources(session, uris=[uri1, uri2])
+
+    assert len(blobs) == 2
+    assert all(isinstance(d, Blob) for d in blobs)
+    assert blobs[0].data == "Content from test1"
+    assert blobs[1].data == "Content from test2"
+    assert blobs[0].metadata["uri"] == uri1
+    assert blobs[1].metadata["uri"] == uri2
+    assert session.read_resource.call_count == 2
+
+
+async def test_load_mcp_resources_with_single_uri_string():
+    session = AsyncMock()
+    uri = "file:///test.txt"
+
+    session.read_resource = AsyncMock(
+        return_value=ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri=uri, mimeType="text/plain", text="Content from test"
+                ),
+            ],
+        ),
+    )
+
+    blobs = await load_mcp_resources(session, uris=uri)
+
+    assert len(blobs) == 1
+    assert isinstance(blobs[0], Blob)
+    assert blobs[0].data == "Content from test"
+    assert blobs[0].metadata["uri"] == uri
+    session.read_resource.assert_called_once_with(uri)
+
+
+async def test_load_mcp_resources_with_all_resources():
+    session = AsyncMock()
+
+    session.list_resources = AsyncMock(
+        return_value=ListResourcesResult(
+            resources=[
+                Resource(
+                    uri="file:///test1.txt", name="test1.txt", mimeType="text/plain"
+                ),
+                Resource(
+                    uri="file:///test2.txt", name="test2.txt", mimeType="text/plain"
+                ),
+            ],
+        ),
+    )
+
+    session.read_resource = AsyncMock()
+    session.read_resource.side_effect = [
+        ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri="file:///test1.txt",
+                    mimeType="text/plain",
+                    text="Content from test1",
+                ),
+            ],
+        ),
+        ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri="file:///test2.txt",
+                    mimeType="text/plain",
+                    text="Content from test2",
+                ),
+            ],
+        ),
+    ]
+
+    blobs = await load_mcp_resources(session)
+
+    assert len(blobs) == 2
+    assert blobs[0].data == "Content from test1"
+    assert blobs[1].data == "Content from test2"
+    assert session.list_resources.called
+    assert session.read_resource.call_count == 2
+
+
+async def test_load_mcp_resources_with_error_handling():
+    session = AsyncMock()
+    uri1 = "file:///valid.txt"
+    uri2 = "file:///error.txt"
+
+    session.read_resource = AsyncMock()
+    session.read_resource.side_effect = [
+        ReadResourceResult(
+            contents=[
+                TextResourceContents(
+                    uri=uri1, mimeType="text/plain", text="Valid content"
+                )
+            ],
+        ),
+        Exception("Resource not found"),
+    ]
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await load_mcp_resources(session, uris=[uri1, uri2])
+
+    assert "Error fetching resource" in str(exc_info.value)
+
+
+async def test_load_mcp_resources_with_blob_content():
+    session = AsyncMock()
+    uri = "file:///with_blob"
+    original_data = b"binary data"
+    base64_blob = base64.b64encode(original_data).decode()
+
+    session.read_resource = AsyncMock(
+        return_value=ReadResourceResult(
+            contents=[
+                BlobResourceContents(
+                    uri=uri,
+                    mimeType="application/octet-stream",
+                    blob=base64_blob,
+                ),
+            ],
+        ),
+    )
+
+    blobs = await load_mcp_resources(session, uris=uri)
+
+    assert len(blobs) == 1
+    assert isinstance(blobs[0], Blob)
+    assert blobs[0].data == original_data
+    assert blobs[0].mimetype == "application/octet-stream"</doc><doc title="Test Tools" desc="docs page.">from typing import Annotated
+from unittest.mock import AsyncMock, MagicMock
+
+import httpx
+import pytest
+from langchain_core.callbacks import CallbackManagerForToolRun
+from langchain_core.messages import ToolMessage
+from langchain_core.tools import BaseTool, InjectedToolArg, ToolException, tool
+from mcp.server import FastMCP
+from mcp.types import (
+    CallToolResult,
+    EmbeddedResource,
+    ImageContent,
+    TextContent,
+    TextResourceContents,
+    ToolAnnotations,
+)
+from mcp.types import Tool as MCPTool
+from pydantic import BaseModel
+
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import (
+    _convert_call_tool_result,
+    convert_mcp_tool_to_langchain_tool,
+    load_mcp_tools,
+    to_fastmcp,
+)
+from tests.utils import run_streamable_http
+
+
+def test_convert_empty_text_content():
+    # Test with a single text content
+    result = CallToolResult(content=[], isError=False)
+
+    text_content, non_text_content = _convert_call_tool_result(result)
+
+    assert text_content == ""
+    assert non_text_content is None
+
+
+def test_convert_single_text_content():
+    # Test with a single text content
+    result = CallToolResult(
+        content=[TextContent(type="text", text="test result")], isError=False
+    )
+
+    text_content, non_text_content = _convert_call_tool_result(result)
+
+    assert text_content == "test result"
+    assert non_text_content is None
+
+
+def test_convert_multiple_text_contents():
+    # Test with multiple text contents
+    result = CallToolResult(
+        content=[
+            TextContent(type="text", text="result 1"),
+            TextContent(type="text", text="result 2"),
+        ],
+        isError=False,
+    )
+
+    text_content, non_text_content = _convert_call_tool_result(result)
+
+    assert text_content == ["result 1", "result 2"]
+    assert non_text_content is None
+
+
+def test_convert_with_non_text_content():
+    # Test with non-text content
+    image_content = ImageContent(type="image", mimeType="image/png", data="base64data")
+    resource_content = EmbeddedResource(
+        type="resource",
+        resource=TextResourceContents(
+            uri="resource://test", mimeType="text/plain", text="hi"
+        ),
+    )
+
+    result = CallToolResult(
+        content=[
+            TextContent(type="text", text="text result"),
+            image_content,
+            resource_content,
+        ],
+        isError=False,
+    )
+
+    text_content, non_text_content = _convert_call_tool_result(result)
+
+    assert text_content == "text result"
+    assert non_text_content == [image_content, resource_content]
+
+
+def test_convert_with_error():
+    # Test with error
+    result = CallToolResult(
+        content=[TextContent(type="text", text="error message")], isError=True
+    )
+
+    with pytest.raises(ToolException) as exc_info:
+        _convert_call_tool_result(result)
+
+    assert str(exc_info.value) == "error message"
+
+
+async def test_convert_mcp_tool_to_langchain_tool():
+    tool_input_schema = {
+        "properties": {
+            "param1": {"title": "Param1", "type": "string"},
+            "param2": {"title": "Param2", "type": "integer"},
+        },
+        "required": ["param1", "param2"],
+        "title": "ToolSchema",
+        "type": "object",
+    }
+    # Mock session and MCP tool
+    session = AsyncMock()
+    session.call_tool.return_value = CallToolResult(
+        content=[TextContent(type="text", text="tool result")],
+        isError=False,
+    )
+
+    mcp_tool = MCPTool(
+        name="test_tool",
+        description="Test tool description",
+        inputSchema=tool_input_schema,
+    )
+
+    # Convert MCP tool to LangChain tool
+    lc_tool = convert_mcp_tool_to_langchain_tool(session, mcp_tool)
+
+    # Verify the converted tool
+    assert lc_tool.name == "test_tool"
+    assert lc_tool.description == "Test tool description"
+    assert lc_tool.args_schema == tool_input_schema
+
+    # Test calling the tool
+    result = await lc_tool.ainvoke(
+        {"args": {"param1": "test", "param2": 42}, "id": "1", "type": "tool_call"},
+    )
+
+    # Verify session.call_tool was called with correct arguments
+    session.call_tool.assert_called_once_with(
+        "test_tool", {"param1": "test", "param2": 42}, progress_callback=None
+    )
+
+    # Verify result
+    assert result == ToolMessage(
+        content="tool result", name="test_tool", tool_call_id="1"
+    )
+
+
+async def test_load_mcp_tools():
+    tool_input_schema = {
+        "properties": {
+            "param1": {"title": "Param1", "type": "string"},
+            "param2": {"title": "Param2", "type": "integer"},
+        },
+        "required": ["param1", "param2"],
+        "title": "ToolSchema",
+        "type": "object",
+    }
+    # Mock session and list_tools response
+    session = AsyncMock()
+    mcp_tools = [
+        MCPTool(
+            name="tool1",
+            description="Tool 1 description",
+            inputSchema=tool_input_schema,
+        ),
+        MCPTool(
+            name="tool2",
+            description="Tool 2 description",
+            inputSchema=tool_input_schema,
+        ),
+    ]
+    session.list_tools.return_value = MagicMock(tools=mcp_tools, nextCursor=None)
+
+    # Mock call_tool to return different results for different tools
+    async def mock_call_tool(tool_name, arguments, progress_callback=None):
+        if tool_name == "tool1":
+            return CallToolResult(
+                content=[
+                    TextContent(type="text", text=f"tool1 result with {arguments}")
+                ],
+                isError=False,
+            )
+        return CallToolResult(
+            content=[TextContent(type="text", text=f"tool2 result with {arguments}")],
+            isError=False,
+        )
+
+    session.call_tool.side_effect = mock_call_tool
+
+    # Load MCP tools
+    tools = await load_mcp_tools(session)
+
+    # Verify the tools
+    assert len(tools) == 2
+    assert all(isinstance(tool, BaseTool) for tool in tools)
+    assert tools[0].name == "tool1"
+    assert tools[1].name == "tool2"
+
+    # Test calling the first tool
+    result1 = await tools[0].ainvoke(
+        {"args": {"param1": "test1", "param2": 1}, "id": "1", "type": "tool_call"},
+    )
+    assert result1 == ToolMessage(
+        content="tool1 result with {'param1': 'test1', 'param2': 1}",
+        name="tool1",
+        tool_call_id="1",
+    )
+
+    # Test calling the second tool
+    result2 = await tools[1].ainvoke(
+        {"args": {"param1": "test2", "param2": 2}, "id": "2", "type": "tool_call"},
+    )
+    assert result2 == ToolMessage(
+        content="tool2 result with {'param1': 'test2', 'param2': 2}",
+        name="tool2",
+        tool_call_id="2",
+    )
+
+
+def _create_annotations_server():
+    server = FastMCP(port=8181)
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            title="Get Time", readOnlyHint=True, idempotentHint=False
+        ),
+    )
+    def get_time() -> str:
+        """Get current time"""
+        return "5:20:00 PM EST"
+
+    return server
+
+
+async def test_load_mcp_tools_with_annotations(socket_enabled) -> None:
+    """Test load mcp tools with annotations."""
+    with run_streamable_http(_create_annotations_server, 8181):
+        # Initialize client without initial connections
+        client = MultiServerMCPClient(
+            {
+                "time": {
+                    "url": "http://localhost:8181/mcp",
+                    "transport": "streamable_http",
+                }
+            },
+        )
+        # pass
+        tools = await client.get_tools(server_name="time")
+        assert len(tools) == 1
+        tool = tools[0]
+        assert tool.name == "get_time"
+        assert tool.metadata == {
+            "title": "Get Time",
+            "readOnlyHint": True,
+            "idempotentHint": False,
+            "destructiveHint": None,
+            "openWorldHint": None,
+        }
+
+
+# Tests for to_fastmcp functionality
+
+
+@tool
+def add(a: int, b: int) -> int:
+    """Add two numbers"""
+    return a + b
+
+
+class AddInput(BaseModel):
+    """Add two numbers"""
+
+    a: int
+    b: int
+
+
+@tool("add", args_schema=AddInput)
+def add_with_schema(a: int, b: int) -> int:
+    return a + b
+
+
+@tool("add")
+def add_with_injection(
+    a: int, b: int, injected_arg: Annotated[str, InjectedToolArg()]
+) -> int:
+    """Add two numbers"""
+    return a + b
+
+
+class AddTool(BaseTool):
+    name: str = "add"
+    description: str = "Add two numbers"
+    args_schema: type[BaseModel] | None = AddInput
+
+    def _run(
+        self, a: int, b: int, run_manager: CallbackManagerForToolRun | None = None
+    ) -> int:
+        """Use the tool."""
+        return a + b
+
+    async def _arun(
+        self,
+        a: int,
+        b: int,
+        run_manager: CallbackManagerForToolRun | None = None,
+    ) -> int:
+        """Use the tool."""
+        return self._run(a, b, run_manager=run_manager)
+
+
+@pytest.mark.parametrize(
+    "tool_instance",
+    [add, add_with_schema, AddTool()],
+    ids=["tool", "tool_with_schema", "tool_class"],
+)
+async def test_convert_langchain_tool_to_fastmcp_tool(tool_instance):
+    fastmcp_tool = to_fastmcp(tool_instance)
+    assert fastmcp_tool.name == "add"
+    assert fastmcp_tool.description == "Add two numbers"
+    assert fastmcp_tool.parameters == {
+        "description": "Add two numbers",
+        "properties": {
+            "a": {"title": "A", "type": "integer"},
+            "b": {"title": "B", "type": "integer"},
+        },
+        "required": ["a", "b"],
+        "title": "add",
+        "type": "object",
+    }
+    assert fastmcp_tool.fn_metadata.arg_model.model_json_schema() == {
+        "properties": {
+            "a": {"title": "A", "type": "integer"},
+            "b": {"title": "B", "type": "integer"},
+        },
+        "required": ["a", "b"],
+        "title": "addArguments",
+        "type": "object",
+    }
+
+    arguments = {"a": 1, "b": 2}
+    assert await fastmcp_tool.run(arguments=arguments) == 3
+
+
+def test_convert_langchain_tool_to_fastmcp_tool_with_injection():
+    with pytest.raises(NotImplementedError):
+        to_fastmcp(add_with_injection)
+
+
+def _create_status_server():
+    server = FastMCP(port=8182)
+
+    @server.tool()
+    def get_status() -> str:
+        """Get server status"""
+        return "Server is running"
+
+    return server
+
+
+# Tests for httpx_client_factory functionality
+
+
+async def test_load_mcp_tools_with_custom_httpx_client_factory(socket_enabled) -> None:
+    """Test load mcp tools with custom httpx client factory."""
+
+    # Custom httpx client factory
+    def custom_httpx_client_factory(
+        headers: dict[str, str] | None = None,
+        timeout: httpx.Timeout | None = None,
+        auth: httpx.Auth | None = None,
+    ) -> httpx.AsyncClient:
+        """Custom factory for creating httpx.AsyncClient with specific configuration."""
+        return httpx.AsyncClient(
+            headers=headers,
+            timeout=timeout or httpx.Timeout(30.0),
+            auth=auth,
+            # Custom configuration
+            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
+        )
+
+    with run_streamable_http(_create_status_server, 8182):
+        # Initialize client with custom httpx_client_factory
+        client = MultiServerMCPClient(
+            {
+                "status": {
+                    "url": "http://localhost:8182/mcp",
+                    "transport": "streamable_http",
+                    "httpx_client_factory": custom_httpx_client_factory,
+                },
+            },
+        )
+
+        tools = await client.get_tools(server_name="status")
+        assert len(tools) == 1
+        tool = tools[0]
+        assert tool.name == "get_status"
+
+        # Test that the tool works correctly
+        result = await tool.ainvoke({"args": {}, "id": "1", "type": "tool_call"})
+        assert result.content == "Server is running"
+
+
+def _create_info_server():
+    server = FastMCP(port=8183)
+
+    @server.tool()
+    def get_info() -> str:
+        """Get server info"""
+        return "SSE Server Info"
+
+    return server
+
+
+async def test_load_mcp_tools_with_custom_httpx_client_factory_sse(
+    socket_enabled,
+) -> None:
+    """Test load mcp tools with custom httpx client factory using SSE transport."""
+
+    # Custom httpx client factory
+    def custom_httpx_client_factory(
+        headers: dict[str, str] | None = None,
+        timeout: httpx.Timeout | None = None,
+        auth: httpx.Auth | None = None,
+    ) -> httpx.AsyncClient:
+        """Custom factory for creating httpx.AsyncClient with specific configuration."""
+        return httpx.AsyncClient(
+            headers=headers,
+            timeout=timeout or httpx.Timeout(30.0),
+            auth=auth,
+            # Custom configuration for SSE
+            limits=httpx.Limits(max_keepalive_connections=3, max_connections=5),
+        )
+
+    with run_streamable_http(_create_info_server, 8183):
+        # Initialize client with custom httpx_client_factory for SSE
+        client = MultiServerMCPClient(
+            {
+                "info": {
+                    "url": "http://localhost:8183/sse",
+                    "transport": "sse",
+                    "httpx_client_factory": custom_httpx_client_factory,
+                },
+            },
+        )
+
+        # Note: This test may not work in practice since the server doesn't expose SSE
+        # endpoint,
+        # but it tests the configuration propagation
+        try:
+            tools = await client.get_tools(server_name="info")
+            # If we get here, the httpx_client_factory was properly passed
+            assert isinstance(tools, list)
+        except Exception:
+            # Expected to fail since server doesn't have SSE endpoint,
+            # but the important thing is that httpx_client_factory was passed correctly
+            pass
+
+
+async def test_convert_mcp_tool_metadata_variants():
+    """Verify metadata merging rules in convert_mcp_tool_to_langchain_tool."""
+    tool_input_schema = {
+        "properties": {},
+        "required": [],
+        "title": "EmptySchema",
+        "type": "object",
+    }
+
+    session = AsyncMock()
+    session.call_tool.return_value = CallToolResult(
+        content=[TextContent(type="text", text="ok")], isError=False
+    )
+
+    mcp_tool_none = MCPTool(
+        name="t_none",
+        description="",
+        inputSchema=tool_input_schema,
+    )
+    lc_tool_none = convert_mcp_tool_to_langchain_tool(session, mcp_tool_none)
+    assert lc_tool_none.metadata is None
+
+    mcp_tool_ann = MCPTool(
+        name="t_ann",
+        description="",
+        inputSchema=tool_input_schema,
+        annotations=ToolAnnotations(
+            title="Title", readOnlyHint=True, idempotentHint=False
+        ),
+    )
+    lc_tool_ann = convert_mcp_tool_to_langchain_tool(session, mcp_tool_ann)
+    assert lc_tool_ann.metadata == {
+        "title": "Title",
+        "readOnlyHint": True,
+        "idempotentHint": False,
+        "destructiveHint": None,
+        "openWorldHint": None,
+    }
+
+    mcp_tool_meta = MCPTool(
+        name="t_meta",
+        description="",
+        inputSchema=tool_input_schema,
+        _meta={"source": "unit-test", "version": 1},
+    )
+    lc_tool_meta = convert_mcp_tool_to_langchain_tool(session, mcp_tool_meta)
+    assert lc_tool_meta.metadata == {"_meta": {"source": "unit-test", "version": 1}}
+
+    mcp_tool_both = MCPTool(
+        name="t_both",
+        description="",
+        inputSchema=tool_input_schema,
+        annotations=ToolAnnotations(title="Both"),
+        _meta={"flag": True},
+    )
+
+    lc_tool_both = convert_mcp_tool_to_langchain_tool(session, mcp_tool_both)
+    assert lc_tool_both.metadata == {
+        "title": "Both",
+        "readOnlyHint": None,
+        "idempotentHint": None,
+        "destructiveHint": None,
+        "openWorldHint": None,
+        "_meta": {"flag": True},
+    }</doc><doc title="Utils" desc="docs page.">import contextlib
+import multiprocessing
+import socket
+import time
+from collections.abc import Generator
+
+import uvicorn
+from mcp.server.websocket import websocket_server
+from starlette.applications import Starlette
+from starlette.routing import WebSocketRoute
+
+from tests.servers.time_server import mcp as time_mcp
+
+
+def make_server_app() -> Starlette:
+    server = time_mcp._mcp_server
+
+    async def handle_ws(websocket):
+        async with websocket_server(
+            websocket.scope, websocket.receive, websocket.send
+        ) as streams:
+            await server.run(
+                streams[0], streams[1], server.create_initialization_options()
+            )
+
+    app = Starlette(routes=[WebSocketRoute("/ws", endpoint=handle_ws)])
+
+    return app
+
+
+def run_server(server_port: int) -> None:
+    app = make_server_app()
+    server = uvicorn.Server(
+        config=uvicorn.Config(
+            app=app, host="127.0.0.1", port=server_port, log_level="error"
+        ),
+    )
+    server.run()
+
+    # Give server time to start
+    while not server.started:
+        time.sleep(0.5)
+
+
+def run_streamable_http_server(server_factory, server_port: int) -> None:
+    """Run a FastMCP server in a separate process exposing a streamable HTTP."""
+    server = server_factory()
+    app = server.streamable_http_app()
+    uvicorn_server = uvicorn.Server(
+        config=uvicorn.Config(
+            app=app, host="127.0.0.1", port=server_port, log_level="error"
+        ),
+    )
+    uvicorn_server.run()
+
+
+@contextlib.contextmanager
+def run_streamable_http(
+    server_factory, server_port: int
+) -> Generator[None, None, None]:
+    """Run the server in a separate process exposing a streamable HTTP endpoint.
+
+    The endpoint will be available at `http://localhost:{server_port}/mcp`.
+    """
+    proc = multiprocessing.Process(
+        target=run_streamable_http_server,
+        kwargs={"server_factory": server_factory, "server_port": server_port},
+        daemon=True,
+    )
+    proc.start()
+
+    # Wait for server to be running
+    max_attempts = 20
+    attempt = 0
+
+    while attempt < max_attempts:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("127.0.0.1", server_port))
+                break
+        except ConnectionRefusedError:
+            time.sleep(0.1)
+            attempt += 1
+    else:
+        raise RuntimeError(f"Server failed to start after {max_attempts} attempts")
+
+    try:
+        yield
+    finally:
+        # Signal the server to stop
+        proc.kill()
+        proc.join(timeout=2)
+        if proc.is_alive():
+            raise RuntimeError(
+                "Server process is still alive after attempting to terminate it"
+            )</doc></tests></project>

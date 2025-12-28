@@ -1,0 +1,70 @@
+# Db
+
+> TanStack DB aims to give developers a fast, reactive, client‑side query layer that works alongside TanStack Query. It eliminates the need for custom API endpoints, reduces round‑trips, and provides live‑query capabilities, optimistic updates, and fine‑grained reactivity for modern UI frameworks.
+
+**Remember:**
+- Live queries
+- Optimistic mutations
+- Reactive collections
+- Query optimizer
+- Paced mutations
+- Debounce / throttle strategies
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/db/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/framework/angular/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/framework/react/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/framework/solid/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/framework/svelte/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/db/main/docs/framework/vue/overview.md): install & quickstart.
+- [Reference](https://raw.githubusercontent.com/TanStack/db/main/docs/reference/index.md): API reference.
+- [Electric Db Collection](https://raw.githubusercontent.com/TanStack/db/main/docs/reference/electric-db-collection/index.md): API reference.
+- [Powersync Db Collection](https://raw.githubusercontent.com/TanStack/db/main/docs/reference/powersync-db-collection/index.md): API reference.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/db/main/examples/angular/todos/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/examples/react/offline-transactions/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/examples/react/projects/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/examples/react/todo/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/examples/solid/todo/README.md): install & quickstart.
+- [Paced Mutations Demo](https://raw.githubusercontent.com/TanStack/db/main/examples/react/paced-mutations-demo/index.html): worked example.
+- [Todo](https://raw.githubusercontent.com/TanStack/db/main/examples/react/todo/index.html): worked example.
+- [Todo](https://raw.githubusercontent.com/TanStack/db/main/examples/solid/todo/index.html): worked example.
+- [Src](https://raw.githubusercontent.com/TanStack/db/main/examples/angular/todos/src/index.html): worked example.
+- [Agent](https://raw.githubusercontent.com/TanStack/db/main/examples/react/projects/AGENT.md): worked example.
+
+## API
+- [Offlineaction](https://raw.githubusercontent.com/TanStack/db/main/packages/offline-transactions/src/api/OfflineAction.ts): API reference.
+- [Offlinetransaction](https://raw.githubusercontent.com/TanStack/db/main/packages/offline-transactions/src/api/OfflineTransaction.ts): API reference.
+
+## Optional
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/angular-db/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/db-collection-e2e/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/db-ivm/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/db/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/electric-db-collection/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/offline-transactions/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/powersync-db-collection/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/query-db-collection/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/react-db/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/db/main/packages/rxdb-db-collection/CHANGELOG.md): version history.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/db/main/eslint.config.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/db/main/scripts/verify-links.ts): docs page.
+
+## .Github
+- [Pull Request Template](https://raw.githubusercontent.com/TanStack/db/main/.github/pull_request_template.md): docs page.
+- [Bug Report](https://raw.githubusercontent.com/TanStack/db/main/.github/ISSUE_TEMPLATE/bug_report.md): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/angular-db/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/db-collection-e2e/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/db-ivm/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/db/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/offline-transactions/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/react-db/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/solid-db/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/svelte-db/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/db/main/packages/vue-db/README.md): install & quickstart.
+- [Svelte.Config](https://raw.githubusercontent.com/TanStack/db/main/packages/svelte-db/svelte.config.js): docs page.

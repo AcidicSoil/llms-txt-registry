@@ -1,0 +1,43 @@
+# Constructa Starter Min
+
+> Constructa Starter Min is a modern, full-stack React application starter kit designed to accelerate development by providing a pre-configured environment with TanStack Start RC1, shadcn/ui components, Tailwind CSS v4, and TypeScript. Its goal is to reduce boilerplate setup and enable developers to focus on building features while maintaining type safety, performance, and scalability from day one.
+
+**Remember:**
+- TanStack Start RC1
+- shadcn/ui
+- Tailwind CSS v4
+- TypeScript
+- TanStack Router
+- Browser Echo
+
+## Docs
+- [Avoid Useeffect Summary](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/docs/avoid-useEffect-summary.md): docs page.
+- [Tanstack Rc1 Upgrade Guide](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/docs/tanstack-rc1-upgrade-guide.md): docs page.
+
+## API
+- [Test](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/routes/api/test.ts): API reference.
+
+## Optional
+- [Changelog](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/CHANGELOG.md): version history.
+- [Agents](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/.ruler/AGENTS.md): docs page.
+- [Agents](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/AGENTS.md): docs page.
+- [README](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/README.md): docs page.
+- [Setup](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/tests/setup.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/vite.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/vitest.config.ts): docs page.
+
+## .Cursor
+- [Problem Analyzer](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/.cursor/commands/problem-analyzer.md): docs page.
+- [Token Shortener](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/.cursor/commands/token-shortener.md): docs page.
+
+## Src
+- [Agents](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/AGENTS.md): docs page.
+- [Start](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/start.ts): docs page.
+- [Tanstack Start.D](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/tanstack-start.d.ts): docs page.
+- [Agents](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/routes/AGENTS.md): docs page.
+- [Browser Echo.D](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/types/browser-echo.d.ts): docs page.
+- [Client](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/env/client.ts): docs page.
+- [Id Generator](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/utils/id-generator.ts): docs page.
+- [Seo](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/utils/seo.ts): docs page.
+- [Server](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/env/server.ts): docs page.
+- [Tanstack Environment Server Client Only Rules](https://raw.githubusercontent.com/instructa/constructa-starter-min/main/src/.ruler/tanstack-environment-server-client-only-rules.md): docs page.

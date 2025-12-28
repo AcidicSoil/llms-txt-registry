@@ -1,0 +1,471 @@
+<project title="Constructa Starter Min" summary="Constructa Starter Min is a modern, full-stack React application starter kit designed to accelerate development by providing a pre-configured environment with TanStack Start RC1, shadcn/ui components, Tailwind CSS v4, and TypeScript. Its goal is to reduce boilerplate setup and enable developers to focus on building features while maintaining type safety, performance, and scalability from day one.">**Remember:**
+- TanStack Start RC1
+- shadcn/ui
+- Tailwind CSS v4
+- TypeScript
+- TanStack Router
+- Browser Echo<docs><doc title="Avoid Useeffect Summary" desc="docs page.">
+Don’t fetch or derive app state in useEffect.
+
+1. Fetch on navigation via TanStack Router loaders (SSR + streaming). Optionally seed TanStack Query in the loader with queryClient.ensureQueryData. \[1]
+2. Do server work on the server via TanStack Start Server Functions; after mutations call router.invalidate() and/or queryClient.invalidateQueries(). \[2]
+3. Keep page/UI state in the URL with typed search params (validateSearch, Route.useSearch, navigate). \[3]
+4. Reserve useEffect for real external side-effects only (DOM, subscriptions, analytics). \[4]\[6]
+
+# If your useEffect was doing X → Use Y
+
+Fetching on mount/params change → route loader (+ ensureQueryData). \[1]
+Submitting/mutating → Server Function → invalidate router/queries. \[2]
+Syncing UI to querystring → typed search params + navigate. \[3]
+Derived state → compute during render (useMemo only if expensive). \[4]
+Subscribing to external stores → useSyncExternalStore. \[5]
+DOM/non-React widgets/listeners → small useEffect/useLayoutEffect. \[6]
+
+# Idiomatic patterns (names only, no boilerplate)
+
+Loader: queryClient.ensureQueryData(queryOptions({ queryKey, queryFn })) → useSuspenseQuery reads hydrated cache. \[1]
+Mutation: createServerFn(...).handler(...) → onSuccess: qc.invalidateQueries, router.invalidate. Supports <form action={serverFn.url}> for progressive enhancement. \[2]
+Search params as state: validateSearch → Route.useSearch → navigate({ search }). \[3]
+External store read: useSyncExternalStore(subscribe, getSnapshot). \[5]
+
+# Decision checklist
+
+Data needed at render → loader (defer/stream as needed). \[1]
+User changed data → Server Function → invalidate. \[2]
+Belongs in URL → typed search params. \[3]
+Purely derived → compute in render. \[4]
+External system only → useEffect/useLayoutEffect. \[6]
+SSR/SEO → loader-based fetching; configure streaming/deferred. \[7]
+
+# React 19 helpers
+
+useActionState for form pending/error/result (pairs with Server Functions or TanStack Form). \[8]
+use to suspend on promises (client or server). \[9]
+
+# Zustand in TanStack Start (where it fits)
+
+Use for client/UI/session and push-based domain state (theme, modals, wizards, optimistic UI, WebSocket buffers). Keep server data in loaders/Query.
+Per request store instance to avoid SSR leaks. Inject via Router context; provide with Wrap; dehydrate/hydrate via router.dehydrate/router.hydrate so snapshots stream with the page. After navigation resolution, clear transient UI (router.subscribe('onResolved', ...)).
+Mutations: do work in Server Function → optionally update store optimistically → router.invalidate to reconcile with loader data.
+Add persist middleware only for client/session state; avoid touching storage during SSR.
+Use atomic selectors (useStore(s => slice)) and equality helpers to limit re-renders.
+
+Docs map: \[1] Router data loading, \[2] Server Functions, \[3] Search Params, \[4] You Might Not Need an Effect, \[5] useSyncExternalStore, \[6] Synchronizing with Effects, \[7] SSR, \[8] useActionState, \[9] use.</doc><doc title="Tanstack Rc1 Upgrade Guide" desc="docs page."># TanStack Start RC1 Upgrade Guide
+
+This guide captures the mandatory changes and local patches we applied while upgrading the project to TanStack Start RC1 (router v1.132.x).
+
+## Platform Requirements
+- Node.js **>= 22.12** (enforced via `package.json` / engines).
+- Vite **>= 7**. Install `@vitejs/plugin-react` (or the matching framework plugin) manually; the Start plugin no longer autoconfigures React/Solid.
+
+## Vite Configuration
+- `tanstackStart()` options renamed:
+  - `tsr` → `router` for the virtual route config.
+  - `srcDirectory` moved to the top level of the plugin options.
+- Wrap `defineConfig` with a factory and call `loadEnv(mode, process.cwd(), '')`, then `Object.assign(process.env, ...)`. This restores the pre-RC behaviour where all `.env` keys are exposed (RC1 regression currently filters out non-`VITE_` prefixes).
+- Ensure `tanstackStart()` is registered **before** `viteReact()` in the plugin array. The RC1 router plugin throws if React runs first.
+- Continue including `viteReact()`, `tailwindcss()`, and other project plugins explicitly.
+
+## Router Entry
+- `createRouter` export renamed to `getRouter`. Update module augmentation to reference `ReturnType<typeof getRouter>`.
+- Initialising any browser-only tooling (like Browser Echo) should be wrapped in `if (typeof window !== 'undefined')` to keep SSR builds safe.
+- Route tree generation now emits the module declaration automatically; remove any manual declarations in `routeTree.gen.ts`.
+
+## Server Functions & Helpers
+- `.validator()` → `.inputValidator()`.
+- `getWebRequest` → `getRequest`, `getHeaders` → `getRequestHeaders`, etc. Apply the full set of renames listed in `docs/tasks/03-upgrade-tanstack-rc1.md`.
+- Response modes were removed—return a `Response` directly when needed.
+- Keep shared types (e.g. `Theme`) exported from server modules so route loaders and components can import them without circular dependencies.
+
+## API Routes
+- Replace `createServerFileRoute` with `createFileRoute` and wrap server handlers inside `server: { handlers: { ... } }`.
+
+## Global Middleware
+- `registerGlobalMiddleware` was removed. Create `src/start.ts` and export `startInstance = createStart(async () => ({ ... }))`, registering request/function middleware there.
+- Harden `src/utils/loggingMiddleware.tsx`: drop the `{ type: 'function' }` option and guard every context read before logging timings so RC1's reordered execution doesn't crash the client.
+
+## Client Entry
+- Import `StartClient` from `@tanstack/react-start/client` and render `<StartClient />` without the router prop.
+- Add `src/entry-client.tsx` that hydrates `<StartClient />` via `startTransition()` and `StrictMode`.
+
+## Known Regressions / Local Patches
+- **Env loading**: Add the `loadEnv(..., '', )` workaround in `vite.config.ts` until the upstream fix lands.
+- **Logging middleware**: Use the guarded implementation noted above; RC1 sometimes runs the server middleware before the client context exists.
+- **Root Route Devtools**: Mount `<ReactQueryDevtools />` and `<TanStackRouterDevtools />` behind `import.meta.env.DEV`, and ensure the root route imports any loader types it returns.
+
+## Validation Steps
+- Rebuild after changes: `pnpm vite build` (confirms route tree generation and SSR build succeed).
+- Verify the dev server launches without env validation errors or blank screens.</doc></docs><api><doc title="Test" desc="API reference.">import { createFileRoute } from '@tanstack/react-router';
+import { json } from '@tanstack/react-start';
+
+export const Route = createFileRoute('/api/test')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        return json({
+          message: 'Hello from GET!',
+          method: 'GET',
+          timestamp: new Date().toISOString(),
+          url: request.url,
+        });
+      },
+      POST: async ({ request }) => {
+        const body = await request.json().catch(() => ({}));
+
+        return json(
+          {
+            message: 'Hello from POST!',
+            method: 'POST',
+            received: body,
+            timestamp: new Date().toISOString(),
+          },
+          {
+            status: 201,
+          }
+        );
+      },
+    },
+  },
+});</doc></api><.cursor><doc title="Problem Analyzer" desc="docs page.">Tasks:
+1) Locate all files/modules affected by the issue. List paths and why each is implicated.
+2) Explain the root cause(s): what changed, how it propagates to the failure, and any environmental factors.
+3) Propose the minimal, safe fix. Include code-level steps, side effects, and tests to add/update.
+4) Flag any missing or outdated documentation/configs/schemas that should be updated or added (especially if code appears outdated vs. current behavior). Specify exact docs/sections to create or amend.
+
+Output format:
+- Affected files:
+  - <path>: <reason>
+- Root cause:
+  - <concise explanation>
+- Proposed fix:
+  - <steps/patch outline>
+  - Tests:
+- Documentation gaps:
+  - <doc/section + what to update/add>
+- Open questions/assumptions:
+  - <items>
+  
+ DON'T WRITE ANY CODE</doc><doc title="Token Shortener" desc="docs page."></doc></.cursor><src><doc title="Agents" desc="docs page.">
+
+
+# ClientOnly
+
+Client-only render to avoid SSR hydration issues. Import from `@tanstack/react-router`:
+
+```typescript
+import { ClientOnly } from '@tanstack/react-router';
+
+<ClientOnly fallback={<span>—</span>}>
+  <ComponentThatUsesClientHooks />
+</ClientOnly>
+```
+
+Alternative: Custom implementation using mounted pattern if needed (see hydration errors below).
+
+# Environment functions
+
+From `@tanstack/react-start`:
+
+## createIsomorphicFn
+
+Adapts to client/server:
+
+```typescript
+import { createIsomorphicFn } from '@tanstack/react-start';
+const getEnv = createIsomorphicFn()
+  .server(() => 'server')
+  .client(() => 'client');
+getEnv(); // 'server' on server, 'client' on client
+```
+
+Partial: `.server()` no-op on client, `.client()` no-op on server.
+
+## createServerOnlyFn / createClientOnlyFn
+
+RC1: `serverOnly` → `createServerOnlyFn`, `clientOnly` → `createClientOnlyFn`
+
+Strict environment execution (throws if called wrong env):
+
+```typescript
+import { createServerOnlyFn, createClientOnlyFn } from '@tanstack/react-start';
+const serverFn = createServerOnlyFn(() => 'bar'); // throws on client
+const clientFn = createClientOnlyFn(() => 'bar'); // throws on server
+```
+
+Tree-shaken: client code removed from server bundle, server code removed from client bundle.
+
+# Hydration errors
+
+Mismatch: Server HTML differs from client render. Common causes: Intl (locale/timezone), Date.now(), random IDs, responsive logic, feature flags, user prefs.
+
+Strategies:
+1. Make server and client match: deterministic locale/timezone on server (cookie or Accept-Language header), compute once and hydrate as initial state.
+2. Let client tell environment: set cookie with client timezone on first visit, SSR uses UTC until then.
+3. Make it client-only: wrap unstable UI in `<ClientOnly>` to avoid SSR mismatches.
+4. Disable/limit SSR: use selective SSR (`ssr: 'data-only'` or `false`) when server HTML cannot be stable.
+5. Last resort: React's `suppressHydrationWarning` for small known-different nodes (use sparingly).
+
+Checklist: Deterministic inputs (locale, timezone, feature flags). Prefer cookies for client context. Use `<ClientOnly>` for dynamic UI. Use selective SSR when server HTML unstable. Avoid blind suppression.
+
+# TanStack Start basics
+
+Depends: @tanstack/react-router, Vite. Router: getRouter() (was createRouter() in beta). routeTree.gen.ts auto-generated on first dev run. Optional: server handler via @tanstack/react-start/server; client hydrate via StartClient from @tanstack/react-start/client. RC1: Import StartClient from @tanstack/react-start/client (not @tanstack/react-start). StartClient no longer requires router prop. Root route head: utf-8, viewport, title; component wraps Outlet in RootDocument. Routes: createFileRoute() code-split + lazy-load; loader runs server/client. Navigation: Link (typed), useNavigate (imperative), useRouter (instance).
+
+# Server functions
+
+createServerFn({ method }) + zod .inputValidator + .handler(ctx). After mutations: router.invalidate(); queryClient.invalidateQueries(['entity', id]).
+
+# Typed Links
+
+Link to="/posts/$postId" with params; activeProps for styling.
+
+
+
+
+# TanStack Query Rules
+
+Server state via TanStack Query + server functions. Type-safe fetching and mutations.
+
+## Query Pattern
+
+Define in `lib/{resource}/queries.ts` using `queryOptions`:
+
+```typescript
+export const todosQueryOptions = () =>
+  queryOptions({
+    queryKey: ['todos'],
+    queryFn: async ({ signal }) => await getTodos({ signal }),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  });
+```
+
+Use: `const { data, isLoading } = useQuery(todosQueryOptions())`. Prefer `useSuspenseQuery` with Suspense.
+
+## Server Functions in Queries
+
+Call server functions directly in `queryFn`. No `useServerFn` hook. TanStack Start proxies. Pass `signal` for cancellation.
+
+## Mutation Pattern
+
+```typescript
+const mutation = useMutation({
+  mutationFn: async (text: string) => await createTodo({ data: { text } }),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: todosQueryOptions().queryKey });
+    toast.success('Success');
+  },
+  onError: (error) => toast.error(error.message || 'Failed'),
+});
+```
+
+Call via `mutation.mutate(data)` or `mutateAsync` for promises.
+
+## Query Invalidation
+
+After mutations: `queryClient.invalidateQueries({ queryKey: ... })`. Use specific keys, not broad.
+
+## Mutation States
+
+Access: `isPending`, `isError`, `isSuccess`, `error`, `data`. Disable UI during `isPending`.
+
+## Error Handling
+
+Handle in `onError`. Toast messages. Access: `error.message || 'Default'`.
+
+## Query Keys
+
+Hierarchical: `['todos']`, `['todo', id]`, `['todos', 'completed']`. Include all affecting variables.
+
+## Stale Time vs GC Time
+
+`staleTime`: freshness duration (no refetch). Default 0. Set for stable data.
+`gcTime`: unused cache duration (was `cacheTime`). Default 5min. Memory management.
+
+## Infinite Queries
+
+`useInfiniteQuery` for pagination. Required: `initialPageParam`, `getNextPageParam`, `fetchNextPage`. Access `data.pages`. Check `hasNextPage` before fetching.
+
+## Optimistic Updates
+
+`onMutate` for optimistic updates. Rollback in `onError`. Update cache via `queryClient.setQueryData`.
+
+## Best Practices
+
+1. Queries in `lib/{resource}/queries.ts` with `queryOptions`
+2. Call server functions directly (no `useServerFn` in callbacks)
+3. Invalidate after mutations
+4. Toast for feedback
+5. Handle loading/error states
+6. Use TypeScript types from query options
+7. Set `staleTime`/`gcTime` appropriately
+8. Prefer `useSuspenseQuery` with Suspense</doc><doc title="Start" desc="docs page.">import { createStart } from '@tanstack/react-start';
+export const startInstance = createStart(async () => ({
+  functionMiddleware: [],
+}));</doc><doc title="Tanstack Start.D" desc="docs page.">/// <reference types="vite/client" />
+import '../.tanstack-start/server-routes/routeTree.gen'</doc><doc title="Agents" desc="docs page.">
+
+
+# Server Routes — TanStack Start
+
+Server HTTP endpoints for requests, forms, auth. Location: ./src/routes. Export Route to create API route. ServerRoute and Route can coexist in same file.
+
+Routing mirrors TanStack Router: dynamic $id, splat $, escaped [.], nested dirs/dotted filenames map to paths. One handler per resolved path (duplicates error). Examples: users.ts → /users; users/$id.ts → /users/$id; api/file/$.ts → /api/file/$; my-script[.]js.ts → /my-script.js.
+
+Middleware: pathless layout routes add group middleware; break-out routes skip parents.
+
+RC1 server entry signature: export default { fetch(req: Request): Promise<Response> { ... } }
+
+Define handlers: use createFileRoute() from @tanstack/react-router with server: { handlers: { ... } }. Methods per HTTP verb, with optional middleware builder. createServerFileRoute removed in RC1; use createFileRoute with server property.
+
+Handler receives { request, params, context }; return Response or Promise<Response>. Helpers from @tanstack/react-start allowed.
+
+Bodies: request.json(), request.text(), request.formData() for POST/PUT/PATCH/DELETE.
+
+JSON/status/headers: return JSON manually or via json(); set status via Response init or setResponseStatus(); set headers via Response init or setHeaders().
+
+Params: /users/$id → params.id; /users/$id/posts/$postId → params.id + params.postId; /file/$ → params._splat.
+
+Unique path rule: one file per resolved path; users.ts vs users.index.ts vs users/index.ts conflicts.
+
+RC1 structure:
+```typescript
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/api/example')({
+  server: {
+    handlers: {
+      GET: ({ request }) => new Response('Hello'),
+      POST: ({ request }) => new Response('Created', { status: 201 })
+    }
+  }
+})
+```</doc><doc title="Browser Echo.D" desc="docs page.">declare module 'virtual:browser-echo';</doc><doc title="Client" desc="docs page.">import { createEnv } from '@t3-oss/env-core';
+import * as z from 'zod';
+
+export const env = createEnv({
+  clientPrefix: 'VITE_',
+  client: {
+    VITE_BASE_URL: z.url().default('http://localhost:3000'),
+  },
+  runtimeEnv: import.meta.env,
+});</doc><doc title="Id Generator" desc="docs page.">import { randomUUID } from 'node:crypto';
+
+const prefixes = {
+    files: 'file',
+    user: 'user',
+} as const;
+
+export const generateId = (prefix: keyof typeof prefixes | string) => {
+    const resolvedPrefix = (prefix in prefixes) ? prefixes[prefix as keyof typeof prefixes] : prefix;
+    return `${resolvedPrefix}_${randomUUID()}`;
+}</doc><doc title="Seo" desc="docs page.">export const seo = ({
+    title,
+    description,
+    keywords,
+    image
+}: {
+    title: string
+    description?: string
+    image?: string
+    keywords?: string
+}) => {
+    const tags = [
+        { title },
+        { name: "description", content: description },
+        { name: "keywords", content: keywords },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:creator", content: "@tannerlinsley" },
+        { name: "twitter:site", content: "@tannerlinsley" },
+        { name: "og:type", content: "website" },
+        { name: "og:title", content: title },
+        { name: "og:description", content: description },
+        ...(image
+            ? [
+                  { name: "twitter:image", content: image },
+                  { name: "twitter:card", content: "summary_large_image" },
+                  { name: "og:image", content: image }
+              ]
+            : [])
+    ]
+
+    return tags
+}</doc><doc title="Server" desc="docs page.">import { createEnv } from '@t3-oss/env-core';
+import * as z from 'zod';
+
+export const env = createEnv({
+  server: {
+    MY_SECRET_VAR: z.url(),
+  },
+  runtimeEnv: process.env,
+});</doc><doc title="Tanstack Environment Server Client Only Rules" desc="docs page."># ClientOnly
+
+Client-only render to avoid SSR hydration issues. Import from `@tanstack/react-router`:
+
+```typescript
+import { ClientOnly } from '@tanstack/react-router';
+
+<ClientOnly fallback={<span>—</span>}>
+  <ComponentThatUsesClientHooks />
+</ClientOnly>
+```
+
+Alternative: Custom implementation using mounted pattern if needed (see hydration errors below).
+
+# Environment functions
+
+From `@tanstack/react-start`:
+
+## createIsomorphicFn
+
+Adapts to client/server:
+
+```typescript
+import { createIsomorphicFn } from '@tanstack/react-start';
+const getEnv = createIsomorphicFn()
+  .server(() => 'server')
+  .client(() => 'client');
+getEnv(); // 'server' on server, 'client' on client
+```
+
+Partial: `.server()` no-op on client, `.client()` no-op on server.
+
+## createServerOnlyFn / createClientOnlyFn
+
+RC1: `serverOnly` → `createServerOnlyFn`, `clientOnly` → `createClientOnlyFn`
+
+Strict environment execution (throws if called wrong env):
+
+```typescript
+import { createServerOnlyFn, createClientOnlyFn } from '@tanstack/react-start';
+const serverFn = createServerOnlyFn(() => 'bar'); // throws on client
+const clientFn = createClientOnlyFn(() => 'bar'); // throws on server
+```
+
+Tree-shaken: client code removed from server bundle, server code removed from client bundle.
+
+# Hydration errors
+
+Mismatch: Server HTML differs from client render. Common causes: Intl (locale/timezone), Date.now(), random IDs, responsive logic, feature flags, user prefs.
+
+Strategies:
+1. Make server and client match: deterministic locale/timezone on server (cookie or Accept-Language header), compute once and hydrate as initial state.
+2. Let client tell environment: set cookie with client timezone on first visit, SSR uses UTC until then.
+3. Make it client-only: wrap unstable UI in `<ClientOnly>` to avoid SSR mismatches.
+4. Disable/limit SSR: use selective SSR (`ssr: 'data-only'` or `false`) when server HTML cannot be stable.
+5. Last resort: React's `suppressHydrationWarning` for small known-different nodes (use sparingly).
+
+Checklist: Deterministic inputs (locale, timezone, feature flags). Prefer cookies for client context. Use `<ClientOnly>` for dynamic UI. Use selective SSR when server HTML unstable. Avoid blind suppression.
+
+# TanStack Start basics
+
+Depends: @tanstack/react-router, Vite. Router: getRouter() (was createRouter() in beta). routeTree.gen.ts auto-generated on first dev run. Optional: server handler via @tanstack/react-start/server; client hydrate via StartClient from @tanstack/react-start/client. RC1: Import StartClient from @tanstack/react-start/client (not @tanstack/react-start). StartClient no longer requires router prop. Root route head: utf-8, viewport, title; component wraps Outlet in RootDocument. Routes: createFileRoute() code-split + lazy-load; loader runs server/client. Navigation: Link (typed), useNavigate (imperative), useRouter (instance).
+
+# Server functions
+
+createServerFn({ method }) + zod .inputValidator + .handler(ctx). After mutations: router.invalidate(); queryClient.invalidateQueries(['entity', id]).
+
+# Typed Links
+
+Link to="/posts/$postId" with params; activeProps for styling.</doc></src></project>

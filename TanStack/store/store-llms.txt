@@ -1,0 +1,57 @@
+# Store
+
+> TanStack Store is a lightweight, immutable, and reactive state management library designed to provide fine-grained updates for high-performance applications. It serves as a foundational tool in the TanStack ecosystem, offering flexible primitives for custom state logic and seamless integration across major frameworks including React, Solid, Vue, Angular, and Svelte. Its goal is to empower developers to manage state efficiently while maintaining type safety and enabling scalable, maintainable applications.
+
+**Remember:**
+- immutable state
+- reactive updates
+- fine-grained state management
+- framework-agnostic
+- derived state
+- effect hooks
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/store/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/store/main/docs/overview.md): install & quickstart.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/framework/angular/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/framework/react/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/framework/solid/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/framework/svelte/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/store/main/docs/framework/vue/reference/index.md): API reference.
+- [Generatedocs](https://raw.githubusercontent.com/TanStack/store/main/scripts/generateDocs.ts): docs page.
+- [Quick Start](https://raw.githubusercontent.com/TanStack/store/main/docs/quick-start.md): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/store/main/examples/angular/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/store/main/examples/react/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/store/main/examples/solid/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/store/main/examples/svelte/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/store/main/examples/vue/simple/README.md): install & quickstart.
+- [Simple](https://raw.githubusercontent.com/TanStack/store/main/examples/react/simple/index.html): worked example.
+- [Simple](https://raw.githubusercontent.com/TanStack/store/main/examples/solid/simple/index.html): worked example.
+- [Simple](https://raw.githubusercontent.com/TanStack/store/main/examples/svelte/simple/index.html): worked example.
+- [Simple](https://raw.githubusercontent.com/TanStack/store/main/examples/vue/simple/index.html): worked example.
+- [Src](https://raw.githubusercontent.com/TanStack/store/main/examples/angular/simple/src/index.html): worked example.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/store/main/CONTRIBUTING.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/store/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/eslint.config.js): docs page.
+- [Vitest.Workspace](https://raw.githubusercontent.com/TanStack/store/main/vitest.workspace.ts): docs page.
+
+## Packages
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/angular-store/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/react-store/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/solid-store/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/store/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/svelte-store/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/vue-store/eslint.config.js): docs page.
+- [Svelte.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/svelte-store/svelte.config.js): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/angular-store/vite.config.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/react-store/vite.config.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/TanStack/store/main/packages/solid-store/vite.config.ts): docs page.
+
+## Scripts
+- [Publish](https://raw.githubusercontent.com/TanStack/store/main/scripts/publish.ts): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/store/main/scripts/verify-links.ts): docs page.

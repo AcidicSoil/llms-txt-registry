@@ -1,0 +1,53 @@
+# Deepagentsjs
+
+> `deepagentsjs` is a TypeScript library that enables the creation of **deep agents**—LLM‑based agents capable of planning, executing sub‑tasks, managing large amounts of context via a file system, and persisting memory across interactions.   Its primary goal is to move beyond the shallow “tool‑calling” loop by providing built‑in planning tools, sub‑agent spawning, and persistent storage, making it suitable for complex, long‑running applications such as research assistants, code generation pipelines, and interactive human‑in‑the‑loop workflows.
+
+**Remember:**
+- Deep Agent
+- Planning tool (write_todos)
+- Sub‑agents (task tool)
+- File‑system middleware (ls, read_file, write_file, edit_file, glob, grep)
+- Store backend (persistent memory)
+- Composite backend (combines multiple backends)
+
+## Tutorials
+- [Composite Backend](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/examples/backends/composite-backend.ts): worked example.
+- [Filesystem Backend](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/examples/backends/filesystem-backend.ts): worked example.
+- [Research Agent](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/examples/research/research-agent.ts): worked example.
+- [State Backend](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/examples/backends/state-backend.ts): worked example.
+- [Store Backend](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/examples/backends/store-backend.ts): worked example.
+
+## Optional
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/CHANGELOG.md): version history.
+- [README](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/eslint.config.js): docs page.
+- [Tsdown.Config](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tsdown.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/vitest.config.ts): docs page.
+
+## .Changeset
+- [README](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/.changeset/README.md): install & quickstart.
+- [Itchy Needles Admire](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/.changeset/itchy-needles-admire.md): docs page.
+
+## Src
+- [Agent](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/agent.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/index.ts): docs page.
+- [Composite](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/backends/composite.ts): docs page.
+- [Filesystem](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/backends/filesystem.ts): docs page.
+- [Fs](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/middleware/fs.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/backends/index.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/middleware/index.ts): docs page.
+- [Patch Tool Calls](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/middleware/patch_tool_calls.ts): docs page.
+- [Protocol](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/backends/protocol.ts): docs page.
+- [State](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/src/backends/state.ts): docs page.
+
+## Tests
+- [Utils](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/utils.ts): docs page.
+- [Deepagents.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/integration/deepagents.test.ts): docs page.
+- [Filesystem.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/integration/filesystem.test.ts): docs page.
+- [Hitl.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/integration/hitl.test.ts): docs page.
+- [Middleware.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/unit/middleware.test.ts): docs page.
+- [Subagents.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/integration/subagents.test.ts): docs page.
+- [Composite.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/unit/backends/composite.test.ts): docs page.
+- [Filesystem.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/unit/backends/filesystem.test.ts): docs page.
+- [State.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/unit/backends/state.test.ts): docs page.
+- [Store.Test](https://raw.githubusercontent.com/langchain-ai/deepagentsjs/main/tests/unit/backends/store.test.ts): docs page.

@@ -1,0 +1,117 @@
+# Langchainjs
+
+> LangChain.js is a framework for building LLM-powered applications by providing a standardized interface for chaining together components such as agents, models, embeddings, vector stores, and tools. It enables developers to integrate with various LLM providers and external systems, adapt models easily, and build scalable, future-proof applications. It also supports agent orchestration via LangGraph.js and offers tools for monitoring and debugging via LangSmith.
+
+**Remember:**
+- LLM-powered application development
+- Modular and interoperable components
+- Agent orchestration with LangGraph.js
+- Model interoperability and swapping
+- Real-time data augmentation
+- LangSmith for monitoring and debugging
+
+## Docs
+- [Lunary Quickstart](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/callbacks/lunary_quickstart.ts): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/chat/overview.ts): install & quickstart.
+- [Quickstart](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart.ts): install & quickstart.
+- [Quickstart2](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart2.ts): install & quickstart.
+- [Quickstart3](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart3.ts): install & quickstart.
+- [Basic Fstring](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/basic_fstring.ts): install & quickstart.
+- [Basic Mustache](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/basic_mustache.ts): install & quickstart.
+- [Hard Coded Fstring](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/hard_coded_fstring.ts): install & quickstart.
+- [Hard Coded Mustache](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/hard_coded_mustache.ts): install & quickstart.
+- [Input Vars Fstring](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/input_vars_fstring.ts): install & quickstart.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/examples/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/cookbook/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/eslint.config.ts): worked example.
+- [State Of The Union](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/state_of_the_union.txt): worked example.
+- [Index](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/index.ts): worked example.
+- [Accessexternalcontext](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessExternalContext.ts): worked example.
+- [Accessexternalcontextintools](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessExternalContextInTools.ts): worked example.
+- [Accesslongtermmemory](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessLongTermMemory.ts): worked example.
+- [Accesslongtermmemoryintools](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessLongTermMemoryInTools.ts): worked example.
+
+## API
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/README.md): install & quickstart.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/CHANGELOG.md): version history.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/eslint.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/vitest.config.ts): docs page.
+- [Api Schema](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/model-profiles/src/api-schema.ts): API reference.
+- [Document](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/document.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/index.ts): docs page.
+- [Sql Db](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/sql_db.ts): docs page.
+- [Text Splitter](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/text_splitter.ts): docs page.
+- [Agent](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/agents/agent.ts): docs page.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/CONTRIBUTING.md): docs page.
+- [Security](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/SECURITY.md): security policy.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-community/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-core/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-standard-tests/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-textsplitters/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain/CHANGELOG.md): version history.
+- [Integrations](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/contributing/INTEGRATIONS.md): docs page.
+- [Changelog](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-anthropic/CHANGELOG.md): version history.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.devcontainer/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/README.md): docs page.
+
+## .Changeset
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.changeset/README.md): install & quickstart.
+- [Fuzzy Towns Listen](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.changeset/fuzzy-towns-listen.md): docs page.
+
+## .Github
+- [Pull Request Template](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/pull_request_template.md): docs page.
+- [Main](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/actions/people/app/main.py): docs page.
+
+## Dependency Range Tests
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/langchain/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Lowest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/langchain/node/update_resolutions_lowest.js): docs page.
+- [Update Workspace Dependencies](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/node/update_workspace_dependencies.js): docs page.
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/anthropic/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/cohere/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/community/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/google-vertexai/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Latest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/openai/node/update_resolutions_latest.js): docs page.
+- [Update Resolutions Lowest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/anthropic/node/update_resolutions_lowest.js): docs page.
+- [Update Resolutions Lowest](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/cohere/node/update_resolutions_lowest.js): docs page.
+
+## Environment Tests
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-cf/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vercel/README.md): install & quickstart.
+- [Test Exports Vite](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/index.html): docs page.
+- [Main](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-tsc/main.ts): docs page.
+- [Next.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vercel/next.config.js): docs page.
+- [Test Runner](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/scripts/test-runner.ts): docs page.
+- [Vite.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/vite.config.js): docs page.
+- [Chain](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/src/chain.ts): docs page.
+- [Combine Dependencies](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-bun/scripts/combine-dependencies.js): docs page.
+
+## Internal
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/eslint/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/model-profiles/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/test-helpers/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/plugins/README.md): install & quickstart.
+- [Cli](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/cli.ts): docs page.
+- [Constants](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/constants.ts): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/eslint/eslint.config.ts): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/test-helpers/eslint.config.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/index.ts): docs page.
+
+## Libs
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-community/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-core/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-standard-tests/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-textsplitters/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/create-langchain-integration/template/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-anthropic/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-aws/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-azure-cosmosdb/README.md): install & quickstart.

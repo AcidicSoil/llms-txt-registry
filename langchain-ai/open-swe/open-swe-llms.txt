@@ -1,0 +1,68 @@
+# Open Swe
+
+> Open SWE aims to empower developers with an autonomous, cloud-based coding assistant that can plan, execute, and manage code changes without constant human intervention. It enables end-to-end task management by automatically creating GitHub issues and pull requests, supports parallel execution for efficiency, and allows real-time human feedback during the process. The project is designed to be extensible and customizable, with support for different LLMs and GitHub workflows, making it suitable for both personal and enterprise use.
+
+**Remember:**
+- LangGraph
+- Asynchronous Coding Agent
+- GitHub Integration
+- Planning and Execution Pipeline
+- Human-in-the-Loop Interaction
+- Sandboxed Execution Environment
+
+## Docs
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/docs/README.md): install & quickstart.
+- [Install Dependencies](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/tools/install-dependencies.ts): install & quickstart.
+- [Usegithubinstallations](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/hooks/useGitHubInstallations.ts): install & quickstart.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/github/installation-callback/route.ts): install & quickstart.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/github/installation/route.ts): install & quickstart.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/github/installations/route.ts): install & quickstart.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/github/switch-installation/route.ts): install & quickstart.
+- [Examples](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/docs/usage/examples.mdx): worked example.
+- [Docs](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/docs/index.mdx): docs page.
+- [Faq](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/docs/faq.mdx): core concept.
+
+## API
+- [Api Keys](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/lib/api-keys.ts): API reference.
+- [Api](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/utils/github/api.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/[..._path]/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/restart-run/route.ts): API reference.
+- [Types](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/restart-run/types.ts): API reference.
+- [Utils](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/[..._path]/utils.ts): API reference.
+- [Index](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/graphs/manager/nodes/classify-message/index.ts): docs page.
+- [Prompts](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/graphs/manager/nodes/classify-message/prompts.ts): docs page.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/auth/logout/route.ts): API reference.
+- [Route](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/src/app/api/auth/status/route.ts): API reference.
+
+## Optional
+- [Security](https://raw.githubusercontent.com/langchain-ai/open-swe/main/SECURITY.md): security policy.
+- [Auth](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/security/auth.ts): security policy.
+- [Custom](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/security/custom.ts): security policy.
+- [Github](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/security/github.ts): security policy.
+- [Utils](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/src/security/utils.ts): security policy.
+- [Agents](https://raw.githubusercontent.com/langchain-ai/open-swe/main/AGENTS.md): docs page.
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/README.md): docs page.
+
+## Apps
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/cli/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe-v2/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/cli/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe-v2/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/web/eslint.config.js): docs page.
+- [Jest.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe-v2/jest.config.js): docs page.
+- [Jest.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/apps/open-swe/jest.config.js): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/eslint.config.js): docs page.
+- [Jest.Config](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/jest.config.js): docs page.
+- [Agent Inbox Interrupt](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/agent-inbox-interrupt.ts): docs page.
+- [Caching](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/caching.ts): docs page.
+- [Configurable Metadata](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/configurable-metadata.ts): docs page.
+- [Constants](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/constants.ts): docs page.
+- [Crypto](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/crypto.ts): docs page.
+- [Git](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/git.ts): docs page.
+- [Index](https://raw.githubusercontent.com/langchain-ai/open-swe/main/packages/shared/src/index.ts): docs page.

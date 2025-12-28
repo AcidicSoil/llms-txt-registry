@@ -1,0 +1,75 @@
+# Form
+
+> TanStack Form is a headless, framework-agnostic form library designed to give developers full control over form state, validation, and workflows while supporting any UI framework. It enables reactive, typed form management with sync/async validation, nested fields, and composability, empowering developers to build complex forms without vendor lock-in. The library is built for scalability, extensibility, and developer ergonomics, with tools like devtools and standardized APIs to enhance productivity across frameworks.
+
+**Remember:**
+- headless form library
+- framework-agnostic
+- reactive hooks
+- typed form state
+- sync/async validation
+- form composition
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/form/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/form/main/docs/overview.md): install & quickstart.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/framework/angular/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/framework/lit/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/framework/react/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/framework/solid/reference/index.md): API reference.
+- [Reference](https://raw.githubusercontent.com/TanStack/form/main/docs/framework/vue/reference/index.md): API reference.
+- [Community Resources](https://raw.githubusercontent.com/TanStack/form/main/docs/community-resources.md): docs page.
+- [Comparison](https://raw.githubusercontent.com/TanStack/form/main/docs/comparison.md): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/angular/array/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/angular/large-form/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/angular/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/angular/standard-schema/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/lit/array/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/lit/simple/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/lit/standard-schema/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/lit/ui-libraries/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/react/array/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/examples/react/compiler/README.md): install & quickstart.
+
+## API
+- [Fieldapi](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/src/FieldApi.ts): docs page.
+- [Fieldapi.Spec](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FieldApi.spec.ts): docs page.
+- [Fieldapi.Test D](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FieldApi.test-d.ts): docs page.
+- [Fieldgroupapi](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/src/FieldGroupApi.ts): docs page.
+- [Fieldgroupapi.Spec](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FieldGroupApi.spec.ts): docs page.
+- [Fieldgroupapi.Test D](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FieldGroupApi.test-d.ts): docs page.
+- [Formapi](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/src/FormApi.ts): docs page.
+- [Formapi.Spec](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FormApi.spec.ts): docs page.
+- [Formapi.Test D](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/tests/FormApi.test-d.ts): docs page.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/form/main/CONTRIBUTING.md): docs page.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/angular-form/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/form-devtools/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/lit-form/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/react-form-devtools/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/react-form/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/solid-form/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/svelte-form/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/form/main/packages/vue-form/CHANGELOG.md): version history.
+- [Bumpy Boats Roll](https://raw.githubusercontent.com/TanStack/form/main/.changeset/bumpy-boats-roll.md): docs page.
+- [Pull Request Template](https://raw.githubusercontent.com/TanStack/form/main/.github/pull_request_template.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/form/main/eslint.config.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/form/main/scripts/verify-links.ts): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/angular-form/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/form-devtools/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/lit-form/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/react-form-devtools/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/react-form/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/solid-form/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/form/main/packages/vue-form/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/form/main/packages/angular-form/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/form/main/packages/form-core/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/form/main/packages/form-devtools/eslint.config.js): docs page.

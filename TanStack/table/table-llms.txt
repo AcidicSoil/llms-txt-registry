@@ -1,0 +1,57 @@
+# Table
+
+> TanStack Table is a headless, framework-agnostic table library designed to empower developers to build highly customizable, performant datagrids with full control over UI, styling, and behavior. It provides a rich set of features including sorting, filtering, grouping, row selection, and virtualization, while remaining lightweight and compatible with server-side rendering. The project aims to serve as a foundational component for data-intensive applications across multiple frontend frameworks.
+
+**Remember:**
+- Headless Table Library
+- Framework-Agnostic
+- Customizable UI
+- Sorting
+- Filtering
+- Grouping
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/table/main/docs/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/table/main/docs/overview.md): install & quickstart.
+- [Faq](https://raw.githubusercontent.com/TanStack/table/main/docs/faq.md): core concept.
+- [Introduction](https://raw.githubusercontent.com/TanStack/table/main/docs/introduction.md): docs page.
+- [Vanilla](https://raw.githubusercontent.com/TanStack/table/main/docs/vanilla.md): docs page.
+- [Ag Grid](https://raw.githubusercontent.com/TanStack/table/main/docs/enterprise/ag-grid.md): docs page.
+- [Cells](https://raw.githubusercontent.com/TanStack/table/main/docs/guide/cells.md): docs page.
+- [Column Defs](https://raw.githubusercontent.com/TanStack/table/main/docs/guide/column-defs.md): docs page.
+- [Column Faceting](https://raw.githubusercontent.com/TanStack/table/main/docs/guide/column-faceting.md): docs page.
+- [Column Filtering](https://raw.githubusercontent.com/TanStack/table/main/docs/guide/column-filtering.md): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/basic/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/column-ordering/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/column-pinning-sticky/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/column-pinning/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/column-resizing-performant/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/column-visibility/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/editable/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/expanding/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/filters/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/examples/angular/grouping/README.md): install & quickstart.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/table/main/CONTRIBUTING.md): docs page.
+- [Pull Request Template](https://raw.githubusercontent.com/TanStack/table/main/.github/pull_request_template.md): docs page.
+- [Code Of Conduct](https://raw.githubusercontent.com/TanStack/table/main/CODE_OF_CONDUCT.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/table/main/README.md): docs page.
+
+## Packages
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/table/main/packages/angular-table/vitest.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/table/main/packages/match-sorter-utils/vitest.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/table/main/packages/react-table/vitest.config.ts): docs page.
+- [Vitest.Config](https://raw.githubusercontent.com/TanStack/table/main/packages/table-core/vitest.config.ts): docs page.
+- [Aggregationfns](https://raw.githubusercontent.com/TanStack/table/main/packages/table-core/src/aggregationFns.ts): docs page.
+- [Columnhelper](https://raw.githubusercontent.com/TanStack/table/main/packages/table-core/src/columnHelper.ts): docs page.
+- [Createangulartable.Test](https://raw.githubusercontent.com/TanStack/table/main/packages/angular-table/tests/createAngularTable.test.ts): docs page.
+- [Filterfns](https://raw.githubusercontent.com/TanStack/table/main/packages/table-core/src/filterFns.ts): docs page.
+- [Flex Render](https://raw.githubusercontent.com/TanStack/table/main/packages/angular-table/src/flex-render.ts): docs page.
+- [Flex Render Component.Test D](https://raw.githubusercontent.com/TanStack/table/main/packages/angular-table/tests/flex-render-component.test-d.ts): docs page.
+
+## Scripts
+- [Getrollupconfig](https://raw.githubusercontent.com/TanStack/table/main/scripts/getRollupConfig.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/table/main/scripts/verify-links.ts): docs page.

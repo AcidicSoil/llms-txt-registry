@@ -1,0 +1,1561 @@
+<project title="Ranger" summary="TanStack Ranger is a lightweight, headless UI component library that enables developers to build range‑selector controls with a single or multiple handles, custom step sizes, and optional tick marks. It is designed to be framework‑agnostic (core) while offering a React‑specific wrapper for easy integration into React applications.">**Remember:**
+- headless UI
+- range selector
+- multiple handles
+- custom steps
+- tick marks
+- React wrapper<docs><doc title="Installation" desc="install &amp; quickstart.">---
+title: Installation
+---
+
+You can install TanStack Ranger with any [NPM](https://npmjs.com) package manager.
+
+Depending on your framework of choice, install one of the following packages:
+
+- [React](./adapters/react-ranger)
+- Solid (coming soon!)
+- Vue (coming soon!)
+- Svelte (coming soon!)
+- Angular (coming soon!)</doc><doc title="Overview" desc="install &amp; quickstart.">---
+title: Overview
+---
+
+Feature Rich and Lightweight Headless utility, which means out of the box, it doesn't render or supply any actual UI elements. Some of its features include:
+
+- 100% Typesafe
+- Lightweight (10kb)
+- Easy to maintain
+- Extensible
+- Not dictating UI
+
+## Let's go!
+
+Enough overview, there's so much more to do with TanStack Ranger. Hit that next button and let's get started!</doc><doc title="Concepts" desc="core concept.">---
+name: Concepts
+route: /concepts
+---
+
+# Concepts
+
+## Ranger is a "headless" UI library
+
+Ranger is a headless utility, which means out of the box, it doesn't render or supply any actual UI elements. You are in charge of utilizing the state and callbacks of the hooks provided by this library to render your own table markup. [Read this article to understand why Ranger is built this way](https://www.merrickchristensen.com/articles/headless-user-interface-components/). If you don't want to, then here's a quick rundown anyway:
+
+- Separation of Concerns - Not that superficial kind you read about all the time. The real kind. Ranger as a library honestly has no business being in charge of your UI. The look, feel, and overall experience of your table is what makes your app or product great. The less Ranger gets in the way of that, the better!
+- Maintenance - By removing the massive (and seemingly endless) API surface area required to support every UI use-case, Ranger can remain small, easy-to-use and simple to update/maintain.
+- Extensibility - UI presents countless edge cases for a library simply because it's a creative medium, and one where every developer does things differently. By not dictating UI concerns, Ranger empowers the developer to design and extend the UI based on their unique use-case.
+
+## The Ranger instance
+
+At the heart of every Ranger is the `Ranger` class. This class will provide everything you'll ever need to build a ranger and interact with its state. This includes, but is not limited to:
+
+- Value Range
+- Snap Interpolation
+- Ticks (labels) generation
+
+After reading about Ranger's concepts, you should:
+- [Check Out Some Examples](./examples)</doc><doc title="Faq" desc="core concept.">---
+name: FAQ
+route: /faq
+---
+
+# FAQ
+
+Below are some of the most frequently asked questions on how to use the React Ranger API to solve various table challenges you may encounter
+
+<hr/></doc><doc title="Quick Start" desc="docs page.">---
+title: Quick Start
+---
+
+If you're feeling impatient and prefer to skip all of our wonderful documentation, here is the bare minimum to get going with TanStack Ranger. We'll use React for this example, but the same principles apply to other frameworks.
+
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { useRanger, Ranger } from '@tanstack/react-ranger'
+
+function App() {
+  const rangerRef = React.useRef<HTMLDivElement>(null)
+  const [values, setValues] = React.useState<ReadonlyArray<number>>([
+    10, 15, 50,
+  ])
+
+  const rangerInstance = useRanger<HTMLDivElement>({
+    getRangerElement: () => rangerRef.current,
+    values,
+    min: 0,
+    max: 100,
+    stepSize: 5,
+    onChange: (instance: Ranger<HTMLDivElement>) =>
+      setValues(instance.sortedValues),
+  })
+
+  return (
+    <div className="App" style={{ padding: 10 }}>
+      <h1>Basic Range</h1>
+      <span>Active Index: {rangerInstance.activeHandleIndex}</span>
+      <br />
+      <br />
+      <div
+        ref={rangerRef}
+        style={{
+          position: 'relative',
+          userSelect: 'none',
+          height: '4px',
+          background: '#ddd',
+          boxShadow: 'inset 0 1px 2px rgba(0,0,0,.6)',
+          borderRadius: '2px',
+        }}
+      >
+        {rangerInstance
+          .handles()
+          .map(
+            (
+              {
+                value,
+                onKeyDownHandler,
+                onMouseDownHandler,
+                onTouchStart,
+                isActive,
+              },
+              i,
+            ) => (
+              <button
+                key={i}
+                onKeyDown={onKeyDownHandler}
+                onMouseDown={onMouseDownHandler}
+                onTouchStart={onTouchStart}
+                role="slider"
+                aria-valuemin={rangerInstance.options.min}
+                aria-valuemax={rangerInstance.options.max}
+                aria-valuenow={value}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: `${rangerInstance.getPercentageForValue(value)}%`,
+                  zIndex: isActive ? '1' : '0',
+                  transform: 'translate(-50%, -50%)',
+                  width: '14px',
+                  height: '14px',
+                  outline: 'none',
+                  borderRadius: '100%',
+                  background: 'linear-gradient(to bottom, #eee 45%, #ddd 55%)',
+                  border: 'solid 1px #888',
+                }}
+              />
+            ),
+          )}
+      </div>
+      <br />
+      <br />
+      <br />
+      <pre
+        style={{
+          display: 'inline-block',
+          textAlign: 'left',
+        }}
+      >
+        <code>
+          {JSON.stringify({
+            values,
+          })}
+        </code>
+      </pre>
+    </div>
+  )
+}
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root'),
+)
+
+```
+
+If you skipped this example or didn't understand something, we don't blame you, because there's so much more to learn to really take advantage of TanStack Ranger! Let's move on.</doc><doc title="React Ranger" desc="docs page.">---
+title: React Ranger
+---
+
+You can install TanStack Ranger with any [NPM](https://npmjs.com) package manager.
+
+```sh
+npm install @tanstack/react-ranger
+```</doc><doc title="Basic" desc="API reference.">---
+name: Basic
+route: /api/basic
+menu: API
+---
+
+## Examples
+Want to skip to the implementation? Check out these examples:
+
+- [basic](../../examples/react/basic)
+
+The API below described how to use the **basic** features.
+
+## Options
+
+### values
+
+```tsx
+values: ReadonlyArray<number>
+```
+**Required** The current value (or values) for the range.
+
+### min
+
+```tsx
+min: number
+```
+**Required** The minimum limit for the range.
+
+### max
+
+```tsx
+max: number
+```
+**Required** The maximum limit for the range.
+
+### stepSize
+
+```ts
+stepSize: number
+```
+**Required** The distance between selectable steps.
+
+### onChange
+
+```ts
+onChange: (instance: Ranger<TTrackElement>) => void
+```
+A function that is called when the handle is released.
+
+## API
+
+### handles
+```tsx
+handles: ReadonlyArray<{value: number; isActive: boolean; onKeyDownHandler(event): function; onMouseDownHandler(event): function; onTouchStart(event): function}>
+```
+Handles to be rendered. Each `handle` has the following props:
+ - `value: number` - The current value for the handle.
+ - `isActive: boolean` - Denotes if the handle is currently being dragged.
+ - `onKeyDownHandler(event): func`
+ - `onMouseDownHandler(event): func`
+ - `onTouchStart(event): func`
+
+### activeHandleIndex
+```tsx
+activeHandleIndex: null | number
+```
+The zero-based index of the handle that is currently being dragged, or `null` if no handle is being dragged.</doc><doc title="Custom Steps" desc="API reference.">---
+name: Custom Steps
+route: /api/custom-steps
+menu: API
+---
+
+## Examples
+Want to skip to the implementation? Check out these examples:
+
+- [custom-steps](../examples/custom-steps)
+
+The API below described how to use the **custom-steps** features.
+
+## Options
+
+### steps
+
+```ts
+steps: Array<number>
+```
+An array of custom steps to use. This will override `stepSize`
+
+### ticks
+
+```ts
+ticks: Array<number>
+```
+An array of custom ticks to use. This will override `tickSize`
+
+## API
+
+### getTicks
+```tsx
+getTicks: () => ReadonlyArray<{value: number; key: number; percentage: number}>
+```
+Ticks to be rendered. Each `tick` has the following props:
+  - `value: number` - The tick number to be displayed
+  - `key: number` - The key of a tick
+  - `percentage: number` - Percentage value of where tick should be placed on ranger</doc><doc title="Custom Styles" desc="API reference.">---
+name: Custom Styles
+route: /api/custom-styles
+menu: API
+---
+
+## Examples
+Want to skip to the implementation? Check out these examples:
+
+- [custom-styles](../examples/custom-styles)
+
+The API below described how to use the **custom-steps** features.
+
+## API
+
+### getSegments
+```tsx
+getSegments: () => ReadonlyArray<{left: number; width: number}>
+```
+Segments to be rendered. Each `segment` has the following props:
+  - `left: number` - Percentage value of where segment should start on ranger
+  - `width: number` - Percentage value of segment width </doc><doc title="Logarithmic Interpolator" desc="API reference.">---
+name: Logarithmic Interpolator
+route: /api/logarithmic-interpolator
+menu: API
+---
+
+## Examples
+Want to skip to the implementation? Check out these examples:
+
+- [logarithmic-interpolator](../examples/logarithmic-interpolator)
+
+The API below described how to use the **logarithmic-interpolator** features.
+
+## Options
+
+By default, `react-ranger` uses linear interpolation between data points, but allows you to easily customize it to use your own interpolation functions by passing an object that implements the following interface.
+
+### interpolator
+
+```tsx
+interpolator: {
+    getPercentageForValue: (val: number, min: number, max: number): number;
+    getValueForClientX: (clientX: number, trackDims: object, min: number, max: number): number;
+}
+```
+The Interpolator to use. Defaults to the bundled linear-scale interpolator
+ - `getPercentageForValue` - Takes the value & range and returns a percentage [0, 100] where the value sits from left to right.
+ - `getValueForClientX`- Takes the clientX (offset from the left edge of the ranger) along with the dimensions and range settings and transforms a pixel coordinate back into a value.</doc></docs><tutorials><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm run start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm run start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm run start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm run start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm run start` or `yarn start`</doc><doc title="Basic" desc="worked example."><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Custom Steps" desc="worked example."><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Custom Styles" desc="worked example."><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Logarithmic Interpolator" desc="worked example."><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Update On Drag" desc="worked example."><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc></tutorials><packages><doc title="README" desc="install &amp; quickstart.">![React Ranger Header](https://github.com/tanstack/ranger/raw/main/media/headerv1.png)
+
+Headless UI for building ranger component in TS/JS and React
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TanStack" target="\_parent">
+  <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack" />
+</a><a href="https://github.com/TanStack/ranger/actions/workflows/ci.yml">
+<img src="https://github.com/tanstack/ranger/actions/workflows/ci.yml/badge.svg" />
+</a><a href="https://npmjs.com/package/@tanstack/ranger-core" target="\_parent">
+  <img alt="" src="https://img.shields.io/npm/dm/@tanstack/ranger-core.svg" />
+</a><a href="https://bundlephobia.com/result?p=@tanstack/ranger@latest" target="\_parent">
+  <img alt="" src="https://badgen.net/bundlephobia/minzip/@tanstack/ranger@latest" />
+</a><a href="#badge">
+    <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg">
+  </a><a href="https://github.com/tanstack/ranger/discussions">
+  <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Github%20Discussions%20%26%20Support-Chat%20now!-blue" />
+</a><a href="https://github.com/tanstack/ranger" target="\_parent">
+  <img alt="" src="https://img.shields.io/github/stars/tanstack/ranger.svg?style=social&label=Star" />
+</a><a href="https://twitter.com/tannerlinsley" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tannerlinsley.svg?style=social&label=Follow" />
+</a>
+
+<br />
+<br />
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com)! [React Query](https://github.com/TanStack/react-query), [TanStack Table](https://github.com/TanStack/table), [React Charts](https://github.com/TanStack/react-charts)
+
+## Visit [tanstack.com/ranger](https://tanstack.com/ranger) for docs, guides, API and more!
+
+## Quick Features
+
+- Headless!
+- Single or Multiple Handles
+- Handle Devider Items
+- Custom Steps or Step-Size
+- Custom Ticks
+</doc><doc title="README" desc="install &amp; quickstart.">![React Ranger Header](https://github.com/tanstack/ranger/raw/main/media/headerv1.png)
+
+Headless UI for building ranger component in TS/JS and React
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TanStack" target="\_parent">
+  <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack" />
+</a><a href="https://github.com/TanStack/ranger/actions/workflows/ci.yml">
+<img src="https://github.com/tanstack/ranger/actions/workflows/ci.yml/badge.svg" />
+</a><a href="https://npmjs.com/package/@tanstack/ranger-core" target="\_parent">
+  <img alt="" src="https://img.shields.io/npm/dm/@tanstack/ranger-core.svg" />
+</a><a href="https://bundlephobia.com/result?p=@tanstack/ranger@latest" target="\_parent">
+  <img alt="" src="https://badgen.net/bundlephobia/minzip/@tanstack/ranger@latest" />
+</a><a href="#badge">
+    <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg">
+  </a><a href="https://github.com/tanstack/ranger/discussions">
+  <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Github%20Discussions%20%26%20Support-Chat%20now!-blue" />
+</a><a href="https://github.com/tanstack/ranger" target="\_parent">
+  <img alt="" src="https://img.shields.io/github/stars/tanstack/ranger.svg?style=social&label=Star" />
+</a><a href="https://twitter.com/tannerlinsley" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tannerlinsley.svg?style=social&label=Follow" />
+</a>
+
+<br />
+<br />
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com)! [React Query](https://github.com/TanStack/react-query), [TanStack Table](https://github.com/TanStack/table), [React Charts](https://github.com/TanStack/react-charts)
+
+## Visit [tanstack.com/ranger](https://tanstack.com/ranger) for docs, guides, API and more!
+
+## Quick Features
+
+- Headless!
+- Single or Multiple Handles
+- Handle Devider Items
+- Custom Steps or Step-Size
+- Custom Ticks
+</doc><doc title="Index" desc="docs page.">import { linearInterpolator, getBoundingClientRect, sortNumList } from './utils'
+
+export type RangerChangeEvent<TTrackElement> = (
+  instance: Ranger<TTrackElement>,
+) => void
+
+export type RangerInterpolator = {
+  getPercentageForValue: (val: number, min: number, max: number) => number
+  getValueForClientX: (
+    clientX: number,
+    trackDims: { width: number; left: number },
+    min: number,
+    max: number,
+  ) => number
+}
+
+export type RangerClassConfig<TTrackElement = unknown> = {
+  getRangerElement: () => TTrackElement | null
+  values: ReadonlyArray<number>
+
+  min: number
+  max: number
+
+  tickSize: number
+  ticks?: ReadonlyArray<number>
+
+  interpolator: RangerInterpolator
+  onChange: RangerChangeEvent<TTrackElement>
+  onDrag?: RangerChangeEvent<TTrackElement>
+
+  rerender: () => void
+  debug: boolean
+} & ({ stepSize: number } | { steps: ReadonlyArray<number> })
+
+export type RangerConfig<TTrackElement = unknown> = Omit<
+  RangerClassConfig<TTrackElement>,
+  'tickSize' | 'interpolator' | 'onChange' | 'debug'
+> & {
+  tickSize?: number
+  interpolator?: RangerInterpolator
+  onChange?: RangerChangeEvent<TTrackElement>
+  debug?: boolean
+} & ({ stepSize: number } | { steps: ReadonlyArray<number> })
+
+export type RangerOptions<TTrackElement = unknown> = Omit<
+  RangerConfig<TTrackElement>,
+  'rerender'
+> &
+  ({ stepSize: number } | { steps: ReadonlyArray<number> })
+
+export class Ranger<TTrackElement = unknown> {
+  activeHandleIndex: number | undefined
+  tempValues: ReadonlyArray<number> | undefined
+  sortedValues: ReadonlyArray<number> = []
+
+  options!: RangerClassConfig<TTrackElement>
+
+  private rangerElement: TTrackElement | null = null
+
+  constructor(opts: RangerConfig<TTrackElement>) {
+    this.setOptions(opts)
+  }
+
+  setOptions(opts: RangerConfig<TTrackElement>) {
+    Object.entries(opts).forEach(([key, value]) => {
+      if (typeof value === 'undefined') delete (opts as any)[key]
+    })
+
+    this.options = {
+      debug: false,
+      tickSize: 10,
+      interpolator: linearInterpolator,
+      onChange: () => {},
+      ...opts,
+    }
+  }
+
+  _willUpdate = () => {
+    const rangerElement = this.options.getRangerElement()
+
+    if (this.rangerElement !== rangerElement) {
+      this.rangerElement = rangerElement
+    }
+  }
+
+  getValueForClientX = (clientX: number) => {
+    const trackDims = getBoundingClientRect(this.rangerElement)
+    return this.options.interpolator.getValueForClientX(
+      clientX,
+      trackDims,
+      this.options.min,
+      this.options.max,
+    )
+  }
+
+  getNextStep = (val: number, direction: number): number => {
+    const { min, max } = this.options
+
+    if ('steps' in this.options) {
+      const { steps } = this.options
+      let currIndex = steps.indexOf(val)
+      let nextIndex = currIndex + direction
+      if (nextIndex >= 0 && nextIndex < steps.length) {
+        return steps[nextIndex] as number
+      } else {
+        return val
+      }
+    } else {
+      let nextVal = val + this.options.stepSize * direction
+      if (nextVal >= min && nextVal <= max) {
+        return nextVal
+      } else {
+        return val
+      }
+    }
+  }
+
+  roundToStep = (val: number) => {
+    const { min, max } = this.options
+
+    let left = min
+    let right = max
+    if ('steps' in this.options) {
+      this.options.steps.forEach((step) => {
+        if (step <= val && step > left) {
+          left = step
+        }
+        if (step >= val && step < right) {
+          right = step
+        }
+      })
+    } else {
+      const { stepSize } = this.options
+      while (left < val && left + stepSize < val) {
+        left += stepSize
+      }
+
+      right = Math.min(left + stepSize, max)
+    }
+
+    if (val - left < right - val) {
+      return left
+    }
+    return right
+  }
+
+  handleDrag = (e: any) => {
+    if (this.activeHandleIndex === undefined) {
+      return
+    }
+
+    const clientX =
+      e.type === 'touchmove' ? e.changedTouches[0].clientX : e.clientX
+    const newValue = this.getValueForClientX(clientX)
+    const newRoundedValue = this.roundToStep(newValue)
+
+    this.sortedValues = [
+      ...this.options.values.slice(0, this.activeHandleIndex),
+      newRoundedValue,
+      ...this.options.values.slice(this.activeHandleIndex + 1),
+    ]
+
+    if (this.options.onDrag) {
+      this.options.onDrag(this)
+    } else {
+      this.tempValues = this.sortedValues
+      this.options.rerender()
+    }
+  }
+
+  handleKeyDown = (e: KeyboardEvent, i: number) => {
+    const { values } = this.options
+
+    // Left Arrow || Right Arrow
+    if (e.keyCode === 37 || e.keyCode === 39) {
+      this.activeHandleIndex = i
+      const direction = e.keyCode === 37 ? -1 : 1
+      const newValue = this.getNextStep(values[i] as number, direction)
+      const newValues = [
+        ...values.slice(0, i),
+        newValue,
+        ...values.slice(i + 1),
+      ]
+      this.sortedValues = sortNumList(newValues)
+      if (this.options.onChange) {
+        this.options.onChange(this)
+      }
+    }
+  }
+
+  handlePress = (_e: any, i: number) => {
+    this.activeHandleIndex = i
+    this.options.rerender()
+
+    const handleRelease = () => {
+      const { tempValues, handleDrag } = this
+
+      document.removeEventListener('mousemove', handleDrag)
+      document.removeEventListener('touchmove', handleDrag)
+      document.removeEventListener('mouseup', handleRelease)
+      document.removeEventListener('touchend', handleRelease)
+      this.sortedValues = sortNumList(tempValues || this.options.values)
+      if (this.options.onChange) {
+        this.options.onChange(this)
+      }
+      if (this.options.onDrag) {
+        this.options.onDrag(this)
+      }
+      this.activeHandleIndex = undefined
+      this.tempValues = undefined
+      this.options.rerender()
+    }
+    const { handleDrag } = this
+    document.addEventListener('mousemove', handleDrag)
+    document.addEventListener('touchmove', handleDrag)
+    document.addEventListener('mouseup', handleRelease)
+    document.addEventListener('touchend', handleRelease)
+  }
+
+  getPercentageForValue = (val: number) =>
+    this.options.interpolator.getPercentageForValue(
+      val,
+      this.options.min,
+      this.options.max,
+    )
+
+  getTicks = () => {
+    let ticks: Array<number> = []
+    if (this.options.ticks) {
+      ticks = [...this.options.ticks]
+    } else if ('steps' in this.options) {
+      ticks = [...this.options.steps]
+    } else {
+      ticks = [this.options.min]
+      while (
+        (ticks[ticks.length - 1] as number) <
+        this.options.max - this.options.tickSize
+      ) {
+        ticks.push((ticks[ticks.length - 1] as number) + this.options.tickSize)
+      }
+      ticks.push(this.options.max)
+    }
+
+    return ticks.map((value, i) => ({
+      value,
+      key: i,
+      percentage: this.getPercentageForValue(value),
+    }))
+  }
+
+  getSteps = () => {
+    const values = sortNumList(this.tempValues || this.options.values)
+
+    return [...values, this.options.max].map((value, i) => {
+      const previousValue = values[i - 1]
+      const leftValue =
+        previousValue !== undefined ? previousValue : this.options.min
+      const left = this.getPercentageForValue(leftValue)
+      const width = this.getPercentageForValue(value) - left
+      return {
+        left,
+        width,
+      }
+    })
+  }
+
+  handles = () => {
+    return (this.tempValues || this.options.values).map((value, i) => ({
+      value,
+      isActive: i === this.activeHandleIndex,
+      onKeyDownHandler: (e: any) => {
+        this.handleKeyDown(e, i)
+      },
+      onMouseDownHandler: (e: any) => {
+        this.handlePress(e, i)
+      },
+      onTouchStart: (e: any) => {
+        this.handlePress(e, i)
+      },
+    }))
+  }
+}</doc><doc title="Jest.Setup" desc="docs page.">// import { act } from '@testing-library/react'
+import '@testing-library/jest-dom'</doc><doc title="Jest.Setup" desc="docs page.">// import { act } from '@testing-library/react'
+import '@testing-library/jest-dom'</doc><doc title="Utils" desc="docs page.">export const getBoundingClientRect = (element: any) => {
+  const rect = element.getBoundingClientRect()
+  return {
+    left: Math.ceil(rect.left),
+    width: Math.ceil(rect.width),
+  }
+}
+
+export const sortNumList = (arr: ReadonlyArray<number | string>) =>
+  [...arr].map(Number).sort((a, b) => a - b)
+
+export const linearInterpolator = {
+  getPercentageForValue: (val: number, min: number, max: number) => {
+    return Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100))
+  },
+  getValueForClientX: (
+    clientX: number,
+    trackDims: { width: number; left: number },
+    min: number,
+    max: number,
+  ) => {
+    const { left, width } = trackDims
+    const percentageValue = (clientX - left) / width
+    const value = (max - min) * percentageValue
+    return value + min
+  },
+}</doc></packages><scripts><doc title="Config" desc="docs page.">import path from 'path'
+import { BranchConfig, Package } from './types'
+
+// TODO: List your npm packages here.
+export const packages: Package[] = [
+  {
+    name: '@tanstack/ranger',
+    packageDir: 'ranger',
+    srcDir: 'src',
+    jsName: 'Ranger',
+    entryFile: 'src/index.ts',
+    globals: {},
+  },
+  {
+    name: '@tanstack/react-ranger',
+    packageDir: 'react-ranger',
+    srcDir: 'src',
+    jsName: 'ReactRanger',
+    entryFile: 'src/index.tsx',
+    globals: {},
+  },
+]
+
+export const latestBranch = 'main'
+
+export const branchConfigs: Record<string, BranchConfig> = {
+  main: {
+    prerelease: false,
+    ghRelease: true,
+  },
+  next: {
+    prerelease: true,
+    ghRelease: true,
+  },
+  beta: {
+    prerelease: true,
+    ghRelease: true,
+  },
+  alpha: {
+    prerelease: true,
+    ghRelease: true,
+  },
+}
+
+export const rootDir = path.resolve(__dirname, '..')
+export const examplesDirs = ['examples/react']</doc><doc title="Publish" desc="docs page.">import {
+  branchConfigs,
+  examplesDirs,
+  latestBranch,
+  packages,
+  rootDir,
+} from './config'
+import { BranchConfig, Commit, Package } from './types'
+
+// Originally ported to TS from https://github.com/remix-run/react-router/tree/main/scripts/{version,publish}.js
+import path from 'path'
+import { exec, execSync } from 'child_process'
+import fsp from 'fs/promises'
+import chalk from 'chalk'
+import jsonfile from 'jsonfile'
+import semver from 'semver'
+import currentGitBranch from 'current-git-branch'
+import parseCommit from '@commitlint/parse'
+import log from 'git-log-parser'
+import streamToArray from 'stream-to-array'
+import axios from 'axios'
+import { DateTime } from 'luxon'
+
+import { PackageJson } from 'type-fest'
+
+const releaseCommitMsg = (version: string) => `release: v${version}`
+
+async function run() {
+  const branchName: string =
+    process.env.BRANCH ??
+    // (process.env.PR_NUMBER ? `pr-${process.env.PR_NUMBER}` : currentGitBranch())
+    currentGitBranch()
+
+  const branchConfig: BranchConfig = branchConfigs[branchName]
+
+  if (!branchConfig) {
+    console.log(`No publish config found for branch: ${branchName}`)
+    console.log('Exiting...')
+    process.exit(0)
+  }
+
+  const isLatestBranch = branchName === latestBranch
+  const npmTag = isLatestBranch ? 'latest' : branchName
+
+  let remoteURL = execSync('git config --get remote.origin.url').toString()
+
+  remoteURL = remoteURL.substring(0, remoteURL.indexOf('.git'))
+
+  // Get tags
+  let tags: string[] = execSync('git tag').toString().split('\n')
+
+  // Filter tags to our branch/pre-release combo
+  tags = tags
+    .filter((tag) => semver.valid(tag))
+    .filter((tag) => {
+      if (isLatestBranch) {
+        return semver.prerelease(tag) == null
+      }
+
+      return tag.includes(`-${branchName}`)
+    })
+    // sort by latest
+    .sort(semver.compare)
+
+  // Get the latest tag
+  let latestTag = [...tags].pop()
+
+  let range = `${latestTag}..HEAD`
+  // let range = ``;
+
+  // If RELEASE_ALL is set via a commit subject or body, all packages will be
+  // released regardless if they have changed files matching the package srcDir.
+  let RELEASE_ALL = false
+
+  if (!latestTag || process.env.TAG) {
+    if (process.env.TAG) {
+      if (!process.env.TAG.startsWith('v')) {
+        throw new Error(
+          `process.env.TAG must start with "v", eg. v0.0.0. You supplied ${process.env.TAG}`,
+        )
+      }
+      console.info(
+        chalk.yellow(
+          `Tag is set to ${process.env.TAG}. This will force release all packages. Publishing...`,
+        ),
+      )
+      RELEASE_ALL = true
+
+      // Is it a major version?
+      if (!semver.patch(process.env.TAG) && !semver.minor(process.env.TAG)) {
+        range = `beta..HEAD`
+        latestTag = process.env.TAG
+      }
+    } else {
+      throw new Error(
+        'Could not find latest tag! To make a release tag of v0.0.1, run with TAG=v0.0.1',
+      )
+    }
+  }
+
+  console.info(`Git Range: ${range}`)
+
+  // Get the commits since the latest tag
+  const commitsSinceLatestTag = (
+    await new Promise<Commit[]>((resolve, reject) => {
+      const strm = log.parse({
+        _: range,
+      })
+
+      streamToArray(strm, function (err: any, arr: any[]) {
+        if (err) return reject(err)
+
+        Promise.all(
+          arr.map(async (d) => {
+            const parsed = await parseCommit(d.subject)
+
+            return { ...d, parsed }
+          }),
+        ).then((res) => resolve(res.filter(Boolean)))
+      })
+    })
+  ).filter((commit: Commit) => {
+    const exclude = [
+      commit.subject.startsWith('Merge branch '), // No merge commits
+      commit.subject.startsWith(releaseCommitMsg('')), // No example update commits
+    ].some(Boolean)
+
+    return !exclude
+  })
+
+  console.info(
+    `Parsing ${commitsSinceLatestTag.length} commits since ${latestTag}...`,
+  )
+
+  // Pares the commit messsages, log them, and determine the type of release needed
+  let recommendedReleaseLevel: number = commitsSinceLatestTag.reduce(
+    (releaseLevel, commit) => {
+      if (['fix', 'refactor', 'perf'].includes(commit.parsed.type!)) {
+        releaseLevel = Math.max(releaseLevel, 0)
+      }
+      if (['feat'].includes(commit.parsed.type!)) {
+        releaseLevel = Math.max(releaseLevel, 1)
+      }
+      if (commit.body.includes('BREAKING CHANGE')) {
+        releaseLevel = Math.max(releaseLevel, 2)
+      }
+      if (
+        commit.subject.includes('RELEASE_ALL') ||
+        commit.body.includes('RELEASE_ALL')
+      ) {
+        RELEASE_ALL = true
+      }
+
+      return releaseLevel
+    },
+    -1,
+  )
+
+  const changedFiles: string[] = process.env.TAG
+    ? []
+    : execSync(`git diff ${latestTag} --name-only`)
+        .toString()
+        .split('\n')
+        .filter(Boolean)
+
+  const changedPackages = RELEASE_ALL
+    ? packages
+    : changedFiles.reduce((changedPackages, file) => {
+        const pkg = packages.find((p) =>
+          file.startsWith(path.join('packages', p.packageDir, p.srcDir)),
+        )
+        if (pkg && !changedPackages.find((d) => d.name === pkg.name)) {
+          changedPackages.push(pkg)
+        }
+        return changedPackages
+      }, [] as Package[])
+
+  // If a package has a dependency that has been updated, we need to update the
+  // package that depends on it as well.
+  await Promise.all(
+    packages.map(async (pkg) => {
+      const pkgJson = await readPackageJson(
+        path.resolve(rootDir, 'packages', pkg.packageDir, 'package.json'),
+      )
+      if (
+        Object.keys(pkgJson.dependencies ?? {})?.find((dep) =>
+          changedPackages.find((d) => d.name === dep),
+        ) &&
+        !changedPackages.find((d) => d.name === pkg.name)
+      ) {
+        changedPackages.push(pkg)
+      }
+    }),
+  )
+
+  if (!process.env.TAG) {
+    if (recommendedReleaseLevel === 2) {
+      console.info(
+        `Major versions releases must be tagged and released manually.`,
+      )
+      return
+    }
+
+    if (recommendedReleaseLevel === -1) {
+      console.info(
+        `There have been no changes since the release of ${latestTag} that require a new version. You're good!`,
+      )
+      return
+    }
+  }
+
+  function getSorterFn<TItem>(sorters: ((d: TItem) => any)[]) {
+    return (a: TItem, b: TItem) => {
+      let i = 0
+
+      sorters.some((sorter) => {
+        const sortedA = sorter(a)
+        const sortedB = sorter(b)
+        if (sortedA > sortedB) {
+          i = 1
+          return true
+        }
+        if (sortedA < sortedB) {
+          i = -1
+          return true
+        }
+        return false
+      })
+
+      return i
+    }
+  }
+
+  const changelogCommitsMd = process.env.TAG
+    ? `Manual Release: ${process.env.TAG}`
+    : await Promise.all(
+        Object.entries(
+          commitsSinceLatestTag.reduce((acc, next) => {
+            const type = next.parsed.type?.toLowerCase() ?? 'other'
+
+            return {
+              ...acc,
+              [type]: [...(acc[type] || []), next],
+            }
+          }, {} as Record<string, Commit[]>),
+        )
+          .sort(
+            getSorterFn([
+              ([d]) =>
+                [
+                  'other',
+                  'examples',
+                  'docs',
+                  'chore',
+                  'refactor',
+                  'perf',
+                  'fix',
+                  'feat',
+                ].indexOf(d),
+            ]),
+          )
+          .reverse()
+          .map(async ([type, commits]) => {
+            return Promise.all(
+              commits.map(async (commit) => {
+                let username = ''
+
+                if (process.env.GH_TOKEN) {
+                  const query = `${
+                    commit.author.email ?? commit.committer.email
+                  }`
+
+                  const res = await axios.get(
+                    'https://api.github.com/search/users',
+                    {
+                      params: {
+                        q: query,
+                      },
+                      headers: {
+                        Authorization: `token ${process.env.GH_TOKEN}`,
+                      },
+                    },
+                  )
+
+                  username = res.data.items[0]?.login
+                }
+
+                const scope = commit.parsed.scope
+                  ? `${commit.parsed.scope}: `
+                  : ''
+                const subject = commit.parsed.subject ?? commit.subject
+                // const commitUrl = `${remoteURL}/commit/${commit.commit.long}`;
+
+                return `- ${scope}${subject} (${commit.commit.short}) ${
+                  username
+                    ? `by @${username}`
+                    : `by ${commit.author.name ?? commit.author.email}`
+                }`
+              }),
+            ).then((commits) => [type, commits] as const)
+          }),
+      ).then((groups) => {
+        return groups
+          .map(([type, commits]) => {
+            return [`### ${capitalize(type)}`, commits.join('\n')].join('\n\n')
+          })
+          .join('\n\n')
+      })
+
+  if (process.env.TAG && recommendedReleaseLevel === -1) {
+    recommendedReleaseLevel = 0
+  }
+
+  const releaseType = branchConfig.prerelease
+    ? 'prerelease'
+    : ({ 0: 'patch', 1: 'minor', 2: 'major' } as const)[recommendedReleaseLevel]
+
+  if (!releaseType) {
+    throw new Error(`Invalid release level: ${recommendedReleaseLevel}`)
+  }
+
+  const version = process.env.TAG
+    ? semver.parse(process.env.TAG)?.version
+    : semver.inc(latestTag!, releaseType, npmTag)
+
+  if (!version) {
+    throw new Error(
+      `Invalid version increment from semver.inc(${[
+        latestTag,
+        recommendedReleaseLevel,
+        branchConfig.prerelease,
+      ].join(', ')}`,
+    )
+  }
+
+  const changelogMd = [
+    `Version ${version} - ${DateTime.now().toLocaleString(
+      DateTime.DATETIME_SHORT,
+    )}`,
+    `## Changes`,
+    changelogCommitsMd,
+    `## Packages`,
+    changedPackages.map((d) => `- ${d.name}@${version}`).join('\n'),
+  ].join('\n\n')
+
+  console.info('Generating changelog...')
+  console.info()
+  console.info(changelogMd)
+  console.info()
+
+  console.info('Building packages...')
+  execSync(`pnpm build`, { encoding: 'utf8', stdio: 'inherit' })
+  console.info('')
+
+  // console.info('Building types...')
+  // execSync(`yarn types`, { encoding: 'utf8', stdio: 'inherit' })
+  // console.info('')
+
+  console.info('Validating packages...')
+  const failedValidations: string[] = []
+
+  await Promise.all(
+    packages.map(async (pkg) => {
+      const pkgJson = await readPackageJson(
+        path.resolve(rootDir, 'packages', pkg.packageDir, 'package.json'),
+      )
+
+      await Promise.all(
+        (['module', 'main', 'browser', 'types'] as const).map(
+          async (entryKey) => {
+            const entry = pkgJson[entryKey] as string
+
+            if (!entry) {
+              throw new Error(
+                `Missing entry for "${entryKey}" in ${pkg.packageDir}/package.json!`,
+              )
+            }
+
+            const filePath = path.resolve(
+              rootDir,
+              'packages',
+              pkg.packageDir,
+              entry,
+            )
+
+            try {
+              await fsp.access(filePath)
+            } catch (err) {
+              failedValidations.push(`Missing build file: ${filePath}`)
+            }
+          },
+        ),
+      )
+    }),
+  )
+  console.info('')
+  if (failedValidations.length > 0) {
+    throw new Error(
+      'Some packages failed validation:\n\n' + failedValidations.join('\n'),
+    )
+  }
+
+  console.info('Testing packages...')
+  execSync(`pnpm test:ci`, { encoding: 'utf8' })
+  console.info('')
+
+  console.info(`Updating all changed packages to version ${version}...`)
+  // Update each package to the new version
+  for (const pkg of changedPackages) {
+    console.info(`  Updating ${pkg.name} version to ${version}...`)
+
+    await updatePackageJson(
+      path.resolve(rootDir, 'packages', pkg.packageDir, 'package.json'),
+      (config) => {
+        config.version = version
+      },
+    )
+  }
+
+  // console.info(`Updating all package dependencies to latest versions...`)
+  // // Update all changed package dependencies to their correct versions
+  // for (const pkg of packages) {
+  //   await updatePackageJson(
+  //     path.resolve(rootDir, 'packages', pkg.packageDir, 'package.json'),
+  //     async (config) => {
+  //       await Promise.all(
+  //         (pkg.dependencies ?? []).map(async (dep) => {
+  //           const depPackage = packages.find((d) => d.name === dep)
+
+  //           if (!depPackage) {
+  //             throw new Error(`Could not find package ${dep}`)
+  //           }
+
+  //           const depVersion = await getPackageVersion(
+  //             path.resolve(
+  //               rootDir,
+  //               'packages',
+  //               depPackage.packageDir,
+  //               'package.json',
+  //             ),
+  //           )
+
+  //           if (
+  //             config.dependencies?.[dep] &&
+  //             config.dependencies[dep] !== depVersion
+  //           ) {
+  //             console.info(
+  //               `  Updating ${pkg.name}'s dependency on ${dep} to version ${depVersion}.`,
+  //             )
+  //             config.dependencies[dep] = depVersion
+  //           }
+  //         }),
+  //       )
+
+  //       await Promise.all(
+  //         (pkg.peerDependencies ?? []).map(async (peerDep) => {
+  //           const peerDepPackage = packages.find((d) => d.name === peerDep)
+
+  //           if (!peerDepPackage) {
+  //             throw new Error(`Could not find package ${peerDep}`)
+  //           }
+
+  //           const depVersion = await getPackageVersion(
+  //             path.resolve(
+  //               rootDir,
+  //               'packages',
+  //               peerDepPackage.packageDir,
+  //               'package.json',
+  //             ),
+  //           )
+
+  //           if (
+  //             config.peerDependencies?.[peerDep] &&
+  //             config.peerDependencies[peerDep] !== depVersion
+  //           ) {
+  //             console.info(
+  //               `  Updating ${pkg.name}'s peerDependency on ${peerDep} to version ${depVersion}.`,
+  //             )
+  //             config.peerDependencies[peerDep] = depVersion
+  //           }
+  //         }),
+  //       )
+  //     },
+  //   )
+  // }
+
+  console.info(`Updating all example dependencies...`)
+  await Promise.all(
+    examplesDirs.map(async (examplesDir) => {
+      examplesDir = path.resolve(rootDir, examplesDir)
+      const exampleDirs = await fsp.readdir(examplesDir)
+      for (const exampleName of exampleDirs) {
+        const exampleDir = path.resolve(examplesDir, exampleName)
+        const stat = await fsp.stat(exampleDir)
+        if (!stat.isDirectory()) continue
+
+        await Promise.all([
+          fsp.rm(path.resolve(exampleDir, 'package-lock.json'), {
+            force: true,
+          }),
+          fsp.rm(path.resolve(exampleDir, 'yarn.lock'), {
+            force: true,
+          }),
+          updatePackageJson(
+            path.resolve(exampleDir, 'package.json'),
+            async (config) => {
+              await Promise.all(
+                changedPackages.map(async (pkg) => {
+                  const depVersion = await getPackageVersion(
+                    path.resolve(
+                      rootDir,
+                      'packages',
+                      pkg.packageDir,
+                      'package.json',
+                    ),
+                  )
+
+                  if (
+                    config.dependencies?.[pkg.name] &&
+                    config.dependencies[pkg.name] !== depVersion
+                  ) {
+                    console.info(
+                      `  Updating ${exampleName}'s dependency on ${pkg.name} to version ${depVersion}.`,
+                    )
+                    config.dependencies[pkg.name] = depVersion
+                  }
+                }),
+              )
+            },
+          ),
+        ])
+      }
+    }),
+  )
+
+  if (!process.env.CI) {
+    console.warn(
+      `This is a dry run for version ${version}. Push to CI to publish for real or set CI=true to override!`,
+    )
+    return
+  }
+
+  // Tag and commit
+  console.info(`Creating new git tag v${version}`)
+  execSync(`git tag -a -m "v${version}" v${version}`)
+
+  const taggedVersion = getTaggedVersion()
+  if (!taggedVersion) {
+    throw new Error(
+      'Missing the tagged release version. Something weird is afoot!',
+    )
+  }
+
+  console.info()
+  console.info(`Publishing all packages to npm with tag "${npmTag}"`)
+
+  // Publish each package
+  changedPackages.map((pkg) => {
+    const packageDir = path.join(rootDir, 'packages', pkg.packageDir)
+    const cmd = `cd ${packageDir} && pnpm publish --tag ${npmTag} --access=public --no-git-checks`
+    console.info(
+      `  Publishing ${pkg.name}@${version} to npm with tag "${npmTag}"...`,
+    )
+
+    // execSync(`${cmd} --token ${process.env.NPM_TOKEN}`)
+    execSync(cmd)
+  })
+
+  console.info()
+
+  console.info(`Pushing new tags to branch.`)
+  execSync(`git push --tags`)
+  console.info(`  Pushed tags to branch.`)
+
+  if (branchConfig.ghRelease) {
+    console.info(`Creating github release...`)
+    // Stringify the markdown to escape any quotes
+    execSync(
+      `gh release create v${version} ${
+        !isLatestBranch ? '--prerelease' : ''
+      } --notes '${changelogMd}'`,
+    )
+    console.info(`  Github release created.`)
+
+    console.info(`Committing changes...`)
+    execSync(`git add -A && git commit --verbose -m "${releaseCommitMsg(version)}"`, { encoding: 'utf8' })
+
+    console.info()
+    console.info(`  Committed Changes.`)
+    console.info(`Pushing changes...`)
+    execSync(`git push`)
+    console.info()
+    console.info(`  Changes pushed.`)
+  } else {
+    console.info(`Skipping github release and change commit.`)
+  }
+
+  console.info(`Pushing tags...`)
+  execSync(`git push --tags`)
+  console.info()
+  console.info(`  Tags pushed.`)
+  console.info(`All done!`)
+}
+
+run().catch((err) => {
+  console.info(err)
+  if (err.stdout) {
+    console.log(err.stdout.toString())
+  }
+  if (err.stderr) {
+    console.log(err.stderr.toString())
+  }
+  process.exit(1)
+})
+
+function capitalize(str: string) {
+  return str.slice(0, 1).toUpperCase() + str.slice(1)
+}
+
+async function readPackageJson(pathName: string) {
+  return (await jsonfile.readFile(pathName)) as PackageJson
+}
+
+async function updatePackageJson(
+  pathName: string,
+  transform: (json: PackageJson) => Promise<void> | void,
+) {
+  const json = await readPackageJson(pathName)
+  await transform(json)
+  await jsonfile.writeFile(pathName, json, {
+    spaces: 2,
+  })
+}
+
+async function getPackageVersion(pathName: string) {
+  const json = await readPackageJson(pathName)
+
+  if (!json.version) {
+    throw new Error(`No version found for package: ${pathName}`)
+  }
+
+  return json.version
+}
+
+function updateExampleLockfile(example: string) {
+  // execute npm to update lockfile, ignoring any stdout or stderr
+  const exampleDir = path.join(rootDir, 'examples', example)
+  execSync(`cd ${exampleDir} && pnpm install`, { stdio: 'ignore' })
+}
+
+function getPackageNameDirectory(pathName: string) {
+  return pathName
+    .split('/')
+    .filter((d) => !d.startsWith('@'))
+    .join('/')
+}
+
+function getTaggedVersion() {
+  const output = execSync('git tag --list --points-at HEAD').toString()
+  return output.replace(/^v|\n+$/g, '')
+}</doc><doc title="Types" desc="docs page.">export type Commit = {
+  commit: CommitOrTree
+  tree: CommitOrTree
+  author: AuthorOrCommitter
+  committer: AuthorOrCommitter
+  subject: string
+  body: string
+  parsed: Parsed
+}
+
+export type CommitOrTree = {
+  long: string
+  short: string
+}
+
+export type AuthorOrCommitter = {
+  name: string
+  email: string
+  date: string
+}
+
+export type Parsed = {
+  type: string
+  scope?: string | null
+  subject: string
+  merge?: null
+  header: string
+  body?: null
+  footer?: null
+  notes?: null[] | null
+  references?: null[] | null
+  mentions?: null[] | null
+  revert?: null
+  raw: string
+}
+
+export type Package = {
+  name: string
+  packageDir: string
+  srcDir: string
+  jsName: string
+  entryFile: string
+  external?: (d: string) => any
+  globals?: Record<string, string>
+  esm?: boolean
+  cjs?: boolean
+  umd?: boolean
+}
+
+export type BranchConfig = {
+  prerelease: boolean
+  ghRelease: boolean
+}</doc></scripts></project>

@@ -1,0 +1,85 @@
+# Router
+
+> TanStack Router is a modern router designed for type safety, data-driven navigation, and seamless developer experience. It provides end-to-end type safety for routes, params, and loaders, schema-driven search params with validation, built-in caching, prefetching, and invalidation, and supports nested layouts, transitions, and error boundaries.
+
+**Remember:**
+- Type Safety
+- Data-Driven Navigation
+- Schema-Driven Search Params
+- Built-In Caching
+- Nested Layouts
+- Transitions
+
+## Docs
+- [Quickstart](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart/index.html): install & quickstart.
+- [Quickstart Esbuild File Based](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-esbuild-file-based/index.html): install & quickstart.
+- [Quickstart File Based](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-file-based/index.html): install & quickstart.
+- [Quickstart File Based](https://raw.githubusercontent.com/TanStack/router/main/examples/solid/quickstart-file-based/index.html): install & quickstart.
+- [Public](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-webpack-file-based/public/index.html): install & quickstart.
+- [Esbuild.Config](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-esbuild-file-based/esbuild.config.js): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-esbuild-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-rspack-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/quickstart-webpack-file-based/README.md): install & quickstart.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/authenticated-routes-firebase/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/authenticated-routes/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-default-search-params/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-devtools-panel/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-non-nested-devtools/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-react-query-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-react-query/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-ssr-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/examples/react/basic-ssr-streaming-file-based/README.md): install & quickstart.
+
+## API
+- [Api](https://raw.githubusercontent.com/TanStack/router/main/packages/virtual-file-routes/src/api.ts): API reference.
+- [Virtual Modules](https://raw.githubusercontent.com/TanStack/router/main/packages/start-server-core/src/virtual-modules.ts): docs page.
+- [Api.Users](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/basic-react-query/src/routes/api.users.ts): API reference.
+- [Api.Users](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/basic/src/routes/api.users.ts): API reference.
+- [Api.Users](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/custom-basepath/src/routes/api.users.ts): API reference.
+- [Api.Users](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-start/basic-solid-query/src/routes/api.users.ts): API reference.
+- [Middleware Context](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/server-routes/src/routes/api/middleware-context.ts): API reference.
+- [Middleware Context](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-start/server-routes/src/routes/api/middleware-context.ts): API reference.
+- [Only Any](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/server-routes/src/routes/api/only-any.ts): API reference.
+- [Only Any](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-start/server-routes/src/routes/api/only-any.ts): API reference.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/router/main/CONTRIBUTING.md): docs page.
+- [Agents](https://raw.githubusercontent.com/TanStack/router/main/AGENTS.md): docs page.
+- [Debugging](https://raw.githubusercontent.com/TanStack/router/main/DEBUGGING.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/router/main/eslint.config.js): docs page.
+- [Generate](https://raw.githubusercontent.com/TanStack/router/main/gpt/generate.js): docs page.
+- [Prettier.Config](https://raw.githubusercontent.com/TanStack/router/main/prettier.config.js): docs page.
+
+## E2E
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-router/rspack-basic-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-router/rspack-basic-virtual-named-export-config-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-router/scroll-restoration-sandbox-vite/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-start/basic-tsr-config/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-router/rspack-basic-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-router/rspack-basic-virtual-named-export-config-file-based/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-router/scroll-restoration-sandbox-vite/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-start/basic-tsr-config/README.md): install & quickstart.
+- [Basepath File Based](https://raw.githubusercontent.com/TanStack/router/main/e2e/react-router/basepath-file-based/index.html): docs page.
+- [Basepath File Based](https://raw.githubusercontent.com/TanStack/router/main/e2e/solid-router/basepath-file-based/index.html): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/directive-functions-plugin/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/nitro-v2-vite-plugin/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-router-devtools/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-router-ssr-query/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-router/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-start-client/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-start-server/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/react-start/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/router-cli/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/router/main/packages/router-core/README.md): install & quickstart.
+
+## Scripts
+- [Publish](https://raw.githubusercontent.com/TanStack/router/main/scripts/publish.js): docs page.
+- [Set Ts Version](https://raw.githubusercontent.com/TanStack/router/main/scripts/set-ts-version.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/router/main/scripts/verify-links.ts): docs page.

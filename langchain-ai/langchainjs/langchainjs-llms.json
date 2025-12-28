@@ -1,0 +1,559 @@
+{
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "llmsTxtDocument",
+    "type": "object",
+    "required": [
+      "project",
+      "remember",
+      "sections"
+    ],
+    "properties": {
+      "project": {
+        "type": "object",
+        "required": [
+          "name",
+          "summary"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "remember": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string"
+        }
+      },
+      "sections": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": [
+            "title",
+            "links"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "url",
+                  "note"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "project": {
+    "name": "Langchainjs",
+    "summary": "![npm](https://img.shields.io/npm/dm/langchain) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchainai.svg?style=social&label=Follow%20%40LangChainAI)](https://twitter.com/langchainai)"
+  },
+  "remember": [
+    "Start with Docs for install & onboarding",
+    "Check Tutorials for end-to-end workflows",
+    "Review API references before integrating"
+  ],
+  "sections": [
+    {
+      "title": "Docs",
+      "links": [
+        {
+          "title": "Lunary Quickstart",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/callbacks/lunary_quickstart.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Overview",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/chat/overview.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Quickstart",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Quickstart2",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart2.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Quickstart3",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/get_started/quickstart3.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Basic Fstring",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/basic_fstring.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Basic Mustache",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/basic_mustache.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Hard Coded Fstring",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/hard_coded_fstring.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Hard Coded Mustache",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/hard_coded_mustache.ts",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Input Vars Fstring",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/langchain-classic/prompts/quickstart/input_vars_fstring.ts",
+          "note": "install & quickstart"
+        }
+      ]
+    },
+    {
+      "title": "Tutorials",
+      "links": [
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/examples/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/cookbook/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Eslint.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/eslint.config.ts",
+          "note": "worked example"
+        },
+        {
+          "title": "State Of The Union",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/state_of_the_union.txt",
+          "note": "worked example"
+        },
+        {
+          "title": "Index",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/index.ts",
+          "note": "worked example"
+        },
+        {
+          "title": "Accessexternalcontext",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessExternalContext.ts",
+          "note": "worked example"
+        },
+        {
+          "title": "Accessexternalcontextintools",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessExternalContextInTools.ts",
+          "note": "worked example"
+        },
+        {
+          "title": "Accesslongtermmemory",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessLongTermMemory.ts",
+          "note": "worked example"
+        },
+        {
+          "title": "Accesslongtermmemoryintools",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/examples/src/createAgent/accessLongTermMemoryInTools.ts",
+          "note": "worked example"
+        }
+      ]
+    },
+    {
+      "title": "API",
+      "links": [
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Eslint.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/eslint.config.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Vitest.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/vitest.config.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Api Schema",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/model-profiles/src/api-schema.ts",
+          "note": "API reference"
+        },
+        {
+          "title": "Document",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/document.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Index",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/index.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Sql Db",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/sql_db.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Text Splitter",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/text_splitter.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Agent",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-classic/src/agents/agent.ts",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": "Optional",
+      "links": [
+        {
+          "title": "Contributing",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/CONTRIBUTING.md",
+          "note": "docs page"
+        },
+        {
+          "title": "Security",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/SECURITY.md",
+          "note": "security policy"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-community/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-core/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-standard-tests/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-textsplitters/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "Integrations",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/contributing/INTEGRATIONS.md",
+          "note": "docs page"
+        },
+        {
+          "title": "Changelog",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-anthropic/CHANGELOG.md",
+          "note": "version history"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.changeset/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.devcontainer/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/README.md",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": ".Github",
+      "links": [
+        {
+          "title": "Pull Request Template",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/pull_request_template.md",
+          "note": "docs page"
+        },
+        {
+          "title": "Main",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/.github/actions/people/app/main.py",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": "Dependency Range Tests",
+      "links": [
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/langchain/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Lowest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/langchain/node/update_resolutions_lowest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Workspace Dependencies",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/node/update_workspace_dependencies.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/anthropic/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/cohere/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/community/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/google-vertexai/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Latest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/openai/node/update_resolutions_latest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Lowest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/anthropic/node/update_resolutions_lowest.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Update Resolutions Lowest",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/dependency_range_tests/scripts/with_standard_tests/cohere/node/update_resolutions_lowest.js",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": "Environment Tests",
+      "links": [
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-cf/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vercel/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Test Exports Vite",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/index.html",
+          "note": "docs page"
+        },
+        {
+          "title": "Main",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-tsc/main.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Next.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vercel/next.config.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Test Runner",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/scripts/test-runner.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Vite.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/vite.config.js",
+          "note": "docs page"
+        },
+        {
+          "title": "Chain",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-vite/src/chain.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Combine Dependencies",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/environment_tests/test-exports-bun/scripts/combine-dependencies.js",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": "Internal",
+      "links": [
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/eslint/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/model-profiles/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/test-helpers/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/plugins/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "Cli",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/cli.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Constants",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/constants.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Eslint.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/eslint/eslint.config.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Eslint.Config",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/test-helpers/eslint.config.ts",
+          "note": "docs page"
+        },
+        {
+          "title": "Index",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/internal/build/index.ts",
+          "note": "docs page"
+        }
+      ]
+    },
+    {
+      "title": "Libs",
+      "links": [
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-community/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-core/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-mcp-adapters/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-standard-tests/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain-textsplitters/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/langchain/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/create-langchain-integration/template/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-anthropic/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-aws/README.md",
+          "note": "install & quickstart"
+        },
+        {
+          "title": "README",
+          "url": "https://raw.githubusercontent.com/langchain-ai/langchainjs/main/libs/providers/langchain-azure-cosmosdb/README.md",
+          "note": "install & quickstart"
+        }
+      ]
+    }
+  ]
+}

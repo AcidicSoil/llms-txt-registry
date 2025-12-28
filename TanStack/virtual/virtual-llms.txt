@@ -1,0 +1,62 @@
+# Virtual
+
+> TanStack Virtual is designed to enable developers to render massive lists, grids, and tables with high performance (60FPS) while maintaining full control over markup and styling. It is framework-agnostic and headless, allowing seamless integration into any modern UI framework. The library supports dynamic and measured sizing, smooth scrolling, sticky items, and window-scrolling utilities, making it ideal for applications dealing with large datasets without sacrificing user experience.
+
+**Remember:**
+- Virtualization
+- Headless Library
+- Framework-Agnostic
+- 60FPS Performance
+- Dynamic Sizing
+- Measured Sizing
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/virtual/main/docs/installation.md): install & quickstart.
+- [Introduction](https://raw.githubusercontent.com/TanStack/virtual/main/docs/introduction.md): docs page.
+- [Virtual Item](https://raw.githubusercontent.com/TanStack/virtual/main/docs/api/virtual-item.md): API reference.
+- [Virtualizer](https://raw.githubusercontent.com/TanStack/virtual/main/docs/api/virtualizer.md): API reference.
+- [Angular Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/angular/angular-virtual.md): docs page.
+- [Lit Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/lit/lit-virtual.md): docs page.
+- [React Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/react/react-virtual.md): docs page.
+- [Solid Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/solid/solid-virtual.md): docs page.
+- [Svelte Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/svelte/svelte-virtual.md): docs page.
+- [Vue Virtual](https://raw.githubusercontent.com/TanStack/virtual/main/docs/framework/vue/vue-virtual.md): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/dynamic/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/fixed/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/infinite-scroll/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/padding/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/smooth-scroll/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/sticky/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/table/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/variable/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/angular/window/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/examples/lit/dynamic/README.md): install & quickstart.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/virtual/main/CONTRIBUTING.md): docs page.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/angular-virtual/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/lit-virtual/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/react-virtual/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/solid-virtual/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/svelte-virtual/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/virtual-core/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/virtual/main/packages/vue-virtual/CHANGELOG.md): version history.
+- [Pull Request Template](https://raw.githubusercontent.com/TanStack/virtual/main/.github/pull_request_template.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/eslint.config.js): docs page.
+- [Prettier.Config](https://raw.githubusercontent.com/TanStack/virtual/main/prettier.config.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/virtual/main/scripts/verify-links.ts): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/packages/angular-virtual/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/virtual/main/packages/lit-virtual/README.md): install & quickstart.
+- [App](https://raw.githubusercontent.com/TanStack/virtual/main/packages/react-virtual/e2e/app/index.html): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/angular-virtual/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/lit-virtual/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/react-virtual/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/solid-virtual/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/svelte-virtual/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/virtual-core/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/virtual/main/packages/vue-virtual/eslint.config.js): docs page.

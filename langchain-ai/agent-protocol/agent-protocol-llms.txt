@@ -1,0 +1,64 @@
+# Agent Protocol
+
+> The Agent Protocol aims to standardize the APIs required to serve LLM agents in production environments, enabling interoperability across different platforms and frameworks. It provides a unified interface for executing agent runs, managing multi-turn conversations with persistent state, introspecting agent capabilities, handling background tasks, and storing long-term memory. The protocol is designed to be framework-agnostic and extensible, with support for various use cases including chatbots, research agents, and stateless interactions. It also encourages community implementations, such as LangGraph.js and the LangGraph Platform, to build upon this foundation.
+
+**Remember:**
+- Runs: APIs for executing agent tasks, including stateless and background modes
+- Threads: Persistent, multi-turn conversations with state history and concurrency controls
+- Store: Long-term memory management with customizable scopes and structured data support
+- Agents: Introspection endpoints to discover agent capabilities, input/output schemas, and metadata
+- Messages: Standardized message format for LLM interactions, supporting streaming and structured output
+- Background Runs: Non-blocking agent execution with support for cancellation, streaming, and retries
+
+## Docs
+- [Agent](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/Agent.md): docs page.
+- [Agentcapabilities](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/AgentCapabilities.md): docs page.
+- [Agentsapi](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/AgentsApi.md): docs page.
+- [Agentschema](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/AgentSchema.md): docs page.
+- [Agentschemas](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/AgentSchemas.md): docs page.
+- [Backgroundrunsapi](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/BackgroundRunsApi.md): docs page.
+- [Config](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/Config.md): docs page.
+- [Content](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/Content.md): docs page.
+- [Contentoneofinner](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/ContentOneOfInner.md): docs page.
+- [Errorresponse](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/docs/ErrorResponse.md): docs page.
+
+## API
+- [Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/api.html): docs page.
+- [Api Client](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/api_client.py): API reference.
+- [Api Response](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/api_response.py): API reference.
+- [Test Agents Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_agents_api.py): docs page.
+- [Test Background Runs Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_background_runs_api.py): docs page.
+- [Test Runs Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_runs_api.py): docs page.
+- [Test Store Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_store_api.py): docs page.
+- [Test Threads Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_threads_api.py): docs page.
+- [Agents Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/api/agents_api.py): API reference.
+- [Background Runs Api](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/api/background_runs_api.py): API reference.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/CONTRIBUTING.md): docs page.
+- [README](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/README.md): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/tooling/ap_tooling/__init__.py): docs page.
+
+## Client Python
+- [README](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/README.md): install & quickstart.
+- [Requirements](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/requirements.txt): docs page.
+- [Setup](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/setup.py): docs page.
+- [Test Requirements](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test-requirements.txt): docs page.
+- [Configuration](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/configuration.py): docs page.
+- [Exceptions](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/exceptions.py): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/__init__.py): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/__init__.py): docs page.
+- [Rest](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/ap_client/rest.py): docs page.
+- [Test Agent](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/client-python/test/test_agent.py): docs page.
+
+## Server
+- [Init](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/__init__.py): docs page.
+- [Main](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/main.py): docs page.
+- [Models](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/models.py): docs page.
+- [Agents](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/agents.py): docs page.
+- [Background Runs](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/background_runs.py): docs page.
+- [Init](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/__init__.py): docs page.
+- [Runs](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/runs.py): docs page.
+- [Stateless Runs](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/stateless_runs.py): docs page.
+- [Store](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/store.py): docs page.
+- [Threads](https://raw.githubusercontent.com/langchain-ai/agent-protocol/main/server/ap_server/routers/threads.py): docs page.

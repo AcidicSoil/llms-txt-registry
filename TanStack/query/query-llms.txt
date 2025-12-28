@@ -1,0 +1,81 @@
+# Query
+
+> TanStack Query is designed to simplify the management of asynchronous data in frontend applications by providing a unified, protocol-agnostic solution for fetching, caching, mutating, and synchronizing server state. Its primary goals are to reduce boilerplate, improve performance through intelligent caching and prefetching, and offer a consistent API across frameworks. It enables developers to handle complex data flows — including pagination, infinite scrolling, background updates, and optimistic UI — with minimal configuration and maximum reliability.
+
+**Remember:**
+- Async state management
+- Caching
+- Query and mutation hooks
+- Protocol-agnostic fetching
+- Infinite scrolling
+- Prefetching
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/angular/installation.md): install & quickstart.
+- [Installation](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/react/installation.md): install & quickstart.
+- [Installation](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/solid/installation.md): install & quickstart.
+- [Installation](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/svelte/installation.md): install & quickstart.
+- [Installation](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/vue/installation.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/angular/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/react/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/solid/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/svelte/overview.md): install & quickstart.
+- [Overview](https://raw.githubusercontent.com/TanStack/query/main/docs/framework/vue/overview.md): install & quickstart.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/auto-refetching/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/basic-persister/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/basic/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/devtools-panel/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/infinite-query-with-max-pages/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/optimistic-updates/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/pagination/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/query-options-from-a-service/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/router/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/examples/angular/rxjs/README.md): install & quickstart.
+
+## Optional
+- [Contributing](https://raw.githubusercontent.com/TanStack/query/main/CONTRIBUTING.md): docs page.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/angular-query-experimental/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/angular-query-persist-client/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/eslint-plugin-query/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/query-async-storage-persister/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/query-broadcast-client-experimental/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/query-core/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/query-persist-client-core/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/query-sync-storage-persister/CHANGELOG.md): version history.
+- [Changelog](https://raw.githubusercontent.com/TanStack/query/main/packages/react-query-persist-client/CHANGELOG.md): version history.
+- [Pull Request Template](https://raw.githubusercontent.com/TanStack/query/main/.github/pull_request_template.md): docs page.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/README.md): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/eslint.config.js): docs page.
+- [Prettier.Config](https://raw.githubusercontent.com/TanStack/query/main/prettier.config.js): docs page.
+
+## Integrations
+- [README](https://raw.githubusercontent.com/TanStack/query/main/integrations/angular-cli-20/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/integrations/react-next-14/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/integrations/react-next-15/README.md): install & quickstart.
+- [React Vite](https://raw.githubusercontent.com/TanStack/query/main/integrations/react-vite/index.html): docs page.
+- [Solid Vite](https://raw.githubusercontent.com/TanStack/query/main/integrations/solid-vite/index.html): docs page.
+- [Svelte Vite](https://raw.githubusercontent.com/TanStack/query/main/integrations/svelte-vite/index.html): docs page.
+- [Vue Vite](https://raw.githubusercontent.com/TanStack/query/main/integrations/vue-vite/index.html): docs page.
+- [Public](https://raw.githubusercontent.com/TanStack/query/main/integrations/react-webpack-4/public/index.html): docs page.
+- [Public](https://raw.githubusercontent.com/TanStack/query/main/integrations/react-webpack-5/public/index.html): docs page.
+- [Src](https://raw.githubusercontent.com/TanStack/query/main/integrations/angular-cli-20/src/index.html): docs page.
+
+## Packages
+- [README](https://raw.githubusercontent.com/TanStack/query/main/packages/angular-query-experimental/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/packages/react-query/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/packages/solid-query/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/TanStack/query/main/packages/vue-query/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/angular-query-experimental/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/angular-query-persist-client/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/eslint-plugin-query/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/query-async-storage-persister/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/query-broadcast-client-experimental/eslint.config.js): docs page.
+- [Eslint.Config](https://raw.githubusercontent.com/TanStack/query/main/packages/query-core/eslint.config.js): docs page.
+
+## Scripts
+- [Generate Labeler Config](https://raw.githubusercontent.com/TanStack/query/main/scripts/generate-labeler-config.ts): docs page.
+- [Gettsupconfig](https://raw.githubusercontent.com/TanStack/query/main/scripts/getTsupConfig.js): docs page.
+- [Getvitealiases](https://raw.githubusercontent.com/TanStack/query/main/scripts/getViteAliases.js): docs page.
+- [Verify Links](https://raw.githubusercontent.com/TanStack/query/main/scripts/verify-links.ts): docs page.

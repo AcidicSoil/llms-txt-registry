@@ -1,0 +1,89 @@
+# Repo Cartographer
+
+> Repo Cartographer aims to create a flexible, AI-driven development environment where users can generate, plan, and scaffold software repositories using a combination of DSPy-based reasoning and a structured planning graph (RPG). It separates user-facing interfaces—CLI and TUI—from the core logic, enabling independent evolution and improvement of each layer. The project centralizes configuration and model provider management to allow seamless switching between different language models, while introducing an RPG layer that validates repository structure, plans feature hierarchies, and generates deterministic build and test queues. Ultimately, the goal is to build a scalable, extensible, and maintainable system that supports intelligent code generation, automated repository planning, and rich user interaction through both command-line and graphical interfaces.
+
+**Remember:**
+- CLI agent structure
+- TUI (Textual User Interface)
+- DSPy modules and signatures
+- Repository Planning Graph (RPG)
+- Provider registry and environment configuration
+- Prompt templates and program instructions
+
+## Docs
+- [Project Spec.Example](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/docs/PROJECT_SPEC.example.md): worked example.
+- [Dspy Tutorials Codebase](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/docs/.ai_context/dspy-codefetch/dspyTutorial_codefetch/DSPY-Tutorials_codebase.md): worked example.
+- [Gemini Cli Example Prompt Ranking Reports](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/docs/owner-docs/TODO/OTHER/gemini-cli_example_prompt_ranking_reports.md): worked example.
+- [Rpg Dspy Tutorial Selection](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/docs/owner-docs/TODO/RPG-DSPY/.archive/RPG-DSPy-Tutorial-Selection.md): worked example.
+- [Quick Reference Execution Guide](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/quick-reference-execution-guide.md): API reference.
+- [Rag Module](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/docs/RAG-module.md): docs page.
+- [Rpg Build Guide](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/RPG_build_guide.md): docs page.
+- [Checklist](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.AI_DOCS/checklist.md): docs page.
+- [Prd](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/docs/prd.txt): docs page.
+- [Project Spec.Template](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/docs/PROJECT_SPEC.template.md): docs page.
+
+## Tutorials
+- [Example Prd](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/templates/example_prd.txt): worked example.
+- [Example Prd](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.taskmaster/templates/example_prd.txt): worked example.
+
+## API
+- [Test Dspy Modules](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/tests/test_dspy_modules.py): docs page.
+- [Analyze](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/dspy_modules/analyze.py): docs page.
+- [Rank Prompts](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/dspy_modules/rank_prompts.py): docs page.
+- [Sequence](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/dspy_modules/sequence.py): docs page.
+
+## Optional
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/AGENTS.md): docs page.
+- [Cli Agent Structure Plan](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/CLI agent structure plan.md): docs page.
+- [README](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/README.md): docs page.
+- [Prd](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/prd.txt): docs page.
+
+## .Taskmaster
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/AGENTS.md): docs page.
+- [Gemini](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/GEMINI.md): docs page.
+- [Rank Root Prompts](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/.taskmaster/templates/rank-root-prompts.md): docs page.
+
+## Apps
+- [App](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/apps/tui/app.py): docs page.
+- [Init](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/apps/cli/__init__.py): docs page.
+- [Init](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/apps/tui/__init__.py): docs page.
+- [Main](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/apps/cli/main.py): docs page.
+- [Init](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/apps/tui/widgets/__init__.py): docs page.
+
+## Core
+- [Init](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/__init__.py): docs page.
+- [Fs](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/tools/fs.py): docs page.
+- [Locations](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/config/locations.py): docs page.
+- [Registry](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/providers/registry.py): docs page.
+- [Run Jobs](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/pipeline/run_jobs.py): docs page.
+- [Schema](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/config/schema.py): docs page.
+- [Web](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/core/tools/web.py): docs page.
+
+## Prompts
+- [Extension Command Template](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/prompts/extension-command_template.md): docs page.
+- [Refactor Prompt Template](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/prompts/refactor_prompt_template.md): docs page.
+
+## Rpg
+- [Build Queue](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg/build_queue.py): docs page.
+- [Construct](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg/construct.py): docs page.
+- [Init](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg/__init__.py): docs page.
+- [Schema](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg/schema.py): docs page.
+- [Validate](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg/validate.py): docs page.
+
+## Rpg Tool
+- [README](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/rpg-vector-index/README.md): install & quickstart.
+- [Readme Task Master](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.taskmaster/README-task-master.md): install & quickstart.
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/AGENTS.md): docs page.
+- [Execution Order](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/execution-order.md): docs page.
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.codex/AGENTS.md): docs page.
+- [Agents](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.taskmaster/AGENTS.md): docs page.
+- [Pull Request Tempate](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/.github/pull_request_tempate.md): docs page.
+- [Rpg Prompt Tool Templates](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/templates/RPG-prompt-tool_templates.md): docs page.
+- [Test Faiss Index](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/rpg_tool/rpg-vector-index/tests/test_faiss_index.py): docs page.
+
+## Tests
+- [Test Cli](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/tests/test_cli.py): docs page.
+- [Test Pipeline](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/tests/test_pipeline.py): docs page.
+- [Test Rpg Validate](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/tests/test_rpg_validate.py): docs page.
+- [Test Tui](https://raw.githubusercontent.com/AcidicSoil/repo-cartographer/main/tests/test_tui.py): docs page.

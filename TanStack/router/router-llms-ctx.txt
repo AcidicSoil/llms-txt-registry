@@ -1,0 +1,1249 @@
+<project title="Router" summary="TanStack Router is a modern router designed for type safety, data-driven navigation, and seamless developer experience. It provides end-to-end type safety for routes, params, and loaders, schema-driven search params with validation, built-in caching, prefetching, and invalidation, and supports nested layouts, transitions, and error boundaries.">**Remember:**
+- Type Safety
+- Data-Driven Navigation
+- Schema-Driven Search Params
+- Built-In Caching
+- Nested Layouts
+- Transitions<docs><doc title="Quickstart" desc="install &amp; quickstart."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Quickstart Esbuild File Based" desc="install &amp; quickstart."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      html {
+        color-scheme: light dark;
+      }
+      * {
+        @apply border-gray-200 dark:border-gray-800;
+      }
+      body {
+        @apply bg-gray-50 text-gray-950 dark:bg-gray-900 dark:text-gray-200;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/dist/main.js"></script>
+  </body>
+</html></doc><doc title="Quickstart File Based" desc="install &amp; quickstart."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Quickstart File Based" desc="install &amp; quickstart."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Public" desc="install &amp; quickstart."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TanStack router</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html></doc><doc title="Esbuild.Config" desc="install &amp; quickstart.">import { tanstackRouter } from '@tanstack/router-plugin/esbuild'
+
+export default {
+  jsx: 'transform',
+  minify: true,
+  sourcemap: true,
+  bundle: true,
+  format: 'esm',
+  target: ['esnext'],
+  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true })],
+}</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc></docs><tutorials><doc title="README" desc="install &amp; quickstart."># Firebase Setup
+
+1. Create a [Firebase project](https://console.firebase.google.com/)
+   1. By default, firebase will configure an accepted domain for localhost...update if necessary!
+2. Enable Authentication in the Firebase console
+3. Add GitHub as an authentication provider:
+   - Go to **Authentication** > **Sign-in method** > **GitHub**
+   - Enable GitHub authentication
+   - You'll need to set up OAuth in your GitHub account:
+     - Go to [GitHub Developer Settings](https://github.com/settings/developers)
+     - Create a new OAuth app
+     - Set the homepage URL to your local or production URL
+     - Set the callback URL to: `https://your-firebase-project-id.firebaseapp.com/__/auth/handler`
+     - Copy the Client ID and Client Secret
+   - Return to Firebase console and paste the GitHub Client ID and Client Secret
+   - Save the changes
+
+4. Create a web app in your Firebase project:
+   - Go to **Project Overview** > **Add app** > **Web**
+   - Register the app with a nickname
+   - Copy the Firebase configuration object for later use
+
+## Setup .env.local
+
+Copy the .env.example provided and configure with your firebase credentials
+
+````VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=```
+
+## Run the app
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`
+````</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `npm install` or `yarn`
+- `npm start` or `yarn start`</doc></tutorials><api><doc title="Api" desc="API reference.">import type {
+  IndexRoute,
+  LayoutRoute,
+  PhysicalSubtree,
+  Route,
+  VirtualRootRoute,
+  VirtualRouteNode,
+} from './types'
+
+export function rootRoute(
+  file: string,
+  children?: Array<VirtualRouteNode>,
+): VirtualRootRoute {
+  return {
+    type: 'root',
+    file,
+    children,
+  }
+}
+
+export function index(file: string): IndexRoute {
+  return {
+    type: 'index',
+    file,
+  }
+}
+
+export function layout(
+  file: string,
+  children: Array<VirtualRouteNode>,
+): LayoutRoute
+export function layout(
+  id: string,
+  file: string,
+  children: Array<VirtualRouteNode>,
+): LayoutRoute
+
+export function layout(
+  idOrFile: string,
+  fileOrChildren: string | Array<VirtualRouteNode>,
+  children?: Array<VirtualRouteNode>,
+): LayoutRoute {
+  if (Array.isArray(fileOrChildren)) {
+    return {
+      type: 'layout',
+      file: idOrFile,
+      children: fileOrChildren,
+    }
+  } else {
+    return {
+      type: 'layout',
+      id: idOrFile,
+      file: fileOrChildren,
+      children,
+    }
+  }
+}
+
+export function route(path: string, children: Array<VirtualRouteNode>): Route
+export function route(path: string, file: string): Route
+export function route(
+  path: string,
+  file: string,
+  children: Array<VirtualRouteNode>,
+): Route
+export function route(
+  path: string,
+  fileOrChildren: string | Array<VirtualRouteNode>,
+  children?: Array<VirtualRouteNode>,
+): Route {
+  if (typeof fileOrChildren === 'string') {
+    return {
+      type: 'route',
+      file: fileOrChildren,
+      path,
+      children,
+    }
+  }
+  return {
+    type: 'route',
+    path,
+    children: fileOrChildren,
+  }
+}
+
+export function physical(
+  pathPrefix: string,
+  directory: string,
+): PhysicalSubtree {
+  return {
+    type: 'physical',
+    directory,
+    pathPrefix,
+  }
+}</doc><doc title="Virtual Modules" desc="docs page.">export const VIRTUAL_MODULES = {
+  startManifest: 'tanstack-start-manifest:v',
+  injectedHeadScripts: 'tanstack-start-injected-head-scripts:v',
+  serverFnManifest: '#tanstack-start-server-fn-manifest',
+} as const</doc><doc title="Api.Users" desc="API reference.">import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+import axios from 'redaxios'
+import type { User } from '../utils/users'
+
+let queryURL = 'https://jsonplaceholder.typicode.com'
+
+if (import.meta.env.VITE_NODE_ENV === 'test') {
+  queryURL = `http://localhost:${import.meta.env.VITE_EXTERNAL_PORT}`
+}
+
+export const Route = createFileRoute('/api/users')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        console.info('Fetching users... @', request.url)
+        const res = await axios.get<Array<User>>(`${queryURL}/users`)
+        const list = res.data.slice(0, 10)
+        return json(
+          list.map((u) => ({ id: u.id, name: u.name, email: u.email })),
+        )
+      },
+    },
+  },
+})</doc><doc title="Api.Users" desc="API reference.">import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+import axios from 'redaxios'
+
+import type { User } from '~/utils/users'
+
+let queryURL = 'https://jsonplaceholder.typicode.com'
+
+if (import.meta.env.VITE_NODE_ENV === 'test') {
+  queryURL = `http://localhost:${import.meta.env.VITE_EXTERNAL_PORT}`
+}
+
+export const Route = createFileRoute('/api/users')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        console.info('Fetching users... @', request.url)
+        const res = await axios.get<Array<User>>(`${queryURL}/users`)
+
+        const list = res.data.slice(0, 10)
+
+        return json(
+          list.map((u) => ({ id: u.id, name: u.name, email: u.email })),
+        )
+      },
+    },
+  },
+})</doc><doc title="Api.Users" desc="API reference.">import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+import axios from 'redaxios'
+
+import type { User } from '~/utils/users'
+
+let queryURL = 'https://jsonplaceholder.typicode.com'
+
+if (import.meta.env.VITE_NODE_ENV === 'test') {
+  queryURL = `http://localhost:${import.meta.env.VITE_EXTERNAL_PORT}`
+}
+
+export const Route = createFileRoute('/api/users')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        console.info('Fetching users... @', request.url)
+        const res = await axios.get<Array<User>>(`${queryURL}/users`)
+
+        const list = res.data.slice(0, 10)
+
+        return json(
+          list.map((u) => ({ id: u.id, name: u.name, email: u.email })),
+        )
+      },
+    },
+  },
+})</doc><doc title="Api.Users" desc="API reference.">import { createFileRoute } from '@tanstack/solid-router'
+import { json } from '@tanstack/solid-start'
+import axios from 'redaxios'
+import type { User } from '../utils/users'
+
+let queryURL = 'https://jsonplaceholder.typicode.com'
+
+if (import.meta.env.VITE_NODE_ENV === 'test') {
+  queryURL = `http://localhost:${import.meta.env.VITE_EXTERNAL_PORT}`
+}
+
+export const Route = createFileRoute('/api/users')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        console.info('Fetching users... @', request.url)
+        const res = await axios.get<Array<User>>(`${queryURL}/users`)
+        const list = res.data.slice(0, 10)
+        return json(
+          list.map((u) => ({ id: u.id, name: u.name, email: u.email })),
+        )
+      },
+    },
+  },
+})</doc><doc title="Middleware Context" desc="API reference.">import { createFileRoute } from '@tanstack/react-router'
+import { createMiddleware, json } from '@tanstack/react-start'
+
+const testParentMiddleware = createMiddleware().server(async ({ next }) => {
+  const result = await next({ context: { testParent: true } })
+  return result
+})
+
+const testMiddleware = createMiddleware()
+  .middleware([testParentMiddleware])
+  .server(async ({ next }) => {
+    const result = await next({ context: { test: true } })
+    return result
+  })
+
+export const Route = createFileRoute('/api/middleware-context')({
+  server: {
+    middleware: [testMiddleware],
+    handlers: {
+      GET: ({ request, context }) => {
+        return json({
+          url: request.url,
+          context: context,
+          expectedContext: { testParent: true, test: true },
+        })
+      },
+    },
+  },
+})</doc><doc title="Middleware Context" desc="API reference.">import { createFileRoute } from '@tanstack/solid-router'
+import { createMiddleware, json } from '@tanstack/solid-start'
+
+const testParentMiddleware = createMiddleware().server(async ({ next }) => {
+  const result = await next({ context: { testParent: true } })
+  return result
+})
+
+const testMiddleware = createMiddleware()
+  .middleware([testParentMiddleware])
+  .server(async ({ next }) => {
+    const result = await next({ context: { test: true } })
+    return result
+  })
+
+export const Route = createFileRoute('/api/middleware-context')({
+  server: {
+    middleware: [testMiddleware],
+    handlers: {
+      GET: ({ request, context }) => {
+        return json({
+          url: request.url,
+          context: context,
+          expectedContext: { testParent: true, test: true },
+        })
+      },
+    },
+  },
+})</doc><doc title="Only Any" desc="API reference.">import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+
+export const Route = createFileRoute('/api/only-any')({
+  server: {
+    handlers: {
+      ANY: ({ request }) => {
+        return json(
+          {
+            handler: 'ANY',
+            method: request.method,
+          },
+          { headers: { 'X-HANDLER': 'ANY', 'X-METHOD': request.method } },
+        )
+      },
+    },
+  },
+})</doc><doc title="Only Any" desc="API reference.">import { createFileRoute } from '@tanstack/solid-router'
+import { json } from '@tanstack/solid-start'
+
+export const Route = createFileRoute('/api/only-any')({
+  server: {
+    handlers: {
+      ANY: ({ request }) => {
+        return json(
+          {
+            handler: 'ANY',
+            method: request.method,
+          },
+          { headers: { 'X-HANDLER': 'ANY', 'X-METHOD': request.method } },
+        )
+      },
+    },
+  },
+})</doc></api><e2e><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `pnpm install`
+- `pnpm dev`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `pnpm install`
+- `pnpm dev`</doc><doc title="README" desc="install &amp; quickstart."># Scroll Restoration Testing Sandbox with Vite
+
+To run this example:
+
+- `npm install`
+- `npm start`
+
+This sandbox is for testing the scroll restoration behavior.
+
+## Setup
+
+- Create your files in `src/routes` directory.
+- Make sure you update the arrays in the following files with the expected routes
+  - `tests/app.spec.ts` > routes array
+  - `src/routes/__root.tsx` > Nav component, routes array
+  - `src/routes/index.tsx` > Navigation test suite, routes array</doc><doc title="README" desc="install &amp; quickstart."># Welcome to TanStack.com!
+
+This site is built with TanStack Router!
+
+- [TanStack Router Docs](https://tanstack.com/router)
+
+It's deployed automagically with Netlify!
+
+- [Netlify](https://netlify.com/)
+
+## Development
+
+From your terminal:
+
+```sh
+pnpm install
+pnpm dev
+```
+
+This starts your app in development mode, rebuilding assets on file changes.
+
+## Editing and previewing the docs of TanStack projects locally
+
+The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
+In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
+
+Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
+
+1. Create a new directory called `tanstack`.
+
+```sh
+mkdir tanstack
+```
+
+2. Enter the directory and clone this repo and the repo of the project there.
+
+```sh
+cd tanstack
+git clone git@github.com:TanStack/tanstack.com.git
+git clone git@github.com:TanStack/form.git
+```
+
+> [!NOTE]
+> Your `tanstack` directory should look like this:
+>
+> ```
+> tanstack/
+>    |
+>    +-- form/
+>    |
+>    +-- tanstack.com/
+> ```
+
+> [!WARNING]
+> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
+
+3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
+
+```sh
+cd tanstack.com
+pnpm i
+# The app will run on https://localhost:3000 by default
+pnpm dev
+```
+
+4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
+
+> [!NOTE]
+> The updated pages need to be manually reloaded in the browser.
+
+> [!WARNING]
+> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `pnpm install`
+- `pnpm dev`</doc><doc title="README" desc="install &amp; quickstart."># Example
+
+To run this example:
+
+- `pnpm install`
+- `pnpm dev`</doc><doc title="README" desc="install &amp; quickstart."># Scroll Restoration Testing Sandbox with Vite
+
+To run this example:
+
+- `npm install`
+- `npm start`
+
+This sandbox is for testing the scroll restoration behavior.
+
+## Setup
+
+- Create your files in `src/routes` directory.
+- Make sure you update the arrays in the following files with the expected routes
+  - `tests/app.spec.ts` > routes array
+  - `src/routes/__root.tsx` > Nav component, routes array
+  - `src/routes/index.tsx` > Navigation test suite, routes array</doc><doc title="README" desc="install &amp; quickstart."># Welcome to TanStack.com!
+
+This site is built with TanStack Router!
+
+- [TanStack Router Docs](https://tanstack.com/router)
+
+It's deployed automagically with Netlify!
+
+- [Netlify](https://netlify.com/)
+
+## Development
+
+From your terminal:
+
+```sh
+pnpm install
+pnpm dev
+```
+
+This starts your app in development mode, rebuilding assets on file changes.
+
+## Editing and previewing the docs of TanStack projects locally
+
+The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
+In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
+
+Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
+
+1. Create a new directory called `tanstack`.
+
+```sh
+mkdir tanstack
+```
+
+2. Enter the directory and clone this repo and the repo of the project there.
+
+```sh
+cd tanstack
+git clone git@github.com:TanStack/tanstack.com.git
+git clone git@github.com:TanStack/form.git
+```
+
+> [!NOTE]
+> Your `tanstack` directory should look like this:
+>
+> ```
+> tanstack/
+>    |
+>    +-- form/
+>    |
+>    +-- tanstack.com/
+> ```
+
+> [!WARNING]
+> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
+
+3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
+
+```sh
+cd tanstack.com
+pnpm i
+# The app will run on https://localhost:3000 by default
+pnpm dev
+```
+
+4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
+
+> [!NOTE]
+> The updated pages need to be manually reloaded in the browser.
+
+> [!WARNING]
+> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!</doc><doc title="Basepath File Based" desc="docs page."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc><doc title="Basepath File Based" desc="docs page."><!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html></doc></e2e><packages><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack Directive Functions Plugin
+
+See https://tanstack.com/router/latest/docs/framework/react/routing/file-based-routing</doc><doc title="README" desc="install &amp; quickstart."># Experimental Nitro v2 Vite Plugin</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Router Devtools
+
+See https://tanstack.com/router/latest/docs/framework/react/devtools</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Router
+
+![TanStack Router Header](https://github.com/tanstack/router/raw/main/media/header_router.png)
+
+🤖 Type-safe router w/ built-in caching & URL state management for React!
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TanStack" target="\_parent">
+  <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack">
+</a><a href="https://discord.com/invite/WrRKjPJ" target="\_parent">
+  <img alt="" src="https://img.shields.io/badge/Discord-TanStack-%235865F2" />
+</a><a href="https://npmjs.com/package/@tanstack/react-router" target="\_parent">
+  <img alt="" src="https://img.shields.io/npm/dm/@tanstack/router.svg" />
+</a><a href="https://bundlephobia.com/result?p=@tanstack/react-router" target="\_parent">
+  <img alt="" src="https://badgen.net/bundlephobia/minzip/@tanstack/react-router" />
+</a><a href="#badge">
+    <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg">
+  </a><a href="https://github.com/tanstack/router/discussions">
+  <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Github%20Discussions%20%26%20Support-Chat%20now!-blue" />
+</a><a href="https://bestofjs.org/projects/router"><img alt="Best of JS" src="https://img.shields.io/endpoint?url=https://bestofjs-serverless.now.sh/api/project-badge?fullName=tanstack%2Frouter%26since=daily" /></a><a href="https://github.com/tanstack/router" target="\_parent">
+  <img alt="" src="https://img.shields.io/github/stars/tanstack/router.svg?style=social&label=Star" />
+</a><a href="https://twitter.com/tan_stack" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tan_stack.svg?style=social&label=Follow @TanStack" />
+</a><a href="https://twitter.com/tannerlinsley" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tannerlinsley.svg?style=social&label=Follow @TannerLinsley" />
+</a>
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com)! [React Query](https://github.com/tannerlinsley/react-query), [React Table](https://github.com/tanstack/react-table), [React Charts](https://github.com/tannerlinsley/react-charts), [React Virtual](https://github.com/tannerlinsley/react-virtual)
+
+## Visit [tanstack.com/router](https://tanstack.com/router) for docs, guides, API and more!</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Router
+
+![TanStack Router Header](https://github.com/tanstack/router/raw/main/media/header_router.png)
+
+🤖 Type-safe router w/ built-in caching & URL state management for React!
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TanStack" target="\_parent">
+  <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack">
+</a><a href="https://discord.com/invite/WrRKjPJ" target="\_parent">
+  <img alt="" src="https://img.shields.io/badge/Discord-TanStack-%235865F2" />
+</a><a href="https://npmjs.com/package/@tanstack/react-router" target="\_parent">
+  <img alt="" src="https://img.shields.io/npm/dm/@tanstack/router.svg" />
+</a><a href="https://bundlephobia.com/result?p=@tanstack/react-router" target="\_parent">
+  <img alt="" src="https://badgen.net/bundlephobia/minzip/@tanstack/react-router" />
+</a><a href="#badge">
+    <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg">
+  </a><a href="https://github.com/tanstack/router/discussions">
+  <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Github%20Discussions%20%26%20Support-Chat%20now!-blue" />
+</a><a href="https://bestofjs.org/projects/router"><img alt="Best of JS" src="https://img.shields.io/endpoint?url=https://bestofjs-serverless.now.sh/api/project-badge?fullName=tanstack%2Frouter%26since=daily" /></a><a href="https://github.com/tanstack/router" target="\_parent">
+  <img alt="" src="https://img.shields.io/github/stars/tanstack/router.svg?style=social&label=Star" />
+</a><a href="https://twitter.com/tan_stack" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tan_stack.svg?style=social&label=Follow @TanStack" />
+</a><a href="https://twitter.com/tannerlinsley" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tannerlinsley.svg?style=social&label=Follow @TannerLinsley" />
+</a>
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com)! [React Query](https://github.com/tannerlinsley/react-query), [React Table](https://github.com/tanstack/react-table), [React Charts](https://github.com/tannerlinsley/react-charts), [React Virtual](https://github.com/tannerlinsley/react-virtual)
+
+## Visit [tanstack.com/router](https://tanstack.com/router) for docs, guides, API and more!</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Start - Client
+
+This package is not meant to be used directly. It is a dependency of [`@tanstack/react-start`](https://www.npmjs.com/package/@tanstack/react-start).
+
+TanStack React Start is a fullstack-framework made for SSR, Streaming, Server Functions, API Routes, bundling and more powered by [TanStack Router](https://tanstack.com/router).
+
+Head over to [tanstack.com/start](https://tanstack.com/start) for more information about getting started.</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Start - Server
+
+This package is not meant to be used directly. It is a dependency of [`@tanstack/react-start`](https://www.npmjs.com/package/@tanstack/react-start).
+
+TanStack React Start is a fullstack-framework made for SSR, Streaming, Server Functions, API Routes, bundling and more powered by [TanStack Router](https://tanstack.com/router).
+
+Head over to [tanstack.com/start](https://tanstack.com/start) for more information about getting started.</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack React Start
+
+![TanStack React Start Header](https://github.com/tanstack/router/raw/main/media/header_start.png)
+
+SSR, Streaming, Server Functions, API Routes, bundling and more powered by [TanStack Router](https://tanstack.com/router) and Vite. Ready to deploy to your favorite hosting provider.
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TanStack" target="\_parent">
+  <img alt="#TanStack" src="https://img.shields.io/twitter/url?color=%2308a0e9&label=%23TanStack&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Fbutton_hashtag%3DTanStack">
+</a>
+<a href="https://discord.com/invite/WrRKjPJ" target="\_parent">
+  <img alt="" src="https://img.shields.io/badge/Discord-TanStack-%235865F2" />
+</a>
+<a href="https://npmjs.com/package/@tanstack/react-start" target="\_parent">
+  <img alt="" src="https://img.shields.io/npm/dm/@tanstack/react-start.svg" />
+</a>
+<a href="https://bundlephobia.com/result?p=@tanstack/react-start" target="\_parent">
+  <img alt="" src="https://badgen.net/bundlephobia/minzip/@tanstack/react-start" />
+</a>
+<a href="#badge">
+  <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg">
+</a>
+<a href="https://github.com/tanstack/router/discussions">
+  <img alt="Join the discussion on Github" src="https://img.shields.io/badge/Github%20Discussions%20%26%20Support-Chat%20now!-blue" />
+</a>
+<a href="https://bestofjs.org/projects/router">
+  <img alt="Best of JS" src="https://img.shields.io/endpoint?url=https://bestofjs-serverless.now.sh/api/project-badge?fullName=tanstack%2Frouter%26since=daily" />
+</a>
+<a href="https://github.com/tanstack/router" target="\_parent">
+  <img alt="" src="https://img.shields.io/github/stars/tanstack/router.svg?style=social&label=Star" />
+</a>
+<a href="https://twitter.com/tan_stack" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tan_stack.svg?style=social&label=Follow @TanStack" />
+</a>
+<a href="https://twitter.com/tannerlinsley" target="\_parent">
+  <img alt="" src="https://img.shields.io/twitter/follow/tannerlinsley.svg?style=social&label=Follow @TannerLinsley" />
+</a>
+
+Enjoy this library? Try the entire [TanStack](https://tanstack.com)! [React Query](https://github.com/tannerlinsley/react-query), [React Table](https://github.com/tanstack/react-table), [React Charts](https://github.com/tannerlinsley/react-charts), [React Virtual](https://github.com/tannerlinsley/react-virtual)
+
+Visit [tanstack.com/start](https://tanstack.com/start) for docs, guides, API and more!</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack Router CLI
+
+See https://tanstack.com/router/latest/docs/framework/react/routing/installation/with-router-cli</doc><doc title="README" desc="install &amp; quickstart."><img src="https://static.scarf.sh/a.png?x-pxid=d988eb79-b0fc-4a2b-8514-6a1ab932d188" />
+
+# TanStack Router Core
+
+See [https://tanstack.com/router](https://tanstack.com/router) for documentation.</doc></packages><scripts><doc title="Publish" desc="docs page.">// @ts-check
+
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { publish } from '@tanstack/config/publish'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+await publish({
+  packages: [
+    {
+      name: '@tanstack/history',
+      packageDir: 'packages/history',
+    },
+    {
+      name: '@tanstack/router-core',
+      packageDir: 'packages/router-core',
+    },
+    {
+      name: '@tanstack/solid-router',
+      packageDir: 'packages/solid-router',
+    },
+    {
+      name: '@tanstack/react-router',
+      packageDir: 'packages/react-router',
+    },
+    {
+      name: '@tanstack/solid-router-ssr-query',
+      packageDir: 'packages/solid-router-ssr-query',
+    },
+    {
+      name: '@tanstack/react-router-ssr-query',
+      packageDir: 'packages/react-router-ssr-query',
+    },
+    {
+      name: '@tanstack/router-ssr-query-core',
+      packageDir: 'packages/router-ssr-query-core',
+    },
+    {
+      name: '@tanstack/zod-adapter',
+      packageDir: 'packages/zod-adapter',
+    },
+    {
+      name: '@tanstack/valibot-adapter',
+      packageDir: 'packages/valibot-adapter',
+    },
+    {
+      name: '@tanstack/arktype-adapter',
+      packageDir: 'packages/arktype-adapter',
+    },
+    {
+      name: '@tanstack/router-devtools',
+      packageDir: 'packages/router-devtools',
+    },
+    {
+      name: '@tanstack/solid-router-devtools',
+      packageDir: 'packages/solid-router-devtools',
+    },
+    {
+      name: '@tanstack/react-router-devtools',
+      packageDir: 'packages/react-router-devtools',
+    },
+    {
+      name: '@tanstack/router-devtools-core',
+      packageDir: 'packages/router-devtools-core',
+    },
+    {
+      name: '@tanstack/router-generator',
+      packageDir: 'packages/router-generator',
+    },
+    {
+      name: '@tanstack/virtual-file-routes',
+      packageDir: 'packages/virtual-file-routes',
+    },
+    {
+      name: '@tanstack/router-cli',
+      packageDir: 'packages/router-cli',
+    },
+    {
+      name: '@tanstack/router-plugin',
+      packageDir: 'packages/router-plugin',
+    },
+    {
+      name: '@tanstack/router-vite-plugin',
+      packageDir: 'packages/router-vite-plugin',
+    },
+    {
+      name: '@tanstack/directive-functions-plugin',
+      packageDir: 'packages/directive-functions-plugin',
+    },
+    {
+      name: '@tanstack/server-functions-plugin',
+      packageDir: 'packages/server-functions-plugin',
+    },
+    {
+      name: '@tanstack/eslint-plugin-router',
+      packageDir: 'packages/eslint-plugin-router',
+    },
+    {
+      name: '@tanstack/solid-start',
+      packageDir: 'packages/solid-start',
+    },
+    {
+      name: '@tanstack/solid-start-client',
+      packageDir: 'packages/solid-start-client',
+    },
+    {
+      name: '@tanstack/solid-start-server',
+      packageDir: 'packages/solid-start-server',
+    },
+    {
+      name: '@tanstack/start-client-core',
+      packageDir: 'packages/start-client-core',
+    },
+    {
+      name: '@tanstack/start-server-core',
+      packageDir: 'packages/start-server-core',
+    },
+    {
+      name: '@tanstack/start-storage-context',
+      packageDir: 'packages/start-storage-context',
+    },
+    {
+      name: '@tanstack/react-start',
+      packageDir: 'packages/react-start',
+    },
+    {
+      name: '@tanstack/react-start-client',
+      packageDir: 'packages/react-start-client',
+    },
+    {
+      name: '@tanstack/react-start-server',
+      packageDir: 'packages/react-start-server',
+    },
+    {
+      name: '@tanstack/start-plugin-core',
+      packageDir: 'packages/start-plugin-core',
+    },
+    {
+      name: '@tanstack/start-static-server-functions',
+      packageDir: 'packages/start-static-server-functions',
+    },
+    {
+      name: '@tanstack/router-utils',
+      packageDir: 'packages/router-utils',
+    },
+    {
+      name: '@tanstack/nitro-v2-vite-plugin',
+      packageDir: 'packages/nitro-v2-vite-plugin',
+    },
+  ],
+  branchConfigs: {
+    main: {
+      prerelease: false,
+    },
+    alpha: {
+      prerelease: true,
+    },
+    beta: {
+      prerelease: true,
+    },
+  },
+  rootDir: resolve(__dirname, '..'),
+  branch: process.env.BRANCH,
+  tag: process.env.TAG,
+  ghToken: process.env.GH_TOKEN,
+})
+
+process.exit(0)</doc><doc title="Set Ts Version" desc="docs page.">import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+const ROOT_PACKAGE_JSON = join(__dirname, '..', 'package.json')
+const PACKAGES_DIR = join(__dirname, '..', 'packages')
+const SUPPORTED_TS_VERSIONS = ['5.4', '5.5', '5.6', '5.7', '5.8', '5.9']
+const LATEST_TS_VERSION =
+  SUPPORTED_TS_VERSIONS[SUPPORTED_TS_VERSIONS.length - 1]
+
+/**
+ * @param {string} packagePath
+ */
+function updatePackageJson(packagePath) {
+  const PREVIOUS_LATEST_VERSION =
+    SUPPORTED_TS_VERSIONS[SUPPORTED_TS_VERSIONS.length - 2]
+
+  if (PREVIOUS_LATEST_VERSION === undefined) {
+    throw new Error('Previous latest version not found')
+  }
+
+  const packageJsonPath = join(packagePath, 'package.json')
+  if (!existsSync(packageJsonPath)) return
+
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+  packageJson.scripts = packageJson.scripts || {}
+
+  const scriptKeys = Object.keys(packageJson.scripts)
+  const updatedScripts = { ...packageJson.scripts }
+  /** @type Record<string, string> */
+  const cliArgs = {}
+
+  // Remove old TS test scripts and store CLI arguments
+  scriptKeys.forEach((key) => {
+    if (key.startsWith('test:types:')) {
+      const script = packageJson.scripts[key]
+      const match = script.match(/(?:node \S+\/tsc\.js|tsc)(.*)/)
+      cliArgs[key] = match ? match[1].trim() : ''
+      delete updatedScripts[key]
+    }
+  })
+
+  // Get CLI arguments from the previous latest version
+  const previousLatestKey = `test:types:ts${PREVIOUS_LATEST_VERSION.replace('.', '')}`
+  const previousLatestArgs = cliArgs[previousLatestKey] || ''
+
+  // Insert new TS test scripts while maintaining order
+  let insertIndex = scriptKeys.findIndex((key) => key.startsWith('test:types:'))
+  if (insertIndex === -1) insertIndex = scriptKeys.length
+
+  /** @type Record<string, string> */
+  const newScripts = {}
+  scriptKeys.forEach((key, index) => {
+    if (index === insertIndex) {
+      SUPPORTED_TS_VERSIONS.forEach((version, i) => {
+        const scriptKey = `test:types:ts${version.replace('.', '')}`
+        if (i === SUPPORTED_TS_VERSIONS.length - 1) {
+          // Use "tsc" directly for the latest version
+          newScripts[scriptKey] = `tsc ${previousLatestArgs}`.trim()
+        } else {
+          const args = cliArgs[scriptKey] || ''
+          newScripts[scriptKey] =
+            `node ../../node_modules/typescript${version.replace('.', '')}/lib/tsc.js ${args}`.trim()
+        }
+      })
+    }
+    if (!key.startsWith('test:types:')) {
+      newScripts[key] = packageJson.scripts[key]
+    }
+  })
+
+  packageJson.scripts = newScripts
+  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
+  console.log(`Updated ${packageJsonPath}`)
+}
+
+function updateRootPackageJson() {
+  if (!existsSync(ROOT_PACKAGE_JSON)) {
+    return
+  }
+
+  const rootPackageJson = JSON.parse(readFileSync(ROOT_PACKAGE_JSON, 'utf8'))
+  rootPackageJson.devDependencies = rootPackageJson.devDependencies || {}
+
+  // Update main TypeScript version
+  rootPackageJson.devDependencies['typescript'] = `^${LATEST_TS_VERSION}.0`
+
+  // Remove old TypeScript aliases
+  Object.keys(rootPackageJson.devDependencies).forEach((dep) => {
+    if (dep.startsWith('typescript') && dep !== 'typescript') {
+      delete rootPackageJson.devDependencies[dep]
+    }
+  })
+
+  // Add supported TypeScript aliases
+  SUPPORTED_TS_VERSIONS.slice(0, -1).forEach((version) => {
+    rootPackageJson.devDependencies[`typescript${version.replace('.', '')}`] =
+      `npm:typescript@${version}`
+  })
+
+  writeFileSync(
+    ROOT_PACKAGE_JSON,
+    JSON.stringify(rootPackageJson, null, 2) + '\n',
+  )
+  console.log(`Updated ${ROOT_PACKAGE_JSON}`)
+}
+
+function updateAllPackages() {
+  if (!existsSync(PACKAGES_DIR)) {
+    throw new Error(`Packages directory not found: ${PACKAGES_DIR}`)
+  }
+
+  const packageDirs = readdirSync(PACKAGES_DIR)
+    .map((name) => join(PACKAGES_DIR, name))
+    .filter((dir) => statSync(dir).isDirectory())
+  packageDirs.forEach(updatePackageJson)
+  updateRootPackageJson()
+}
+
+updateAllPackages()</doc><doc title="Verify Links" desc="docs page.">import { existsSync, readFileSync, statSync } from 'node:fs'
+import path, { resolve } from 'node:path'
+import fg from 'fast-glob'
+// @ts-ignore
+import markdownLinkExtractor from 'markdown-link-extractor'
+
+function isRelativeLink(link: string) {
+  return (
+    link &&
+    !link.startsWith('/') &&
+    !link.startsWith('http://') &&
+    !link.startsWith('https://') &&
+    !link.startsWith('//') &&
+    !link.startsWith('#') &&
+    !link.startsWith('mailto:')
+  )
+}
+
+function normalizePath(p: string): string {
+  // Remove any trailing .md
+  p = p.replace(`${path.extname(p)}`, '')
+  return p
+}
+
+function fileExistsForLink(
+  link: string,
+  markdownFile: string,
+  errors: Array<any>,
+): boolean {
+  // Remove hash if present
+  const filePart = link.split('#')[0]
+  // If the link is empty after removing hash, it's not a file
+  if (!filePart) return false
+
+  // Normalize the markdown file path
+  markdownFile = normalizePath(markdownFile)
+
+  // Normalize the path
+  const normalizedPath = normalizePath(filePart)
+
+  // Resolve the path relative to the markdown file's directory
+  let absPath = resolve(markdownFile, normalizedPath)
+
+  // Ensure the resolved path is within /docs
+  const docsRoot = resolve('docs')
+  if (!absPath.startsWith(docsRoot)) {
+    errors.push({
+      link,
+      markdownFile,
+      resolvedPath: absPath,
+      reason: 'navigates above /docs, invalid',
+    })
+    return false
+  }
+
+  // Check if this is an example path
+  const isExample = absPath.includes('/examples/')
+
+  let exists = false
+
+  if (isExample) {
+    // Transform /docs/framework/{framework}/examples/ to /examples/{framework}/
+    absPath = absPath.replace(
+      /\/docs\/framework\/([^/]+)\/examples\//,
+      '/examples/$1/',
+    )
+    // For examples, we want to check if the directory exists
+    exists = existsSync(absPath) && statSync(absPath).isDirectory()
+  } else {
+    // For non-examples, we want to check if the .md file exists
+    if (!absPath.endsWith('.md')) {
+      absPath = `${absPath}.md`
+    }
+    exists = existsSync(absPath)
+  }
+
+  if (!exists) {
+    errors.push({
+      link,
+      markdownFile,
+      resolvedPath: absPath,
+      reason: 'not found',
+    })
+  }
+  return exists
+}
+
+async function findMarkdownLinks() {
+  // Find all markdown files in docs directory
+  const markdownFiles = await fg('docs/**/*.md', {
+    ignore: ['**/node_modules/**'],
+  })
+
+  console.log(`Found ${markdownFiles.length} markdown files\n`)
+
+  const errors: Array<any> = []
+
+  // Process each file
+  for (const file of markdownFiles) {
+    const content = readFileSync(file, 'utf-8')
+    const links: Array<any> = markdownLinkExtractor(content)
+
+    const filteredLinks = links.filter((link: any) => {
+      if (typeof link === 'string') {
+        return isRelativeLink(link)
+      } else if (link && typeof link.href === 'string') {
+        return isRelativeLink(link.href)
+      }
+      return false
+    })
+
+    if (filteredLinks.length > 0) {
+      filteredLinks.forEach((link: any) => {
+        const href = typeof link === 'string' ? link : link.href
+        fileExistsForLink(href, file, errors)
+      })
+    }
+  }
+
+  if (errors.length > 0) {
+    console.log(`\n❌ Found ${errors.length} broken links:`)
+    errors.forEach((err) => {
+      console.log(
+        `${err.link}\n  in:    ${err.markdownFile}\n  path:  ${err.resolvedPath}\n  why:   ${err.reason}\n`,
+      )
+    })
+    process.exit(1)
+  } else {
+    console.log('\n✅ No broken links found!')
+  }
+}
+
+findMarkdownLinks().catch(console.error)</doc></scripts></project>

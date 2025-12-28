@@ -1,0 +1,133 @@
+# Three.Js
+
+> To create an easy-to-use, lightweight, cross-browser, general-purpose 3D library for web development.
+
+**Remember:**
+- 3D rendering
+- WebGL
+- WebGPU
+- JavaScript
+- Cross-browser compatibility
+- Animation
+
+## Docs
+- [Installation](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/en/installation.html): install & quickstart.
+- [Installation](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/fr/installation.html): install & quickstart.
+- [Docs](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/index.html): docs page.
+- [Pages](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/index.html): docs page.
+- [Static](https://raw.githubusercontent.com/mrdoob/three.js/dev/utils/docs/template/static/index.html): docs page.
+- [Afterimagenode](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/AfterImageNode.html): docs page.
+- [Afterimagepass](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/AfterimagePass.html): docs page.
+- [Ambientlight](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/AmbientLight.html): docs page.
+- [Ambientlightnode](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/AmbientLightNode.html): docs page.
+- [Amfloader](https://raw.githubusercontent.com/mrdoob/three.js/dev/docs/pages/AMFLoader.html): docs page.
+
+## Tutorials
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/ies/README.md): install & quickstart.
+- [Readme](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/sounds/readme.txt): install & quickstart.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/ttf/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/3mf/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/fbx/README.md): install & quickstart.
+- [Readme](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/droid/README.txt): install & quickstart.
+- [Readme](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/kmz/Readme.txt): install & quickstart.
+- [Readme](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/nrrd/README.txt): install & quickstart.
+- [Readme](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/3d/Readme.txt): install & quickstart.
+
+## API
+- [Three.Module](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.module.js): docs page.
+- [Three.Module.Min](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.module.min.js): docs page.
+- [Flow.Module](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/libs/flow.module.js): docs page.
+- [Materialreferencenode](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/nodes/accessors/MaterialReferenceNode.js): API reference.
+- [Referencebasenode](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/nodes/accessors/ReferenceBaseNode.js): API reference.
+- [Referencenode](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/nodes/accessors/ReferenceNode.js): API reference.
+- [Rendererreferencenode](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/nodes/accessors/RendererReferenceNode.js): API reference.
+
+## Concepts
+- [Faq](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/en/faq.html): core concept.
+- [Faq](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/fr/faq.html): core concept.
+
+## Optional
+- [Security](https://raw.githubusercontent.com/mrdoob/three.js/dev/SECURITY.md): security policy.
+- [Contributing](https://raw.githubusercontent.com/mrdoob/three.js/dev/.github/CONTRIBUTING.md): docs page.
+- [License](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/ko/resources/fonts/LICENSE.md): usage terms.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/README.md): docs page.
+
+## .Github
+- [Code Of Conduct](https://raw.githubusercontent.com/mrdoob/three.js/dev/.github/CODE_OF_CONDUCT.md): docs page.
+- [Pull Request Template](https://raw.githubusercontent.com/mrdoob/three.js/dev/.github/pull_request_template.md): docs page.
+
+## Build
+- [Three.Core](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.core.js): docs page.
+- [Three.Core.Min](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.core.min.js): docs page.
+- [Three.Tsl](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.tsl.js): docs page.
+- [Three.Tsl.Min](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.tsl.min.js): docs page.
+- [Three.Webgpu](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.webgpu.js): docs page.
+- [Three.Webgpu.Min](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.webgpu.min.js): docs page.
+- [Three.Webgpu.Nodes](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.webgpu.nodes.js): docs page.
+- [Three.Webgpu.Nodes.Min](https://raw.githubusercontent.com/mrdoob/three.js/dev/build/three.webgpu.nodes.min.js): docs page.
+
+## Editor
+- [Editor](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/index.html): docs page.
+- [App](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/libs/app/index.html): docs page.
+- [Sw](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/sw.js): docs page.
+- [Command](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/Command.js): docs page.
+- [Config](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/Config.js): docs page.
+- [Editor](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/Editor.js): docs page.
+- [Editorcontrols](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/EditorControls.js): docs page.
+- [History](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/History.js): docs page.
+- [Loader](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/Loader.js): docs page.
+- [Loaderutils](https://raw.githubusercontent.com/mrdoob/three.js/dev/editor/js/LoaderUtils.js): docs page.
+
+## Manual
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/resources/tools/geo-picking/README.md): install & quickstart.
+- [Manual](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/index.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/en/align-html-elements-to-3d.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/fr/align-html-elements-to-3d.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/ja/align-html-elements-to-3d.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/ko/align-html-elements-to-3d.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/ru/align-html-elements-to-3d.html): docs page.
+- [Align Html Elements To 3D](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/zh/align-html-elements-to-3d.html): docs page.
+- [Animation System](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/en/animation-system.html): docs page.
+- [Animation System](https://raw.githubusercontent.com/mrdoob/three.js/dev/manual/fr/animation-system.html): docs page.
+
+## Playground
+- [Playground](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/index.html): docs page.
+- [Basenodeeditor](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/BaseNodeEditor.js): docs page.
+- [Datatypelib](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/DataTypeLib.js): docs page.
+- [Nodeeditor](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/NodeEditor.js): docs page.
+- [Nodeeditorlib](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/NodeEditorLib.js): docs page.
+- [Nodeeditorutils](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/NodeEditorUtils.js): docs page.
+- [Splitscreenmanager](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/SplitscreenManager.js): docs page.
+- [Basicmaterialeditor](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/editors/BasicMaterialEditor.js): docs page.
+- [Codeeditorelement](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/elements/CodeEditorElement.js): docs page.
+- [Coloreditor](https://raw.githubusercontent.com/mrdoob/three.js/dev/playground/editors/ColorEditor.js): docs page.
+
+## Src
+- [Constants](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/constants.js): docs page.
+- [Three](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.js): docs page.
+- [Three.Core](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.Core.js): docs page.
+- [Three.Legacy](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.Legacy.js): docs page.
+- [Three.Tsl](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.TSL.js): docs page.
+- [Three.Webgpu](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.WebGPU.js): docs page.
+- [Three.Webgpu.Nodes](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/Three.WebGPU.Nodes.js): docs page.
+- [Utils](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/utils.js): docs page.
+- [Ambientlight](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/lights/AmbientLight.js): docs page.
+- [Animationaction](https://raw.githubusercontent.com/mrdoob/three.js/dev/src/animation/AnimationAction.js): docs page.
+
+## Test
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/e2e/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/unit/README.md): install & quickstart.
+- [Rollup.Treeshake.Config](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/rollup.treeshake.config.js): docs page.
+- [Check Coverage](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/e2e/check-coverage.js): docs page.
+- [Clean Page](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/e2e/clean-page.js): docs page.
+- [Deterministic Injection](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/e2e/deterministic-injection.js): docs page.
+- [Index](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/treeshake/index.js): docs page.
+- [Index.Webgpu](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/treeshake/index.webgpu.js): docs page.
+- [Index.Webgpu.Nodes](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/treeshake/index.webgpu.nodes.js): docs page.
+- [Puppeteer](https://raw.githubusercontent.com/mrdoob/three.js/dev/test/e2e/puppeteer.js): docs page.
+
+## Utils
+- [Generatedfglut](https://raw.githubusercontent.com/mrdoob/three.js/dev/utils/generateDFGLUT.js): docs page.
+- [Dev](https://raw.githubusercontent.com/mrdoob/three.js/dev/utils/build/dev.js): docs page.
+- [Rollup.Config](https://raw.githubusercontent.com/mrdoob/three.js/dev/utils/build/rollup.config.js): docs page.

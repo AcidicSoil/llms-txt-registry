@@ -1,0 +1,86 @@
+# Codex
+
+> The purpose of the Codex CLI is to provide a locally installed, command-line interface for interacting with OpenAI’s Codex AI agent. It allows users to execute code, generate code, and interact with the agent in a terminal environment. The CLI supports features like sandboxing, execpolicy for command control, authentication via ChatGPT, and integration with IDEs. It also offers advanced capabilities such as model context protocol (MCP) for server-side execution, zero data retention (ZDR), and extensibility via SDKs and GitHub Actions. The goal is to empower developers to use powerful AI coding assistance locally, with full control over execution and privacy.
+
+**Remember:**
+- Codex CLI: Command-line interface for interacting with OpenAI’s local AI coding agent
+- Model Context Protocol (MCP): Protocol for executing commands via remote servers
+- Execpolicy: Rules governing which commands Codex can execute
+- Sandboxing: Isolation of execution to prevent system-wide risks
+- Zero Data Retention (ZDR): Ensures no user data is stored on servers
+- Authentication via ChatGPT: Integration with OpenAI’s ChatGPT account for access
+
+## Docs
+- [Getting Started](https://raw.githubusercontent.com/openai/codex/main/docs/getting-started.md): install & quickstart.
+- [Install](https://raw.githubusercontent.com/openai/codex/main/docs/install.md): install & quickstart.
+- [Install Native Deps](https://raw.githubusercontent.com/openai/codex/main/codex-cli/scripts/install_native_deps.py): install & quickstart.
+- [Example Config](https://raw.githubusercontent.com/openai/codex/main/docs/example-config.md): worked example.
+- [Advanced](https://raw.githubusercontent.com/openai/codex/main/docs/advanced.md): docs page.
+- [Agents Md](https://raw.githubusercontent.com/openai/codex/main/docs/agents_md.md): docs page.
+- [Authentication](https://raw.githubusercontent.com/openai/codex/main/docs/authentication.md): docs page.
+- [Cla](https://raw.githubusercontent.com/openai/codex/main/docs/CLA.md): docs page.
+- [Config](https://raw.githubusercontent.com/openai/codex/main/docs/config.md): docs page.
+- [Contributing](https://raw.githubusercontent.com/openai/codex/main/docs/contributing.md): docs page.
+
+## API
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/codex-api/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/responses-api-proxy/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/responses-api-proxy/npm/README.md): install & quickstart.
+- [Eslint.Config](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/eslint.config.js): docs page.
+- [Tsup.Config](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/tsup.config.ts): docs page.
+- [Abort.Test](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/tests/abort.test.ts): docs page.
+- [Basic Streaming](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/samples/basic_streaming.ts): docs page.
+- [Codex](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/src/codex.ts): docs page.
+- [Codexexecspy](https://raw.githubusercontent.com/openai/codex/main/sdk/typescript/tests/codexExecSpy.ts): docs page.
+
+## Optional
+- [Changelog](https://raw.githubusercontent.com/openai/codex/main/CHANGELOG.md): version history.
+- [Osrelease](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/osRelease.ts): version history.
+- [Osrelease.Test](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/tests/osRelease.test.ts): version history.
+- [README](https://raw.githubusercontent.com/openai/codex/main/.devcontainer/README.md): install & quickstart.
+- [Agents](https://raw.githubusercontent.com/openai/codex/main/AGENTS.md): docs page.
+- [Pnpm](https://raw.githubusercontent.com/openai/codex/main/PNPM.md): docs page.
+- [README](https://raw.githubusercontent.com/openai/codex/main/README.md): docs page.
+
+## .Github
+- [Pull Request Template](https://raw.githubusercontent.com/openai/codex/main/.github/pull_request_template.md): docs page.
+- [Issue Deduplicator](https://raw.githubusercontent.com/openai/codex/main/.github/prompts/issue-deduplicator.txt): docs page.
+- [Issue Labeler](https://raw.githubusercontent.com/openai/codex/main/.github/prompts/issue-labeler.txt): docs page.
+- [Codex Attempt](https://raw.githubusercontent.com/openai/codex/main/.github/codex/labels/codex-attempt.md): docs page.
+- [Codex Review](https://raw.githubusercontent.com/openai/codex/main/.github/codex/labels/codex-review.md): docs page.
+- [Codex Rust Review](https://raw.githubusercontent.com/openai/codex/main/.github/codex/labels/codex-rust-review.md): docs page.
+- [Codex Triage](https://raw.githubusercontent.com/openai/codex/main/.github/codex/labels/codex-triage.md): docs page.
+
+## Codex Cli
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-cli/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-cli/scripts/README.md): install & quickstart.
+- [Build Npm Package](https://raw.githubusercontent.com/openai/codex/main/codex-cli/scripts/build_npm_package.py): docs page.
+- [Codex](https://raw.githubusercontent.com/openai/codex/main/codex-cli/bin/codex.js): docs page.
+
+## Codex Rs
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/ansi-escape/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/app-server-test-client/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/app-server/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/chatgpt/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/codex-client/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/common/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/core/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/execpolicy-legacy/README.md): install & quickstart.
+- [README](https://raw.githubusercontent.com/openai/codex/main/codex-rs/execpolicy/README.md): install & quickstart.
+
+## Scripts
+- [Readme Toc](https://raw.githubusercontent.com/openai/codex/main/scripts/readme_toc.py): install & quickstart.
+- [Asciicheck](https://raw.githubusercontent.com/openai/codex/main/scripts/asciicheck.py): docs page.
+- [Stage Npm Packages](https://raw.githubusercontent.com/openai/codex/main/scripts/stage_npm_packages.py): docs page.
+
+## Shell Tool Mcp
+- [README](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/README.md): install & quickstart.
+- [Tsup.Config](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/tsup.config.ts): docs page.
+- [Bashselection](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/bashSelection.ts): docs page.
+- [Bashselection.Test](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/tests/bashSelection.test.ts): docs page.
+- [Constants](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/constants.ts): docs page.
+- [Index](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/index.ts): docs page.
+- [Platform](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/platform.ts): docs page.
+- [Types](https://raw.githubusercontent.com/openai/codex/main/shell-tool-mcp/src/types.ts): docs page.
