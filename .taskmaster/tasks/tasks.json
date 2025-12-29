@@ -2,14 +2,14 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
+        "id": "1",
         "title": "Initialize Registry Structure and Configuration Module",
         "description": "Set up the repository structure, define the source manifest schema, and implement the configuration loading logic.",
         "details": "1. Create the directory structure: `docs/`, `src/registry_config/`, `src/reporting/`, `scripts/`. \n2. Define the schema for `sources.json` (ID, URL, profiles, etc.) and `profiles.json`. \n3. Implement `src/registry_config` to load, validate, and normalize the manifest. \n4. Ensure IDs are URL-safe slugs and URLs are valid. \n5. Create a sample `sources.json` for testing.",
         "testStrategy": "Unit tests for `load_manifest`: valid JSON, invalid JSON, duplicate IDs, missing fields, profile defaults application.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -17,8 +17,10 @@
             "description": "Initialize the project folder hierarchy and define the Pydantic models for the source registry and profiles.",
             "dependencies": [],
             "details": "Create the required directory structure: `docs/`, `src/registry_config/`, `src/reporting/`, and `scripts/`. Implement the Pydantic models `Source`, `Profile`, and `Manifest` in `src/registry_config/models.py`. Ensure validators are in place for URL-safe slug IDs and standard URL formatting constraints.",
-            "status": "pending",
-            "testStrategy": "Verify directory existence via script. Import Pydantic models and instantiate them with valid/invalid data to check basic validation errors."
+            "status": "done",
+            "testStrategy": "Verify directory existence via script. Import Pydantic models and instantiate them with valid/invalid data to check basic validation errors.",
+            "updatedAt": "2025-12-29T20:31:35.292Z",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -28,8 +30,10 @@
               1
             ],
             "details": "Implement the `load_manifest` function in `src/registry_config/loader.py`. This function must read `sources.json` and `profiles.json`, map sources to their profiles, merge default values (like timeouts or headers) from the profile into the source config, and return a validated `Manifest` object.",
-            "status": "pending",
-            "testStrategy": "Unit tests checking that a source inheriting from a profile correctly adopts the profile's default values when those fields are missing in the source definition."
+            "status": "done",
+            "testStrategy": "Unit tests checking that a source inheriting from a profile correctly adopts the profile's default values when those fields are missing in the source definition.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-29T20:31:38.070Z"
           },
           {
             "id": 3,
@@ -39,20 +43,26 @@
               2
             ],
             "details": "Create a `sources.json` sample file for manual testing. Write a suite of `pytest` cases covering edge cases: malformed JSON, invalid URL formats, duplicate IDs, missing mandatory fields, and ensuring that the loader fails gracefully with informative error messages.",
-            "status": "pending",
-            "testStrategy": "Run `pytest` suite covering `src/registry_config`. Tests must include both success paths and failure paths (e.g., `ValidationError` assertions)."
+            "status": "done",
+            "testStrategy": "Run `pytest` suite covering `src/registry_config`. Tests must include both success paths and failure paths (e.g., `ValidationError` assertions).",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-29T20:32:04.996Z"
           }
-        ]
+        ],
+        "complexity": 3,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Create a Pydantic model for the `Source` and `Manifest` schemas, ensuring validation for URL format and slug constraints. Implement a configuration loader that reads `sources.json` and merges profile defaults from `profiles.json`. Write unit tests for schema validation edge cases.",
+        "updatedAt": "2025-12-29T20:32:04.996Z"
       },
       {
-        "id": 2,
+        "id": "2",
         "title": "Implement Reporting and Logging Module",
         "description": "Create a structured logging and reporting system to track the success/failure of source generation.",
         "details": "1. Implement `src/reporting` module. \n2. Create a `RunReport` class to track start time, end time, and per-source results. \n3. Define the structure for `refresh-report.json`. \n4. Implement methods to record success, failure (with error logs), and skipped sources. \n5. Ensure atomic writes for the report file.",
         "testStrategy": "Unit tests: Verify `RunReport` correctly aggregates results and serializes to the expected JSON format. Mock filesystem to test file writing.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -60,8 +70,10 @@
             "description": "Develop the core `RunReport` class in `src/reporting` including context manager hooks for timing and methods to record execution outcomes.",
             "dependencies": [],
             "details": "Create `src/reporting.py` and define the `RunReport` class. Implement `__enter__` to record `start_time` and `__exit__` to record `end_time` and catch unhandled exceptions. Add thread-safe methods `record_success(source_id)`, `record_failure(source_id, error_log)`, and `record_skipped(source_id)` that append result objects to an internal list.",
-            "status": "pending",
-            "testStrategy": "Unit test the context manager to verify start/end times are captured. assert that result recording methods correctly update the internal list state."
+            "status": "done",
+            "testStrategy": "Unit test the context manager to verify start/end times are captured. assert that result recording methods correctly update the internal list state.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-29T20:32:43.952Z"
           },
           {
             "id": 2,
@@ -71,23 +83,29 @@
               1
             ],
             "details": "Add a `save_report(filepath)` method to `RunReport`. Define the output JSON structure (e.g., including metadata and the results list). Implement atomic writing by serializing to a temporary file first and using `os.replace` to rename it to `refresh-report.json`. Ensure `json.dump` handles the internal data types correctly.",
-            "status": "pending",
-            "testStrategy": "Mock filesystem operations. Call save_report and verify the file content matches the expected JSON structure. validation of atomic behavior by simulating write failures."
+            "status": "done",
+            "testStrategy": "Mock filesystem operations. Call save_report and verify the file content matches the expected JSON structure. validation of atomic behavior by simulating write failures.",
+            "parentId": "undefined",
+            "updatedAt": "2025-12-29T20:32:46.907Z"
           }
-        ]
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 2,
+        "expansionPrompt": "Develop a `RunReport` class that uses a context manager to automatically track start/end times and handle exception logging. Implement thread-safe JSON serialization for the report file to prevent corruption if concurrent processing is added later.",
+        "updatedAt": "2025-12-29T20:32:46.907Z"
       },
       {
-        "id": 3,
+        "id": "3",
         "title": "Implement Generator Runner with Venv Isolation",
         "description": "Build the module responsible for managing Python environments and running the `llmstxt` generator.",
         "details": "1. Implement `src/generator_runner`. \n2. Create logic to check for/create a `.venv`. \n3. Implement `install_requirements` to ensure `llmstxt` is available. \n4. Implement `run_llmstxt(source, output_dir)` which invokes the generator as a subprocess. \n5. Ensure the generator runs in an isolated temporary directory per source to prevent contamination.",
         "testStrategy": "Integration test: Mock the `llmstxt` command or use a simple script. Verify that the command runs, environment variables are passed, and output is captured in the specified directory.",
         "priority": "high",
         "dependencies": [
-          1,
-          2
+          "1",
+          "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -96,7 +114,8 @@
             "dependencies": [],
             "details": "Implement the `VenvManager` class in `src/generator_runner`. Add logic to check if a local `.venv` exists; if not, use the standard `venv` module to create it. Implement methods to locate the specific python interpreter and pip executable paths, handling the differences between Windows (`Scripts`) and POSIX (`bin`) structures.",
             "status": "pending",
-            "testStrategy": "Unit test: Verify that the class correctly identifies missing venvs, creates them, and returns the valid absolute path to the python binary for the running OS."
+            "testStrategy": "Unit test: Verify that the class correctly identifies missing venvs, creates them, and returns the valid absolute path to the python binary for the running OS.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -107,7 +126,8 @@
             ],
             "details": "Implement an `install_requirements` method. This method should utilize the isolated python path identified in the previous step to run `pip install llmstxt`. Include logic to capture installation logs for debugging and optionally check if the package is already satisfied to optimize runtime.",
             "status": "pending",
-            "testStrategy": "Integration test: Invoke the install method on a fresh venv and verify via `pip freeze` or import check that `llmstxt` is present."
+            "testStrategy": "Integration test: Invoke the install method on a fresh venv and verify via `pip freeze` or import check that `llmstxt` is present.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -118,7 +138,8 @@
             ],
             "details": "Create a `run_command` or `_execute` method that wraps `subprocess.run`. It must capture `stdout` and `stderr` (using `PIPE`), raise exceptions on non-zero exit codes, and accept a `timeout` argument to prevent hanging processes. This function will be the primitive used to invoke the generator.",
             "status": "pending",
-            "testStrategy": "Unit test: Execute simple python scripts via the wrapper. Verify stdout capture works and that a script with `time.sleep` triggers the timeout exception."
+            "testStrategy": "Unit test: Execute simple python scripts via the wrapper. Verify stdout capture works and that a script with `time.sleep` triggers the timeout exception.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -130,22 +151,27 @@
             ],
             "details": "Implement `run_llmstxt(source, output_dir)`. Use `tempfile.TemporaryDirectory` as a context manager to create a scratch space. Execute the generator tool (using the logic from Subtask 3 and environment from Subtask 2) inside this temp dir. Ensure generated files are available for the caller, but the temp dir is automatically cleaned up after execution.",
             "status": "pending",
-            "testStrategy": "Integration test: Run the full `run_llmstxt` function. specific that the temp directory is created during the run and removed afterwards, and that errors during execution do not leave orphan directories."
+            "testStrategy": "Integration test: Run the full `run_llmstxt` function. specific that the temp directory is created during the run and removed afterwards, and that errors during execution do not leave orphan directories.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Implement a `VenvManager` class to handle creation, activation, and caching of the virtual environment. Use `subprocess` with captured stdout/stderr to run the `llmstxt` tool. Implement a timeout mechanism and proper cleanup of temporary directories to prevent disk bloat.",
+        "updatedAt": "2025-12-29T20:33:32.433Z"
       },
       {
-        "id": 4,
+        "id": "4",
         "title": "Implement Artifact Ingestion and Normalization",
         "description": "Create the logic to copy generated artifacts to the canonical docs directory and generate metadata.",
         "details": "1. Implement `src/artifact_ingest`. \n2. Create `ingest_artifacts` function. \n3. logic to copy `*-llms*.txt` files from the temporary output dir to `docs/<source-id>/`. \n4. Normalize line endings (e.g., to LF) to ensure deterministic git diffs. \n5. Generate and write `metadata.json` (timestamp, source hash/version) in the target directory.",
         "testStrategy": "Unit/Integration tests: Create a temp dir with dummy text files. Run ingest. Verify files exist in target, unwanted files are ignored, and metadata.json is valid.",
         "priority": "high",
         "dependencies": [
-          1,
-          2
+          "1",
+          "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -154,7 +180,8 @@
             "dependencies": [],
             "details": "Develop a `normalize_content(text)` function to strictly enforce LF line endings regardless of the input format. Implement `calculate_checksum(content)` using SHA-256. These utilities will be used to ensure that re-running the generator only results in changes if the actual content differs.",
             "status": "pending",
-            "testStrategy": "Unit tests: Pass strings with CRLF, CR, and LF to the normalizer and assert only LF exists in output. verify SHA-256 hashes are consistent for identical normalized content."
+            "testStrategy": "Unit tests: Pass strings with CRLF, CR, and LF to the normalizer and assert only LF exists in output. verify SHA-256 hashes are consistent for identical normalized content.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -163,7 +190,8 @@
             "dependencies": [],
             "details": "Create a function to generate the metadata dictionary. It must include fields such as `generated_at` (ISO 8601 timestamp), `source_version` (or hash of the input configuration), and `generator_version`. This prepares the sidecar data required for the ingestion process.",
             "status": "pending",
-            "testStrategy": "Unit tests: Call the metadata generator and validate the returned dictionary keys, value types, and timestamp format."
+            "testStrategy": "Unit tests: Call the metadata generator and validate the returned dictionary keys, value types, and timestamp format.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -175,22 +203,27 @@
             ],
             "details": "Implement `ingest_artifacts(source_id, temp_dir, target_base_dir)`. This function must: 1. Ensure `target_base_dir/docs/<source_id>` exists. 2. Iterate through `*-llms*.txt` files in `temp_dir`. 3. Use the normalization utility (Task 1) on content. 4. Write the normalized files and the metadata (Task 2) to the target directory.",
             "status": "pending",
-            "testStrategy": "Integration test: Create a temp directory with dummy artifacts. Run `ingest_artifacts`. Verify files appear in the correct `docs/` subdirectory with normalized content and a valid `metadata.json`."
+            "testStrategy": "Integration test: Create a temp directory with dummy artifacts. Run `ingest_artifacts`. Verify files appear in the correct `docs/` subdirectory with normalized content and a valid `metadata.json`.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Create a function to calculate checksums of generated files to detect changes. Implement text normalization (newline standardization) before saving. Write logic to atomic move/copy files to the final `docs/` directory and update the `metadata.json` sidecar file.",
+        "updatedAt": "2025-12-29T20:33:35.397Z"
       },
       {
-        "id": 5,
+        "id": "5",
         "title": "Develop Orchestration Script (refresh.py) - Local Mode",
         "description": "Combine config, runner, and ingest modules into a CLI script for local execution.",
         "details": "1. Create `scripts/refresh.py`. \n2. Implement CLI args using `argparse`: `--manifest`, `--output`, `--only <id>`. \n3. Orchestrate the flow: Load Manifest -> Loop Sources -> Run Generator -> Ingest Artifacts -> Update Report. \n4. Handle exceptions gracefully so one failed source doesn't crash the whole process (unless `--fail-fast` is set).",
         "testStrategy": "End-to-end local test: Run `python scripts/refresh.py --only test-source`. Verify that `docs/test-source` is populated and `refresh-report.json` is generated.",
         "priority": "high",
         "dependencies": [
-          3,
-          4
+          "3",
+          "4"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -199,7 +232,8 @@
             "dependencies": [],
             "details": "Initialize `scripts/refresh.py` with an entry point. Define arguments: `--manifest` (default: `sources.json`), `--output` (default: `docs/`), `--only <id>` (for single source execution), and `--fail-fast` (to stop on first error). Ensure help messages are clear.",
             "status": "pending",
-            "testStrategy": "Run `python scripts/refresh.py --help` to verify argument parsing and check defaults."
+            "testStrategy": "Run `python scripts/refresh.py --help` to verify argument parsing and check defaults.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -210,7 +244,8 @@
             ],
             "details": "Import `src.registry_config` and `src.generator_runner`. Load the manifest object. Create a loop that iterates over sources (filtering if `--only` is provided). Inside the loop, prepare the temporary execution environment and invoke `run_llmstxt`.",
             "status": "pending",
-            "testStrategy": "Mock `registry_config` and `generator_runner` to verify the loop iterates correctly over a sample manifest."
+            "testStrategy": "Mock `registry_config` and `generator_runner` to verify the loop iterates correctly over a sample manifest.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -221,7 +256,8 @@
             ],
             "details": "Inside the main loop, wrap the generator call in a try/except block. Catch specific errors (e.g., NetworkError, ParsingError) differently from generic Exceptions. If `--fail-fast` is not set, log the error and `continue` to the next source.",
             "status": "pending",
-            "testStrategy": "Inject exceptions into a mock generator function and verify that the script continues processing subsequent sources without crashing."
+            "testStrategy": "Inject exceptions into a mock generator function and verify that the script continues processing subsequent sources without crashing.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -233,21 +269,26 @@
             ],
             "details": "Initialize a `RunReport` instance at the start. Update it within the loop: record success on completion or failure inside the exception handler. Finally, call the method to serialize the report to `refresh-report.json` in the output directory.",
             "status": "pending",
-            "testStrategy": "Run a full flow with mock data and verify that `refresh-report.json` is created with the expected success/failure counts."
+            "testStrategy": "Run a full flow with mock data and verify that `refresh-report.json` is created with the expected success/failure counts.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Design the main loop using the Command pattern or similar to orchestrate the steps. Integrate `argparse` for flexible CLI usage. Implement a 'fail-safe' mechanism where one source failure logs an error but proceeds to the next source. Add specific error handling for network vs. parsing errors.",
+        "updatedAt": "2025-12-29T20:33:38.367Z"
       },
       {
-        "id": 6,
+        "id": "6",
         "title": "Implement Git Sync Module for Commit-on-Change",
         "description": "Build logic to detect changes in the docs directory and commit them automatically.",
         "details": "1. Implement `src/git_sync`. \n2. Use `subprocess` to run `git status --porcelain docs/`. \n3. Implement `commit_changes` to stage modified/new files and commit with a standard message (e.g., 'chore: refresh llms-txt artifacts'). \n4. Ensure no commit is made if there are no changes.",
         "testStrategy": "Integration test: Initialize a temp git repo. Modify a file. Run sync module. Verify a commit was created. Run again with no changes. Verify no new commit.",
         "priority": "medium",
         "dependencies": [
-          2
+          "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -256,7 +297,8 @@
             "dependencies": [],
             "details": "Create `src/git_sync.py`. Implement a function `check_for_changes(target_dir)` that uses `subprocess.run` to execute `git status --porcelain <target_dir>`. Parse the stdout to determine if there are added, modified, or deleted files. Return a boolean indicating if action is needed. Handle `subprocess.CalledProcessError` gracefully.",
             "status": "pending",
-            "testStrategy": "Unit test: Mock `subprocess.run` to simulate various git status outputs (clean, dirty, untracked files) and verify the function returns the correct boolean status."
+            "testStrategy": "Unit test: Mock `subprocess.run` to simulate various git status outputs (clean, dirty, untracked files) and verify the function returns the correct boolean status.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -267,22 +309,27 @@
             ],
             "details": "Implement `commit_changes(target_dir, run_id)` in `src/git_sync`. The function should first verify changes exist. If so, execute `git add <target_dir>` followed by `git commit -m 'chore: refresh artifacts [Run ID: <run_id>]'`. Ensure the function returns early if no changes are detected to prevent empty commits.",
             "status": "pending",
-            "testStrategy": "Integration test: Initialize a temporary git repository, modify a dummy file in a subdirectory, run the commit function, and verify `git log` shows the new commit with the expected message."
+            "testStrategy": "Integration test: Initialize a temporary git repository, modify a dummy file in a subdirectory, run the commit function, and verify `git log` shows the new commit with the expected message.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 2,
+        "expansionPrompt": "Wrap git commands using `subprocess` or a library like `GitPython`. Implement logic to check `git status` cleanly and parse the output to decide if a commit is needed. Ensure the commit message includes a timestamp or run ID.",
+        "updatedAt": "2025-12-29T20:33:41.292Z"
       },
       {
-        "id": 7,
+        "id": "7",
         "title": "Integrate Git Sync into Refresh Script",
         "description": "Update the orchestration script to include the git commit step at the end of the run.",
         "details": "1. Update `scripts/refresh.py` to import `src/git_sync`. \n2. Add a flag `--commit` (default false locally, true in CI) or detect CI environment. \n3. Call `git_sync.commit_changes` after the report generation is finalized. \n4. Ensure the report itself is also committed if changed.",
         "testStrategy": "Manual/Scripted test: Run refresh script with changes. Check `git log` to see the automated commit.",
         "priority": "medium",
         "dependencies": [
-          5,
-          6
+          "5",
+          "6"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -291,7 +338,8 @@
             "dependencies": [],
             "details": "Modify `scripts/refresh.py`. Use `argparse` to add a `--commit` argument (action='store_true'). Implement logic to check `os.environ` for 'CI' or 'GITHUB_ACTIONS'. If the environment variable is present, default `--commit` to True; otherwise, default to False.",
             "status": "pending",
-            "testStrategy": "Run `python scripts/refresh.py --help` to verify the flag exists. Run locally to verify default is False, and run with mocked env var to verify default becomes True."
+            "testStrategy": "Run `python scripts/refresh.py --help` to verify the flag exists. Run locally to verify default is False, and run with mocked env var to verify default becomes True.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -302,7 +350,8 @@
             ],
             "details": "In `scripts/refresh.py`, import `src.git_sync` (from Task 6). Import `datetime`. Create a logic block to generate a standard commit message string, e.g., 'chore(docs): auto-refresh content [timestamp]'.",
             "status": "pending",
-            "testStrategy": "Static analysis or linting to ensure `src.git_sync` can be imported without errors."
+            "testStrategy": "Static analysis or linting to ensure `src.git_sync` can be imported without errors.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -314,7 +363,8 @@
             ],
             "details": "At the end of the `main()` function in `scripts/refresh.py` (after artifact ingestion and report generation), add the conditional check `if args.commit:`. Inside this block, call `src.git_sync.commit_changes(message=commit_message)`.",
             "status": "pending",
-            "testStrategy": "Mock `src.git_sync.commit_changes` and run the script with `--commit` to assert the function is called exactly once."
+            "testStrategy": "Mock `src.git_sync.commit_changes` and run the script with `--commit` to assert the function is called exactly once.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -325,7 +375,8 @@
             ],
             "details": "Ensure that the `commit_changes` call or the preceding logic explicitly targets the `docs/` directory and the generated `refresh-report.json`. If the `git_sync` module requires explicit paths, pass `['docs', 'refresh-report.json']` as arguments.",
             "status": "pending",
-            "testStrategy": "Verify via code review that the artifacts generated in previous steps are available on disk before the git call is made."
+            "testStrategy": "Verify via code review that the artifacts generated in previous steps are available on disk before the git call is made.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -336,21 +387,26 @@
             ],
             "details": "Wrap the `src.git_sync.commit_changes` call in a `try...except` block. Catch specific exceptions (or general `Exception`). Log errors using `logging.error` but allow the script to exit gracefully if artifacts were successfully generated but the commit failed.",
             "status": "pending",
-            "testStrategy": "Simulate a git error (e.g., by removing .git folder temporarily) and run the script with `--commit`. Verify the script logs the error but does not crash or return a failure exit code for the artifact generation part."
+            "testStrategy": "Simulate a git error (e.g., by removing .git folder temporarily) and run the script with `--commit`. Verify the script logs the error but does not crash or return a failure exit code for the artifact generation part.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 2,
+        "recommendedSubtasks": 0,
+        "expansionPrompt": "",
+        "updatedAt": "2025-12-29T20:33:44.176Z"
       },
       {
-        "id": 8,
+        "id": "8",
         "title": "Create GitHub Actions Workflow for Automation",
         "description": "Set up the CI pipeline to run the refresh script on a schedule.",
         "details": "1. Create `.github/workflows/refresh.yml`. \n2. Define triggers: `schedule` (cron) and `workflow_dispatch`. \n3. Steps: Checkout repo, Setup Python, Install dependencies (`requirements.txt`), Run `scripts/refresh.py --commit`. \n4. Configure git user/email for the commit step.",
         "testStrategy": "Dry run using `act` or push to a branch to verify the workflow syntax and execution steps.",
         "priority": "medium",
         "dependencies": [
-          7
+          "7"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -359,7 +415,8 @@
             "dependencies": [],
             "details": "Create `.github/workflows/refresh.yml`. Define triggers: `workflow_dispatch` and a daily `schedule` (cron). Use `actions/checkout` to fetch code. Use `actions/setup-python` specifying a python version and `cache: 'pip'` to optimize dependency installation. Add step to `pip install -r requirements.txt`.",
             "status": "pending",
-            "testStrategy": "Push the workflow file to a branch and verify that the 'Set up job' and 'Install dependencies' steps succeed in the Actions tab."
+            "testStrategy": "Push the workflow file to a branch and verify that the 'Set up job' and 'Install dependencies' steps succeed in the Actions tab.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -370,21 +427,26 @@
             ],
             "details": "Configure git `user.name` and `user.email` (using `github-actions[bot]`). Add the step to execute `python scripts/refresh.py --commit`. Ensure the job has `contents: write` permissions. Add a final step using `actions/upload-artifact` to upload `refresh-report.json`, ensuring it runs `if: always()` to capture failures.",
             "status": "pending",
-            "testStrategy": "Trigger the workflow manually. Verify that the script executes, commits are pushed if changes exist, and the 'refresh-report.json' artifact is downloadable from the run summary."
+            "testStrategy": "Trigger the workflow manually. Verify that the script executes, commits are pushed if changes exist, and the 'refresh-report.json' artifact is downloadable from the run summary.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 2,
+        "expansionPrompt": "Define a GitHub Actions workflow that caches the Python environment to speed up runs. Configure the git `user.name` and `user.email` dynamically. Add a step to upload the execution report as a build artifact for debugging failures.",
+        "updatedAt": "2025-12-29T20:35:08.214Z"
       },
       {
-        "id": 9,
+        "id": "9",
         "title": "Document Client Configuration for Single MCP Endpoint",
         "description": "Create documentation showing how to configure clients to use this registry as a single MCP server.",
         "details": "1. Update `README.md`. \n2. Add sections for 'Gemini CLI Configuration' and 'Codex Configuration'. \n3. Provide the specific JSON/TOML snippets using `mcp-remote` pointing to `gitmcp.io/<org>/<repo>`. \n4. Explain the directory structure (`docs/<id>`) for users browsing the registry.",
         "testStrategy": "Review documentation for clarity and accuracy. Test the snippets by configuring a real client against the repo (if public).",
         "priority": "medium",
         "dependencies": [
-          1
+          "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -393,7 +455,8 @@
             "dependencies": [],
             "details": "Create a 'Registry Structure' section in README.md explaining that `docs/<id>` contains the generated context and how `gitmcp.io/<org>/<repo>/docs/<id>` maps to these resources. This defines the base URL pattern for clients.",
             "status": "pending",
-            "testStrategy": "Review the rendered Markdown to ensure the URL patterns and directory tree are clearly explained and formatted."
+            "testStrategy": "Review the rendered Markdown to ensure the URL patterns and directory tree are clearly explained and formatted.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -404,7 +467,8 @@
             ],
             "details": "Construct specific configuration blocks (JSON/TOML) that point to the registry. Include placeholders for `<org>` and `<repo>`. Ensure syntax validity for `mcp-remote` usage. These snippets will be inserted into the documentation.",
             "status": "pending",
-            "testStrategy": "Validate the JSON/TOML snippets using a linter to ensure they are syntactically correct copy-pasteable blocks."
+            "testStrategy": "Validate the JSON/TOML snippets using a linter to ensure they are syntactically correct copy-pasteable blocks.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -415,7 +479,8 @@
             ],
             "details": "Add a 'Gemini CLI Configuration' section to README.md. Explain how to use the snippets generated in the previous task to configure the Gemini client to consume the single MCP endpoint.",
             "status": "pending",
-            "testStrategy": "Manually follow the instructions with a mock Gemini CLI setup to verify the configuration steps flow logically."
+            "testStrategy": "Manually follow the instructions with a mock Gemini CLI setup to verify the configuration steps flow logically.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -426,7 +491,8 @@
             ],
             "details": "Add a 'Codex Configuration' section to README.md. detailed how to configure generic clients that support MCP to point to the `gitmcp.io` endpoints using the previously generated snippets.",
             "status": "pending",
-            "testStrategy": "Review for clarity and consistency with the Gemini section. Ensure distinction between client-specific requirements is clear."
+            "testStrategy": "Review for clarity and consistency with the Gemini section. Ensure distinction between client-specific requirements is clear.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -439,21 +505,26 @@
             ],
             "details": "Update the Table of Contents in README.md. Ensure the new sections (Registry Structure, Gemini Config, Codex Config) are logically ordered and accessible. Verify all links and internal references work.",
             "status": "pending",
-            "testStrategy": "Preview the README on GitHub or a local Markdown viewer to verify rendering of code blocks, links, and hierarchy."
+            "testStrategy": "Preview the README on GitHub or a local Markdown viewer to verify rendering of code blocks, links, and hierarchy.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 1,
+        "recommendedSubtasks": 0,
+        "expansionPrompt": "",
+        "updatedAt": "2025-12-29T20:35:36.182Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Implement Registry Index Generation (Optional/Hardening)",
         "description": "Generate a machine-readable index of all available sources and artifacts to aid discovery.",
         "details": "1. Update `src/artifact_ingest` or `scripts/refresh.py`. \n2. After processing all sources, generate a `docs/index.json`. \n3. Structure: List of objects containing source ID, title, description (if available), and paths to available artifacts. \n4. Ensure this index is committed along with the artifacts.",
         "testStrategy": "Run refresh. Verify `docs/index.json` is created and contains correct data for all processed sources.",
         "priority": "low",
         "dependencies": [
-          5
+          "5"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -462,7 +533,8 @@
             "dependencies": [],
             "details": "Define a schema (using Pydantic or a standard dictionary structure) for `docs/index.json`. The schema must include `source_id`, `title`, `description` (optional), and `artifacts` (a dictionary or list of relative paths to files like `llms.txt`). Ensure the structure supports easy parsing by consumers.",
             "status": "pending",
-            "testStrategy": "Create a mock JSON object validating against the defined schema to ensure all required fields are present and types are correct."
+            "testStrategy": "Create a mock JSON object validating against the defined schema to ensure all required fields are present and types are correct.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -473,15 +545,24 @@
             ],
             "details": "Update `scripts/refresh.py` to run a final step after processing. Iterate through successful entries in the `RunReport`. For each entry, format the data according to the schema defined in subtask 1, resolving relative paths for artifacts stored in `docs/<source_id>/`. Write the aggregated list to `docs/index.json`.",
             "status": "pending",
-            "testStrategy": "Run the refresh script with dummy sources. Verify that `docs/index.json` is generated and contains accurate relative paths and metadata for the processed sources."
+            "testStrategy": "Run the refresh script with dummy sources. Verify that `docs/index.json` is generated and contains accurate relative paths and metadata for the processed sources.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 3,
+        "recommendedSubtasks": 2,
+        "expansionPrompt": "Define a schema for `index.json`. Implement a step at the end of `refresh.py` that iterates over the successful results in the `RunReport` and aggregates them into the index file. Ensure paths are relative and portable.",
+        "updatedAt": "2025-12-29T20:35:11.040Z"
       }
     ],
     "metadata": {
-      "created": "2025-12-29T16:35:31.149Z",
-      "updated": "2025-12-29T16:35:31.149Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2025-12-29T20:35:36.183Z",
+      "taskCount": 10,
+      "completedCount": 10,
+      "tags": [
+        "master"
+      ]
     }
   }
 }

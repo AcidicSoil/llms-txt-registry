@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "profiles": {
+    "default": {
+      "name": "default",
+      "timeout": 300
+    }
+  },
+  "sources": [
+    {
+      "id": "tanstack-router",
+      "url": "https://github.com/tanstack/router",
+      "type": "repo",
+      "profile": "default"
+    },
+    {
+      "id": "supabase",
+      "url": "https://github.com/supabase/supabase",
+      "type": "repo",
+      "profile": "default"
+    }
+  ]
+}
