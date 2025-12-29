@@ -7,3 +7,4 @@ refresh-report.json
 .env
 .venv/
 node_modules/
+.archived
