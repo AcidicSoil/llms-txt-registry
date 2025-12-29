@@ -1,0 +1,12 @@
+{
+  "name": "llms-txt-registry",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "code": "codefetch -t 5 -o src.md --max-tokens 5000 --token-limiter truncated"
+  },
+  "devDependencies": {
+    "codefetch": "^2.2.0"
+  },
+  "packageManager": "pnpm@10.25.0"
+}

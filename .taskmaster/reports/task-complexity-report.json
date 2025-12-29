@@ -1,0 +1,93 @@
+{
+	"meta": {
+		"generatedAt": "2025-12-29T16:37:53.841Z",
+		"tasksAnalyzed": 10,
+		"totalTasks": 10,
+		"analysisCount": 10,
+		"thresholdScore": 5,
+		"projectName": "Task Master",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Initialize Registry Structure and Configuration Module",
+			"complexityScore": 3,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Create a Pydantic model for the `Source` and `Manifest` schemas, ensuring validation for URL format and slug constraints. Implement a configuration loader that reads `sources.json` and merges profile defaults from `profiles.json`. Write unit tests for schema validation edge cases.",
+			"reasoning": "This is a foundational task but involves standard JSON parsing and schema validation. Using Pydantic will simplify the validation logic significantly. The complexity lies mainly in defining a robust schema upfront."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Implement Reporting and Logging Module",
+			"complexityScore": 4,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Develop a `RunReport` class that uses a context manager to automatically track start/end times and handle exception logging. Implement thread-safe JSON serialization for the report file to prevent corruption if concurrent processing is added later.",
+			"reasoning": "Requires careful handling of file I/O to ensure the report isn't corrupted if the process crashes. Needs a clean API for other modules to report status without tight coupling."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Implement Generator Runner with Venv Isolation",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Implement a `VenvManager` class to handle creation, activation, and caching of the virtual environment. Use `subprocess` with captured stdout/stderr to run the `llmstxt` tool. Implement a timeout mechanism and proper cleanup of temporary directories to prevent disk bloat.",
+			"reasoning": "High complexity due to subprocess management, environment isolation, and error handling. Ensuring the `llmstxt` tool runs correctly in a separate environment across different OS platforms (Windows/Linux) introduces significant edge cases."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Implement Artifact Ingestion and Normalization",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Create a function to calculate checksums of generated files to detect changes. Implement text normalization (newline standardization) before saving. Write logic to atomic move/copy files to the final `docs/` directory and update the `metadata.json` sidecar file.",
+			"reasoning": "Requires robust file handling and normalization to ensure idempotent builds (running twice shouldn't change git status if content implies no change). Checksum logic adds slight complexity."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Develop Orchestration Script (refresh.py) - Local Mode",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Design the main loop using the Command pattern or similar to orchestrate the steps. Integrate `argparse` for flexible CLI usage. Implement a 'fail-safe' mechanism where one source failure logs an error but proceeds to the next source. Add specific error handling for network vs. parsing errors.",
+			"reasoning": "This is the glue code. Complexity comes from integrating the previous modules and handling the control flow, argument parsing, and error aggregation gracefully without spaghetti code."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Implement Git Sync Module for Commit-on-Change",
+			"complexityScore": 5,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Wrap git commands using `subprocess` or a library like `GitPython`. Implement logic to check `git status` cleanly and parse the output to decide if a commit is needed. Ensure the commit message includes a timestamp or run ID.",
+			"reasoning": "Interacting with Git programmatically requires handling various states (detached HEAD, dirty tree, etc.). Safe execution within a script requires defensive programming."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Integrate Git Sync into Refresh Script",
+			"complexityScore": 2,
+			"recommendedSubtasks": 0,
+			"expansionPrompt": "",
+			"reasoning": "Low complexity as it largely involves importing the module from Task 6 and calling it conditionally based on a CLI flag. Logic is mostly delegated."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Create GitHub Actions Workflow for Automation",
+			"complexityScore": 4,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Define a GitHub Actions workflow that caches the Python environment to speed up runs. Configure the git `user.name` and `user.email` dynamically. Add a step to upload the execution report as a build artifact for debugging failures.",
+			"reasoning": "Requires knowledge of YAML syntax and GitHub Actions context. Testing is slower (requires commit/push). Security considerations for write permissions to the repo are needed."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Document Client Configuration for Single MCP Endpoint",
+			"complexityScore": 1,
+			"recommendedSubtasks": 0,
+			"expansionPrompt": "",
+			"reasoning": "Purely documentation. Requires clarity but zero code complexity."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Implement Registry Index Generation (Optional/Hardening)",
+			"complexityScore": 3,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Define a schema for `index.json`. Implement a step at the end of `refresh.py` that iterates over the successful results in the `RunReport` and aggregates them into the index file. Ensure paths are relative and portable.",
+			"reasoning": "Straightforward data transformation task. Aggregating existing data into a new JSON file."
+		}
+	]
+}
