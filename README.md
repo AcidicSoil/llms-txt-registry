@@ -25,7 +25,7 @@ Add this to your `~/.gemini/settings.json` (or project config):
 }
 ```
 
-Replace `<org>/<repo>` with the GitHub path to this repository.
+**Important**: Replace `<org>/<repo>` with the actual GitHub path to this repository (e.g., `my-org/llms-registry`).
 
 ### Codex Configuration
 
@@ -36,6 +36,13 @@ For Codex or other clients supporting `mcp-remote`:
 command = "npx"
 args = ["-y", "mcp-remote", "gitmcp.io/<org>/<repo>"]
 ```
+
+## How It Works (The AI Flow)
+
+1.  **Connection**: Your local client connects to the `gitmcp.io` gateway, which acts as a bridge to this GitHub repository.
+2.  **Discovery**: The gateway exposes the files in `docs/` as **MCP Resources**. The AI sees a list of available documentation sets (e.g., `tanstack-router`, `supabase`).
+3.  **Retrieval**: When you ask a question (e.g., *"How do I configure Supabase auth?"*), the AI automatically identifies the relevant resource (`docs/supabase/supabase-llms.txt`) and reads it via MCP.
+4.  **Context**: The content of that file is injected into the conversation context, allowing the AI to answer with up-to-date, curated knowledge.
 
 ## Structure
 
