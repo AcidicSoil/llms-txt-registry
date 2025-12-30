@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "1",
+        "id": 1,
         "title": "Initialize Registry Structure and Configuration Module",
         "description": "Set up the repository structure, define the source manifest schema, and implement the configuration loading logic.",
         "details": "1. Create the directory structure: `docs/`, `src/registry_config/`, `src/reporting/`, `scripts/`. \n2. Define the schema for `sources.json` (ID, URL, profiles, etc.) and `profiles.json`. \n3. Implement `src/registry_config` to load, validate, and normalize the manifest. \n4. Ensure IDs are URL-safe slugs and URLs are valid. \n5. Create a sample `sources.json` for testing.",
@@ -55,7 +55,7 @@
         "updatedAt": "2025-12-29T20:32:04.996Z"
       },
       {
-        "id": "2",
+        "id": 2,
         "title": "Implement Reporting and Logging Module",
         "description": "Create a structured logging and reporting system to track the success/failure of source generation.",
         "details": "1. Implement `src/reporting` module. \n2. Create a `RunReport` class to track start time, end time, and per-source results. \n3. Define the structure for `refresh-report.json`. \n4. Implement methods to record success, failure (with error logs), and skipped sources. \n5. Ensure atomic writes for the report file.",
@@ -95,7 +95,7 @@
         "updatedAt": "2025-12-29T20:32:46.907Z"
       },
       {
-        "id": "3",
+        "id": 3,
         "title": "Implement Generator Runner with Venv Isolation",
         "description": "Build the module responsible for managing Python environments and running the `llmstxt` generator.",
         "details": "1. Implement `src/generator_runner`. \n2. Create logic to check for/create a `.venv`. \n3. Implement `install_requirements` to ensure `llmstxt` is available. \n4. Implement `run_llmstxt(source, output_dir)` which invokes the generator as a subprocess. \n5. Ensure the generator runs in an isolated temporary directory per source to prevent contamination.",
@@ -161,7 +161,7 @@
         "updatedAt": "2025-12-29T20:33:32.433Z"
       },
       {
-        "id": "4",
+        "id": 4,
         "title": "Implement Artifact Ingestion and Normalization",
         "description": "Create the logic to copy generated artifacts to the canonical docs directory and generate metadata.",
         "details": "1. Implement `src/artifact_ingest`. \n2. Create `ingest_artifacts` function. \n3. logic to copy `*-llms*.txt` files from the temporary output dir to `docs/<source-id>/`. \n4. Normalize line endings (e.g., to LF) to ensure deterministic git diffs. \n5. Generate and write `metadata.json` (timestamp, source hash/version) in the target directory.",
@@ -213,7 +213,7 @@
         "updatedAt": "2025-12-29T20:33:35.397Z"
       },
       {
-        "id": "5",
+        "id": 5,
         "title": "Develop Orchestration Script (refresh.py) - Local Mode",
         "description": "Combine config, runner, and ingest modules into a CLI script for local execution.",
         "details": "1. Create `scripts/refresh.py`. \n2. Implement CLI args using `argparse`: `--manifest`, `--output`, `--only <id>`. \n3. Orchestrate the flow: Load Manifest -> Loop Sources -> Run Generator -> Ingest Artifacts -> Update Report. \n4. Handle exceptions gracefully so one failed source doesn't crash the whole process (unless `--fail-fast` is set).",
@@ -279,7 +279,7 @@
         "updatedAt": "2025-12-29T20:33:38.367Z"
       },
       {
-        "id": "6",
+        "id": 6,
         "title": "Implement Git Sync Module for Commit-on-Change",
         "description": "Build logic to detect changes in the docs directory and commit them automatically.",
         "details": "1. Implement `src/git_sync`. \n2. Use `subprocess` to run `git status --porcelain docs/`. \n3. Implement `commit_changes` to stage modified/new files and commit with a standard message (e.g., 'chore: refresh llms-txt artifacts'). \n4. Ensure no commit is made if there are no changes.",
@@ -319,7 +319,7 @@
         "updatedAt": "2025-12-29T20:33:41.292Z"
       },
       {
-        "id": "7",
+        "id": 7,
         "title": "Integrate Git Sync into Refresh Script",
         "description": "Update the orchestration script to include the git commit step at the end of the run.",
         "details": "1. Update `scripts/refresh.py` to import `src/git_sync`. \n2. Add a flag `--commit` (default false locally, true in CI) or detect CI environment. \n3. Call `git_sync.commit_changes` after the report generation is finalized. \n4. Ensure the report itself is also committed if changed.",
@@ -397,7 +397,7 @@
         "updatedAt": "2025-12-29T20:33:44.176Z"
       },
       {
-        "id": "8",
+        "id": 8,
         "title": "Create GitHub Actions Workflow for Automation",
         "description": "Set up the CI pipeline to run the refresh script on a schedule.",
         "details": "1. Create `.github/workflows/refresh.yml`. \n2. Define triggers: `schedule` (cron) and `workflow_dispatch`. \n3. Steps: Checkout repo, Setup Python, Install dependencies (`requirements.txt`), Run `scripts/refresh.py --commit`. \n4. Configure git user/email for the commit step.",
@@ -437,7 +437,7 @@
         "updatedAt": "2025-12-29T20:35:08.214Z"
       },
       {
-        "id": "9",
+        "id": 9,
         "title": "Document Client Configuration for Single MCP Endpoint",
         "description": "Create documentation showing how to configure clients to use this registry as a single MCP server.",
         "details": "1. Update `README.md`. \n2. Add sections for 'Gemini CLI Configuration' and 'Codex Configuration'. \n3. Provide the specific JSON/TOML snippets using `mcp-remote` pointing to `gitmcp.io/<org>/<repo>`. \n4. Explain the directory structure (`docs/<id>`) for users browsing the registry.",
@@ -515,7 +515,7 @@
         "updatedAt": "2025-12-29T20:35:36.182Z"
       },
       {
-        "id": "10",
+        "id": 10,
         "title": "Implement Registry Index Generation (Optional/Hardening)",
         "description": "Generate a machine-readable index of all available sources and artifacts to aid discovery.",
         "details": "1. Update `src/artifact_ingest` or `scripts/refresh.py`. \n2. After processing all sources, generate a `docs/index.json`. \n3. Structure: List of objects containing source ID, title, description (if available), and paths to available artifacts. \n4. Ensure this index is committed along with the artifacts.",
@@ -562,7 +562,18 @@
       "completedCount": 10,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2025-12-30T16:55:54.174Z",
+      "description": "Tasks for master context",
+      "updated": "2025-12-30T16:55:54.174Z"
+    }
+  },
+  "chore-lms-llmstxt": {
+    "tasks": [],
+    "metadata": {
+      "created": "2025-12-30T17:00:36.962Z",
+      "updated": "2025-12-30T17:00:36.962Z",
+      "description": "Tag created on 12/30/2025"
     }
   }
 }

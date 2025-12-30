@@ -55,15 +55,14 @@ We use a local-first workflow to generate artifacts using your own LM Studio ins
 
 ### Prerequisites
 
-- Python 3.10+
+- [uv](https://github.com/astral-sh/uv) (Recommended Python package manager)
 - [LM Studio](https://lmstudio.ai/) (with a model loaded and Server started)
-- [lmstudio-llmstxt-generator](https://pypi.org/project/lmstudio-llmstxt-generator/) CLI tool (installed via `pip install lmstudio-llmstxt-generator` or similar)
 
 ### Setup
 
-1. Install dependencies:
+1. Install the project and its dependencies:
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 2. Install Git hooks (Critical):
@@ -84,10 +83,10 @@ We use a local-first workflow to generate artifacts using your own LM Studio ins
    }
    ```
 
-2. Run the refresh script locally:
+2. Run the refresh command locally:
    ```bash
    # Make sure LM Studio server is running at http://localhost:1234
-   python scripts/refresh.py --only my-lib
+   uv run llms-registry --only my-lib
    ```
 
 3. Verify the output in `docs/my-lib/`.
@@ -98,5 +97,11 @@ We use a local-first workflow to generate artifacts using your own LM Studio ins
 
 To update all artifacts:
 ```bash
-python scripts/refresh.py
+uv run llms-registry
+```
+
+### Running Tests
+
+```bash
+uv run pytest
 ```

@@ -6,8 +6,9 @@ import uuid
 import logging
 from pathlib import Path
 
-# Ensure src is in path
-sys.path.append(str(Path(__file__).parent.parent))
+# Compatibility shim for running as a script
+if __name__ == "__main__" or __package__ is None:
+    sys.path.append(str(Path(__file__).parent.parent))
 
 from src.registry_config.loader import load_manifest, save_manifest
 from src.reporting.report import RunReport, SourceResult
@@ -43,7 +44,11 @@ def main():
         return
 
     docs_root = Path(args.docs_root)
-    runner = GeneratorRunner(output_root=Path(".taskmaster/tmp"), api_base=args.api_base)
+    # Ensure tmp directory exists
+    tmp_root = Path(".taskmaster/tmp")
+    tmp_root.mkdir(parents=True, exist_ok=True)
+    
+    runner = GeneratorRunner(output_root=tmp_root, api_base=args.api_base)
     report = RunReport(run_id=str(uuid.uuid4()))
 
     sources_to_run = manifest.sources

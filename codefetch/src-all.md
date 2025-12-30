@@ -31,36 +31,12 @@ Project Structure:
 │   ├── test_registry_config.py
 │   ├── test_reporting.py
 │   └── test_runner.py
-├── .browser-echo-mcp.json
-├── package.json
 ├── requirements.txt
 └── sources.json
 
 </filetree>
 
 <source_code>
-.browser-echo-mcp.json
-```
-{"url":"http://127.0.0.1:46529","route":"/__client-logs","timestamp":1767113585963,"pid":20681}
-```
-
-package.json
-```
-{
-  "name": "llms-txt-registry",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "code": "codefetch -t 5 -o src.md --exclude-dir docs,.gemini,.cursor,.pytest_cache,.clinerules,.taskmaster --max-tokens 5000 --token-limiter truncated",
-    "code:gem": "codefetch -t 5 --include-dir .gemini/commands/tm -o gemini-commands.md"
-  },
-  "devDependencies": {
-    "codefetch": "^2.2.0"
-  },
-  "packageManager": "pnpm@10.25.0"
-}
-```
-
 requirements.txt
 ```
 pydantic>=2.0
@@ -91,10 +67,6 @@ sources.json
     }
   ]
 }
-```
-
-src/__init__.py
-```
 ```
 
 scripts/refresh.py
@@ -131,7 +103,86 @@ def main():
     args = parser.parse_args()
 
     if args.check:
-[TRUNCATED]
+        if check_stale_artifacts(args.manifest, args.docs_root):
+            logger.warning("STALE: sources.json was modified but no artifacts in docs/ were updated.")
+            sys.exit(1)
+        else:
+            logger.info("VALID: No stale artifacts detected.")
+            sys.exit(0)
+
+    manifest = load_manifest(args.manifest)
+    if not manifest.sources:
+        logger.error("No sources found in manifest.")
+        return
+
+    docs_root = Path(args.docs_root)
+    runner = GeneratorRunner(output_root=Path(".taskmaster/tmp"), api_base=args.api_base)
+    report = RunReport(run_id=str(uuid.uuid4()))
+
+    sources_to_run = manifest.sources
+    if args.only:
+        sources_to_run = [s for s in sources_to_run if s.id == args.only]
+        if not sources_to_run:
+            logger.error(f"Source ID '{args.only}' not found in manifest.")
+            return
+
+    try:
+        for source in sources_to_run:
+            if not source.enabled and not args.only:
+                logger.info(f"Skipping disabled source: {source.id}")
+                report.record_result(SourceResult(id=source.id, status="skipped", duration=0))
+                continue
+
+            logger.info(f"Processing source: {source.id} ({source.url})")
+            profile = manifest.profiles.get(source.profile) if source.profile else None
+            
+            gen_result = runner.run_source(source, profile)
+            
+            if gen_result["status"] == "success":
+                ingested = ingest_artifacts(
+                    source.id, 
+                    gen_result["temp_dir"], 
+                    docs_root, 
+                    model_used=gen_result.get("model_used")
+                )
+                
+                # Update manifest metadata
+                source.last_refreshed = gen_result.get("timestamp") or report.start_time
+                source.last_model_used = gen_result.get("model_used")
+                
+                report.record_result(SourceResult(
+                    id=source.id,
+                    status="success",
+                    duration=gen_result["duration"],
+                    model_used=gen_result.get("model_used"),
+                    artifacts_generated=ingested
+                ))
+                logger.info(f"SUCCESS: {source.id} - {len(ingested)} artifacts generated.")
+            else:
+                report.record_result(SourceResult(
+                    id=source.id,
+                    status="failure",
+                    duration=gen_result["duration"],
+                    error=gen_result.get("error")
+                ))
+                logger.error(f"FAILURE: {source.id} - {gen_result.get('error')}")
+
+    finally:
+        report.finalize()
+        report.to_json()
+        save_manifest(manifest, args.manifest)
+        
+        # Generate Index
+        try:
+            generate_registry_index(docs_root)
+            logger.info("Registry index generated at docs/index.json")
+        except Exception as e:
+            logger.error(f"Failed to generate registry index: {e}")
+            
+        logger.info(f"Run complete. Report saved to refresh-report.json")
+
+if __name__ == "__main__":
+    main()
 ```
 
 scripts/setup_hooks.sh
@@ -159,6 +210,10 @@ EOF
 
 chmod +x "$HOOK_FILE"
 echo "Hook installed successfully at $HOOK_FILE"
+```
+
+src/__init__.py
+```
 ```
 
 tests/test_index.py
@@ -282,7 +337,12 @@ def test_load_manifest(tmp_path):
     manifest = load_manifest(str(manifest_file))
     assert len(manifest.sources) == 1
     assert manifest.sources[0].id == "test-source"
-[TRUNCATED]
+    assert manifest.profiles["default"].timeout == 60
+
+def test_load_missing_manifest():
+    manifest = load_manifest("non_existent.json")
+    assert isinstance(manifest, Manifest)
+    assert len(manifest.sources) == 0
 ```
 
 tests/test_reporting.py
@@ -359,7 +419,27 @@ def test_runner_success(mock_run, tmp_path):
 @patch("subprocess.run")
 def test_runner_failure(mock_run, tmp_path):
     runner = GeneratorRunner(output_root=tmp_path)
-[TRUNCATED]
+    source = Source(id="test-src", url="https://github.com/test/repo")
+    
+    mock_result = MagicMock()
+    mock_result.returncode = 1
+    mock_result.stderr = "Error"
+    mock_run.return_value = mock_result
+    
+    result = runner.run_source(source)
+    assert result["status"] == "failure"
+    assert result["error"] == "Error"
+
+@patch("subprocess.run")
+def test_runner_timeout(mock_run, tmp_path):
+    runner = GeneratorRunner(output_root=tmp_path)
+    source = Source(id="test-src", url="https://github.com/test/repo")
+    
+    mock_run.side_effect = subprocess.TimeoutExpired(cmd="cmd", timeout=300)
+    
+    result = runner.run_source(source)
+    assert result["status"] == "failure"
+    assert "timed out" in result["error"]
 ```
 
 .github/workflows/lint.yml
@@ -402,6 +482,47 @@ jobs:
         if [ ! -d "docs" ]; then echo "docs/ directory missing"; exit 1; fi
         if [ ! -d "src" ]; then echo "src/ directory missing"; exit 1; fi
         if [ ! -f "scripts/refresh.py" ]; then echo "refresh script missing"; exit 1; fi
+```
+
+src/git_sync/__init__.py
+```
+```
+
+src/git_sync/status.py
+```
+import subprocess
+import logging
+from pathlib import Path
+from typing import List
+
+logger = logging.getLogger(__name__)
+
+def get_staged_changes() -> List[str]:
+    """Return a list of staged files using git status --porcelain."""
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return [line[3:].strip() for line in result.stdout.splitlines() if line.startswith("M ") or line.startswith("A ")]
+    except Exception as e:
+        logger.error(f"Failed to get git status: {e}")
+        return []
+
+def check_stale_artifacts(manifest_path: str = "sources.json", docs_root: str = "docs") -> bool:
+    """
+    Heuristic check: if sources.json is modified but docs/ isn't changed in the same commit,
+    it might be stale.
+    """
+    staged = get_staged_changes()
+    if manifest_path in staged:
+        # Check if any file in docs/ is also staged
+        docs_changes = [f for f in staged if f.startswith(docs_root)]
+        if not docs_changes:
+            return True # Stale
+    return False
 ```
 
 src/artifact_ingest/__init__.py
@@ -452,7 +573,17 @@ def generate_registry_index(docs_root: Path, output_path: Path = None):
         
         source_data["artifacts"] = sorted(list(found_artifacts))
             
-[TRUNCATED]
+        if source_data["artifacts"]:
+            index.append(source_data)
+            
+    if output_path is None:
+        output_path = docs_root / "index.json"
+        
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(index, f, indent=2)
+        f.write("\n")
+        
+    return index
 ```
 
 src/artifact_ingest/ingest.py
@@ -498,7 +629,11 @@ def ingest_artifacts(
         "artifacts": ingested_files
     }
     
-[TRUNCATED]
+    with (target_dir / "metadata.json").open("w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+        f.write("\n")
+        
+    return ingested_files
 ```
 
 src/generator_runner/__init__.py
@@ -548,48 +683,53 @@ class GeneratorRunner:
         
         # Set environment variables (e.g. for CTX generation)
         env = os.environ.copy()
-[TRUNCATED]
-```
-
-src/git_sync/__init__.py
-```
-```
-
-src/git_sync/status.py
-```
-import subprocess
-import logging
-from pathlib import Path
-from typing import List
-
-logger = logging.getLogger(__name__)
-
-def get_staged_changes() -> List[str]:
-    """Return a list of staged files using git status --porcelain."""
-    try:
-        result = subprocess.run(
-            ["git", "status", "--porcelain"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return [line[3:].strip() for line in result.stdout.splitlines() if line.startswith("M ") or line.startswith("A ")]
-    except Exception as e:
-        logger.error(f"Failed to get git status: {e}")
-        return []
-
-def check_stale_artifacts(manifest_path: str = "sources.json", docs_root: str = "docs") -> bool:
-    """
-    Heuristic check: if sources.json is modified but docs/ isn't changed in the same commit,
-    it might be stale.
-    """
-    staged = get_staged_changes()
-    if manifest_path in staged:
-        # Check if any file in docs/ is also staged
-        docs_changes = [f for f in staged if f.startswith(docs_root)]
-        if not docs_changes:
-            return True # Stale
-    return False
+        env["ENABLE_CTX"] = "1" 
+        
+        try:
+            logger.info(f"Executing: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                env=env,
+                timeout=profile.timeout if profile else 300
+            )
+            
+            duration = time.time() - start_time
+            
+            if result.returncode == 0:
+                # Success - scan for generated artifacts
+                artifacts = [str(p.relative_to(temp_out)) for p in temp_out.glob("**/*-llms*.txt")]
+                return {
+                    "status": "success",
+                    "duration": duration,
+                    "artifacts": artifacts,
+                    "temp_dir": temp_out,
+                    "stdout": result.stdout,
+                    "model_used": model # This might be auto-detected by the tool if not passed
+                }
+            else:
+                return {
+                    "status": "failure",
+                    "duration": duration,
+                    "error": result.stderr or result.stdout,
+                    "temp_dir": temp_out
+                }
+                
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "failure",
+                "duration": time.time() - start_time,
+                "error": "Execution timed out",
+                "temp_dir": temp_out
+            }
+        except Exception as e:
+            return {
+                "status": "failure",
+                "duration": time.time() - start_time,
+                "error": str(e),
+                "temp_dir": temp_out
+            }
 ```
 
 src/registry_config/__init__.py
@@ -646,7 +786,30 @@ class Source(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Categorization tags")
     
     # Metadata fields (updated during refresh)
-[TRUNCATED]
+    last_refreshed: Optional[str] = Field(default=None, description="ISO 8601 timestamp of last successful refresh")
+    last_model_used: Optional[str] = Field(default=None, description="Model used for the last generation")
+
+    @field_validator('id')
+    @classmethod
+    def validate_slug(cls, v: str) -> str:
+        if not SLUG_REGEX.match(v):
+            raise ValueError(f"ID '{v}' must be a URL-safe slug (lowercase alphanumeric with hyphens)")
+        return v
+
+class Manifest(BaseModel):
+    version: str = Field(default="1.0", description="Manifest schema version")
+    profiles: Dict[str, GeneratorProfile] = Field(default_factory=dict, description="Shared generator profiles")
+    sources: List[Source] = Field(default_factory=list, description="List of documentation sources")
+
+    @field_validator('sources')
+    @classmethod
+    def validate_unique_ids(cls, v: List[Source]) -> List[Source]:
+        ids = [s.id for s in v]
+        if len(ids) != len(set(ids)):
+            from collections import Counter
+            duplicates = [item for item, count in Counter(ids).items() if count > 1]
+            raise ValueError(f"Duplicate source IDs found: {duplicates}")
+        return v
 ```
 
 src/reporting/__init__.py
@@ -696,7 +859,10 @@ class RunReport:
         dir_name = target_path.parent
         with tempfile.NamedTemporaryFile("w", dir=str(dir_name) if dir_name.name else ".", delete=False, encoding="utf-8") as tmp:
             json.dump(data, tmp, indent=2)
-[TRUNCATED]
+            tmp.write("\n")
+            tmp_path = Path(tmp.name)
+            
+        os.replace(tmp_path, target_path)
 ```
 
 </source_code>

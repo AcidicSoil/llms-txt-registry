@@ -25,10 +25,10 @@ def test_runner_success(mock_run, tmp_path):
     assert result["status"] == "success"
     assert "test-llms.txt" in result["artifacts"][0]
     
-    # Verify command structure
+    # Verify command structure - UPDATED to check for 'lmstxt'
     args, kwargs = mock_run.call_args
     cmd = args[0]
-    assert cmd[0] == "lmstudio-llmstxt"
+    assert cmd[0] == "lmstxt"
     assert cmd[1] == "https://github.com/test/repo"
     assert "--output-dir" in cmd
     assert "--stamp" in cmd

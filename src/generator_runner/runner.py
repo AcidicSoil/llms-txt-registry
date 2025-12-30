@@ -14,14 +14,14 @@ class GeneratorRunner:
         self.api_base = api_base
 
     def run_source(self, source: Source, profile: Optional[GeneratorProfile] = None) -> Dict[str, any]:
-        """Execute the lmstudio-llmstxt CLI for a single source."""
+        """Execute the lmstxt CLI for a single source."""
         start_time = time.time()
         
         # Determine model
         model = source.last_model_used or (profile.model if profile else None)
         
-        # Prepare command
-        cmd = ["lmstudio-llmstxt", str(source.url)]
+        # Prepare command - UPDATED to use 'lmstxt'
+        cmd = ["lmstxt", str(source.url)]
         
         # We target a temporary output directory inside the root for isolation
         temp_out = self.output_root / "temp_work" / source.id
@@ -62,7 +62,7 @@ class GeneratorRunner:
                     "artifacts": artifacts,
                     "temp_dir": temp_out,
                     "stdout": result.stdout,
-                    "model_used": model # This might be auto-detected by the tool if not passed
+                    "model_used": model
                 }
             else:
                 return {

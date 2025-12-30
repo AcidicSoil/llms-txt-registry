@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "code": "codefetch -t 5 -o src.md --exclude-dir docs,.gemini,.cursor,.pytest_cache,.clinerules,.taskmaster --max-tokens 5000 --token-limiter truncated",
-    "code:gem": "codefetch -t 5 --include-dir .gemini/commands/tm -o gemini-commands.md"
+    "code:gem": "codefetch -t 5 --include-dir .gemini/commands/tm -o gemini-commands.md",
+    "codea": "codefetch -t 5 -o src-all.md"
   },
   "devDependencies": {
     "codefetch": "^2.2.0"

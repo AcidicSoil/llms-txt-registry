@@ -1,0 +1,20 @@
+# Task Master Registry
+.taskmaster/tmp/
+work/
+__pycache__/
+*.pyc
+refresh-report.json
+.env
+.venv/
+node_modules/
+.archived
+docs/
+.pytest_cache
+.gemini/
+.cursor/
+.clinerules/
+pnpm-lock.yaml
+package.json
+.env.example
+.browser-echo-mcp.json
+.taskmaster/
