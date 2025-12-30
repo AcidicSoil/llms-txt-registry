@@ -57,7 +57,7 @@ We use a local-first workflow to generate artifacts using your own LM Studio ins
 
 - Python 3.10+
 - [LM Studio](https://lmstudio.ai/) (with a model loaded and Server started)
-- `lmstudio-llmstxt-generator` CLI tool (installed via `pip install lmstudio-llmstxt-generator` or similar)
+- [lmstudio-llmstxt-generator](https://pypi.org/project/lmstudio-llmstxt-generator/) CLI tool (installed via `pip install lmstudio-llmstxt-generator` or similar)
 
 ### Setup
 
