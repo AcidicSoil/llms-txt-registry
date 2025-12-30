@@ -1,0 +1,88 @@
+{
+  "version": "0.1.0",
+  "created": 1767122562,
+  "updated": 1767122567,
+  "files": {
+    "./requirements.txt": {
+      "path": "./requirements.txt",
+      "hash": "987cd6eb0bd772ca77ca98ab3c3fcd853de3e4731d7353df58ede6e88844c4e3",
+      "last_modified": 1767039964,
+      "size": 14
+    },
+    "./llms_txt_registry.egg-info/requires.txt": {
+      "path": "./llms_txt_registry.egg-info/requires.txt",
+      "hash": "5f10e89035101acd6bdbe8ebee26a1e6499cfaf754f77d058f7d39b8d8acd366",
+      "last_modified": 1767117334,
+      "size": 91
+    },
+    "./llms_txt_registry.egg-info/PKG-INFO": {
+      "path": "./llms_txt_registry.egg-info/PKG-INFO",
+      "hash": "43406b68151a1e04becfb0a9366b7a5830faba109ef2b253064edb7d2ba4d323",
+      "last_modified": 1767117334,
+      "size": 3388
+    },
+    "./llms_txt_registry.egg-info/top_level.txt": {
+      "path": "./llms_txt_registry.egg-info/top_level.txt",
+      "hash": "6c90b8409a46e21213675e6e41d28802b6f295a912e18cf5c18770905ae2a2b0",
+      "last_modified": 1767117334,
+      "size": 12
+    },
+    "./llms_txt_registry.egg-info/SOURCES.txt": {
+      "path": "./llms_txt_registry.egg-info/SOURCES.txt",
+      "hash": "4126a0b5876fbf2ca310d23197bdefdbbd40e50c990ecbc1996d5968c63460f5",
+      "last_modified": 1767117334,
+      "size": 768
+    },
+    "./llms_txt_registry.egg-info/entry_points.txt": {
+      "path": "./llms_txt_registry.egg-info/entry_points.txt",
+      "hash": "8b9916837ee49ee1290fe2f9b0aa59042b17aa22b3c3c2df85f97fe809e5b189",
+      "last_modified": 1767117334,
+      "size": 55
+    },
+    "./codefetch/src-all.md": {
+      "path": "./codefetch/src-all.md",
+      "hash": "1d9eaa6c5630c611cbddf9ba92f039daa2338c9df91303b8c536b25a3b21d991",
+      "last_modified": 1767114333,
+      "size": 26840
+    },
+    "./package.json": {
+      "path": "./package.json",
+      "hash": "139c87838f5c26c6e37ece59f5d9145c134287075e1b4277e95a74192fb448bb",
+      "last_modified": 1767121956,
+      "size": 603
+    },
+    "./pyproject.toml": {
+      "path": "./pyproject.toml",
+      "hash": "36e16ae4a9041de8b7274540598900b7d8aaa3877e9e6adfc3a99ee78c9772ee",
+      "last_modified": 1767117264,
+      "size": 757
+    },
+    "./todo-lmstxt.md": {
+      "path": "./todo-lmstxt.md",
+      "hash": "2dfbddfbf242b89f2ba7b389ee73a14e53d60390582e669110390cbf8fc5c5fa",
+      "last_modified": 1767118711,
+      "size": 1278
+    },
+    "./codefetch/src.md": {
+      "path": "./codefetch/src.md",
+      "hash": "e39bd987b4775ede8c5a5dc0e54e8d3c4e6f7c00f139a058a32d9fd7a9efe4df",
+      "last_modified": 1767121771,
+      "size": 13109
+    },
+    "./llms_txt_registry.egg-info/dependency_links.txt": {
+      "path": "./llms_txt_registry.egg-info/dependency_links.txt",
+      "hash": "295192ea1ec8566d563b1a7587e5f0198580cdbd043842f5090a4c197c20c67a",
+      "last_modified": 1767117334,
+      "size": 1
+    },
+    "./codefetch/src-docs.md": {
+      "path": "./codefetch/src-docs.md",
+      "hash": "df81476240236fce9dca35f077b3f1718d517d03f7f48c75c39ec7a3911754d9",
+      "last_modified": 1767121995,
+      "size": 22916
+    }
+  },
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "embedding_dimensions": 384,
+  "chunk_hash_version": 2
+}

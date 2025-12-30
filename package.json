@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "code": "codefetch -t 5 -o src.md --exclude-dir docs,.gemini,.cursor,.pytest_cache,.clinerules,.taskmaster --max-tokens 5000 --token-limiter truncated",
+    "code": "codefetch -t 5 --include-dir src --exclude-dir docs,.gemini,.cursor,.pytest_cache,.clinerules,.taskmaster --max-tokens 5000 --token-limiter truncated -o src.md",
+    "coded": "codefetch -t 5 --include-dir docs --max-tokens 5000 --token-limiter truncated -o src-docs.md",
     "code:gem": "codefetch -t 5 --include-dir .gemini/commands/tm -o gemini-commands.md",
     "codea": "codefetch -t 5 -o src-all.md"
   },

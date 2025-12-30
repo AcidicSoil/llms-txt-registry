@@ -1,407 +1,30 @@
 <filetree>
 Project Structure:
-├── .github
-│   └── workflows
-│       └── lint.yml
-├── scripts
-│   ├── refresh.py
-│   └── setup_hooks.sh
-├── src
-│   ├── artifact_ingest
-│   │   ├── __init__.py
-│   │   ├── index.py
-│   │   └── ingest.py
-│   ├── generator_runner
-│   │   ├── __init__.py
-│   │   └── runner.py
-│   ├── git_sync
-│   │   ├── __init__.py
-│   │   └── status.py
-│   ├── registry_config
-│   │   ├── __init__.py
-│   │   ├── loader.py
-│   │   └── models.py
-│   ├── reporting
-│   │   ├── __init__.py
-│   │   └── report.py
-│   └── __init__.py
-├── tests
-│   ├── test_index.py
-│   ├── test_ingest.py
-│   ├── test_registry_config.py
-│   ├── test_reporting.py
-│   └── test_runner.py
-├── .browser-echo-mcp.json
-├── package.json
-├── requirements.txt
-└── sources.json
+└── src
+    ├── artifact_ingest
+    │   ├── __init__.py
+    │   ├── index.py
+    │   └── ingest.py
+    ├── generator_runner
+    │   ├── __init__.py
+    │   └── runner.py
+    ├── git_sync
+    │   ├── __init__.py
+    │   └── status.py
+    ├── registry_config
+    │   ├── __init__.py
+    │   ├── loader.py
+    │   └── models.py
+    ├── reporting
+    │   ├── __init__.py
+    │   └── report.py
+    └── __init__.py
 
 </filetree>
 
 <source_code>
-.browser-echo-mcp.json
-```
-{"url":"http://127.0.0.1:46529","route":"/__client-logs","timestamp":1767113585963,"pid":20681}
-```
-
-package.json
-```
-{
-  "name": "llms-txt-registry",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "code": "codefetch -t 5 -o src.md --exclude-dir docs,.gemini,.cursor,.pytest_cache,.clinerules,.taskmaster --max-tokens 5000 --token-limiter truncated",
-    "code:gem": "codefetch -t 5 --include-dir .gemini/commands/tm -o gemini-commands.md"
-  },
-  "devDependencies": {
-    "codefetch": "^2.2.0"
-  },
-  "packageManager": "pnpm@10.25.0"
-}
-```
-
-requirements.txt
-```
-pydantic>=2.0
-```
-
-sources.json
-```
-{
-  "version": "1.0",
-  "profiles": {
-    "default": {
-      "name": "default",
-      "timeout": 300
-    }
-  },
-  "sources": [
-    {
-      "id": "tanstack-router",
-      "url": "https://github.com/tanstack/router",
-      "type": "repo",
-      "profile": "default"
-    },
-    {
-      "id": "supabase",
-      "url": "https://github.com/supabase/supabase",
-      "type": "repo",
-      "profile": "default"
-    }
-  ]
-}
-```
-
 src/__init__.py
 ```
-```
-
-scripts/refresh.py
-```
-#!/usr/bin/env python3
-import argparse
-import sys
-import os
-import uuid
-import logging
-from pathlib import Path
-
-# Ensure src is in path
-sys.path.append(str(Path(__file__).parent.parent))
-
-from src.registry_config.loader import load_manifest, save_manifest
-from src.reporting.report import RunReport, SourceResult
-from src.generator_runner.runner import GeneratorRunner
-from src.artifact_ingest.ingest import ingest_artifacts
-from src.artifact_ingest.index import generate_registry_index
-from src.git_sync.status import check_stale_artifacts
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-logger = logging.getLogger("refresh")
-
-def main():
-    parser = argparse.ArgumentParser(description="Refresh the llms-txt registry artifacts.")
-    parser.add_argument("--manifest", default="sources.json", help="Path to sources.json")
-    parser.add_argument("--docs-root", default="docs", help="Path to docs directory")
-    parser.add_argument("--only", help="Only refresh a specific source ID")
-    parser.add_argument("--api-base", default="http://localhost:1234/v1", help="LM Studio API base")
-    parser.add_argument("--check", action="store_true", help="Only check for stale artifacts and exit")
-    
-    args = parser.parse_args()
-
-    if args.check:
-[TRUNCATED]
-```
-
-scripts/setup_hooks.sh
-```
-#!/bin/bash
-HOOK_FILE=".git/hooks/pre-push"
-
-echo "Installing pre-push hook..."
-
-cat <<EOF > "$HOOK_FILE"
-#!/bin/bash
-# Task Master Registry - Pre-push Hook
-# Validates that artifacts are updated if sources.json changed.
-
-python3 scripts/refresh.py --check
-RESULT=\$?
-
-if [ \$RESULT -ne 0 ]; then
-  echo "Error: Stale artifacts detected. Please run 'scripts/refresh.py' and commit the changes before pushing."
-  exit 1
-fi
-
-exit 0
-EOF
-
-chmod +x "$HOOK_FILE"
-echo "Hook installed successfully at $HOOK_FILE"
-```
-
-tests/test_index.py
-```
-import json
-from pathlib import Path
-from src.artifact_ingest.index import generate_registry_index
-
-def test_generate_index(tmp_path):
-    docs_root = tmp_path / "docs"
-    docs_root.mkdir()
-    
-    # Source 1 with artifacts and metadata
-    src1 = docs_root / "src1"
-    src1.mkdir()
-    (src1 / "llms.txt").touch()
-    (src1 / "metadata.json").write_text(json.dumps({"model_used": "gpt-4"}))
-    
-    # Source 2 with artifacts only
-    src2 = docs_root / "src2"
-    src2.mkdir()
-    (src2 / "foo-llms.txt").touch()
-    
-    # Source 3 empty
-    (docs_root / "src3").mkdir()
-    
-    index = generate_registry_index(docs_root)
-    
-    assert len(index) == 2
-    
-    s1 = next(s for s in index if s["id"] == "src1")
-    assert s1["model_used"] == "gpt-4"
-    assert "src1/llms.txt" in s1["artifacts"]
-    
-    s2 = next(s for s in index if s["id"] == "src2")
-    assert "src2/foo-llms.txt" in s2["artifacts"]
-    assert "model_used" not in s2
-    
-    assert (docs_root / "index.json").exists()
-```
-
-tests/test_ingest.py
-```
-import json
-from pathlib import Path
-from src.artifact_ingest.ingest import ingest_artifacts
-
-def test_ingest_artifacts(tmp_path):
-    # Setup source dir
-    temp_dir = tmp_path / "temp"
-    temp_dir.mkdir()
-    artifact = temp_dir / "foo-llms.txt"
-    artifact.write_bytes(b"Hello\r\nWorld") # CRLF
-    
-    docs_root = tmp_path / "docs"
-    docs_root.mkdir()
-    
-    ingested = ingest_artifacts("test-src", temp_dir, docs_root, model_used="gpt-4")
-    
-    # Check location
-    target_file = docs_root / "test-src" / "foo-llms.txt"
-    assert target_file.exists()
-    assert str(target_file.relative_to(docs_root)) in ingested
-    
-    # Check normalization
-    assert target_file.read_bytes() == b"Hello\nWorld"
-    
-    # Check metadata
-    meta_file = docs_root / "test-src" / "metadata.json"
-    assert meta_file.exists()
-    meta = json.loads(meta_file.read_text())
-    assert meta["source_id"] == "test-src"
-    assert meta["model_used"] == "gpt-4"
-    assert len(meta["artifacts"]) == 1
-```
-
-tests/test_registry_config.py
-```
-import pytest
-from pathlib import Path
-import json
-from src.registry_config.models import Manifest, Source, GeneratorProfile
-from src.registry_config.loader import load_manifest
-from pydantic import ValidationError
-
-def test_source_validation_slug():
-    # Valid slug
-    s = Source(id="valid-slug", url="https://example.com")
-    assert s.id == "valid-slug"
-
-    # Invalid slug (uppercase)
-    with pytest.raises(ValidationError):
-        Source(id="Invalid-Slug", url="https://example.com")
-
-    # Invalid slug (spaces)
-    with pytest.raises(ValidationError):
-        Source(id="invalid slug", url="https://example.com")
-
-def test_manifest_duplicate_ids():
-    sources = [
-        Source(id="s1", url="https://a.com"),
-        Source(id="s1", url="https://b.com")
-    ]
-    with pytest.raises(ValidationError) as exc:
-        Manifest(sources=sources)
-    assert "Duplicate source IDs" in str(exc.value)
-
-def test_load_manifest(tmp_path):
-    manifest_file = tmp_path / "sources.json"
-    data = {
-        "version": "1.0",
-        "profiles": {
-            "default": {"name": "default", "timeout": 60}
-        },
-        "sources": [
-            {"id": "test-source", "url": "https://example.com", "profile": "default"}
-        ]
-    }
-    manifest_file.write_text(json.dumps(data))
-    
-    manifest = load_manifest(str(manifest_file))
-    assert len(manifest.sources) == 1
-    assert manifest.sources[0].id == "test-source"
-[TRUNCATED]
-```
-
-tests/test_reporting.py
-```
-import json
-from pathlib import Path
-from src.reporting.report import RunReport, SourceResult
-
-def test_report_lifecycle():
-    report = RunReport(run_id="test-run")
-    assert report.start_time > 0
-    assert report.end_time is None
-    
-    result = SourceResult(id="s1", status="success", duration=1.5)
-    report.record_result(result)
-    
-    assert report.summary["success"] == 1
-    assert report.results["s1"] == result
-    
-    report.finalize()
-    assert report.end_time >= report.start_time
-
-def test_atomic_write(tmp_path):
-    report_file = tmp_path / "report.json"
-    report = RunReport(run_id="test-run")
-    report.record_result(SourceResult(id="s1", status="success", duration=1.0))
-    report.finalize()
-    
-    report.to_json(str(report_file))
-    
-    assert report_file.exists()
-    content = json.loads(report_file.read_text())
-    assert content["run_id"] == "test-run"
-    assert content["summary"]["success"] == 1
-```
-
-tests/test_runner.py
-```
-import subprocess
-import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
-from src.generator_runner.runner import GeneratorRunner
-from src.registry_config.models import Source
-
-@patch("subprocess.run")
-def test_runner_success(mock_run, tmp_path):
-    runner = GeneratorRunner(output_root=tmp_path)
-    source = Source(id="test-src", url="https://github.com/test/repo")
-    
-    # Mock successful result
-    mock_result = MagicMock()
-    mock_result.returncode = 0
-    mock_result.stdout = "Success"
-    mock_run.return_value = mock_result
-    
-    # Create fake artifact
-    (tmp_path / "temp_work" / "test-src").mkdir(parents=True)
-    (tmp_path / "temp_work" / "test-src" / "test-llms.txt").touch()
-    
-    result = runner.run_source(source)
-    
-    assert result["status"] == "success"
-    assert "test-llms.txt" in result["artifacts"][0]
-    
-    # Verify command structure
-    args, kwargs = mock_run.call_args
-    cmd = args[0]
-    assert cmd[0] == "lmstudio-llmstxt"
-    assert cmd[1] == "https://github.com/test/repo"
-    assert "--output-dir" in cmd
-    assert "--stamp" in cmd
-
-@patch("subprocess.run")
-def test_runner_failure(mock_run, tmp_path):
-    runner = GeneratorRunner(output_root=tmp_path)
-[TRUNCATED]
-```
-
-.github/workflows/lint.yml
-```
-name: Lint and Validate
-
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
-
-    - name: Run Unit Tests
-      run: |
-        PYTHONPATH=. pytest tests/
-
-    - name: Validate sources.json
-      run: |
-        python3 -c "from src.registry_config.loader import load_manifest; load_manifest('sources.json'); print('Manifest valid.')"
-
-    - name: Verify Directory Structure
-      run: |
-        if [ ! -d "docs" ]; then echo "docs/ directory missing"; exit 1; fi
-        if [ ! -d "src" ]; then echo "src/ directory missing"; exit 1; fi
-        if [ ! -f "scripts/refresh.py" ]; then echo "refresh script missing"; exit 1; fi
 ```
 
 src/artifact_ingest/__init__.py
@@ -452,7 +75,17 @@ def generate_registry_index(docs_root: Path, output_path: Path = None):
         
         source_data["artifacts"] = sorted(list(found_artifacts))
             
-[TRUNCATED]
+        if source_data["artifacts"]:
+            index.append(source_data)
+            
+    if output_path is None:
+        output_path = docs_root / "index.json"
+        
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(index, f, indent=2)
+        f.write("\n")
+        
+    return index
 ```
 
 src/artifact_ingest/ingest.py
@@ -498,57 +131,11 @@ def ingest_artifacts(
         "artifacts": ingested_files
     }
     
-[TRUNCATED]
-```
-
-src/generator_runner/__init__.py
-```
-```
-
-src/generator_runner/runner.py
-```
-import subprocess
-import os
-import time
-import logging
-from pathlib import Path
-from typing import Optional, List, Dict
-from ..registry_config.models import Source, GeneratorProfile
-
-logger = logging.getLogger(__name__)
-
-class GeneratorRunner:
-    def __init__(self, output_root: Path, api_base: str = "http://localhost:1234/v1"):
-        self.output_root = output_root
-        self.api_base = api_base
-
-    def run_source(self, source: Source, profile: Optional[GeneratorProfile] = None) -> Dict[str, any]:
-        """Execute the lmstudio-llmstxt CLI for a single source."""
-        start_time = time.time()
+    with (target_dir / "metadata.json").open("w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+        f.write("\n")
         
-        # Determine model
-        model = source.last_model_used or (profile.model if profile else None)
-        
-        # Prepare command
-        cmd = ["lmstudio-llmstxt", str(source.url)]
-        
-        # We target a temporary output directory inside the root for isolation
-        temp_out = self.output_root / "temp_work" / source.id
-        temp_out.mkdir(parents=True, exist_ok=True)
-        
-        cmd.extend(["--output-dir", str(temp_out)])
-        
-        if model:
-            cmd.extend(["--model", model])
-        
-        if self.api_base:
-            cmd.extend(["--api-base", self.api_base])
-            
-        cmd.append("--stamp") # Always stamp for registry
-        
-        # Set environment variables (e.g. for CTX generation)
-        env = os.environ.copy()
-[TRUNCATED]
+    return ingested_files
 ```
 
 src/git_sync/__init__.py
@@ -590,6 +177,102 @@ def check_stale_artifacts(manifest_path: str = "sources.json", docs_root: str = 
         if not docs_changes:
             return True # Stale
     return False
+```
+
+src/generator_runner/__init__.py
+```
+```
+
+src/generator_runner/runner.py
+```
+import subprocess
+import os
+import time
+import logging
+from pathlib import Path
+from typing import Optional, List, Dict
+from ..registry_config.models import Source, GeneratorProfile
+
+logger = logging.getLogger(__name__)
+
+class GeneratorRunner:
+    def __init__(self, output_root: Path, api_base: str = "http://localhost:1234/v1"):
+        self.output_root = output_root
+        self.api_base = api_base
+
+    def run_source(self, source: Source, profile: Optional[GeneratorProfile] = None) -> Dict[str, any]:
+        """Execute the lmstxt CLI for a single source."""
+        start_time = time.time()
+        
+        # Determine model
+        model = source.last_model_used or (profile.model if profile else None)
+        
+        # Prepare command - UPDATED to use 'lmstxt'
+        cmd = ["lmstxt", str(source.url)]
+        
+        # We target a temporary output directory inside the root for isolation
+        temp_out = self.output_root / "temp_work" / source.id
+        temp_out.mkdir(parents=True, exist_ok=True)
+        
+        cmd.extend(["--output-dir", str(temp_out)])
+        
+        if model:
+            cmd.extend(["--model", model])
+        
+        if self.api_base:
+            cmd.extend(["--api-base", self.api_base])
+            
+        cmd.append("--stamp") # Always stamp for registry
+        
+        # Set environment variables (e.g. for CTX generation)
+        env = os.environ.copy()
+        env["ENABLE_CTX"] = "1" 
+        
+        try:
+            logger.info(f"Executing: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                env=env,
+                timeout=profile.timeout if profile else 300
+            )
+            
+            duration = time.time() - start_time
+            
+            if result.returncode == 0:
+                # Success - scan for generated artifacts
+                artifacts = [str(p.relative_to(temp_out)) for p in temp_out.glob("**/*-llms*.txt")]
+                return {
+                    "status": "success",
+                    "duration": duration,
+                    "artifacts": artifacts,
+                    "temp_dir": temp_out,
+                    "stdout": result.stdout,
+                    "model_used": model
+                }
+            else:
+                return {
+                    "status": "failure",
+                    "duration": duration,
+                    "error": result.stderr or result.stdout,
+                    "temp_dir": temp_out
+                }
+                
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "failure",
+                "duration": time.time() - start_time,
+                "error": "Execution timed out",
+                "temp_dir": temp_out
+            }
+        except Exception as e:
+            return {
+                "status": "failure",
+                "duration": time.time() - start_time,
+                "error": str(e),
+                "temp_dir": temp_out
+            }
 ```
 
 src/registry_config/__init__.py
@@ -646,7 +329,30 @@ class Source(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Categorization tags")
     
     # Metadata fields (updated during refresh)
-[TRUNCATED]
+    last_refreshed: Optional[str] = Field(default=None, description="ISO 8601 timestamp of last successful refresh")
+    last_model_used: Optional[str] = Field(default=None, description="Model used for the last generation")
+
+    @field_validator('id')
+    @classmethod
+    def validate_slug(cls, v: str) -> str:
+        if not SLUG_REGEX.match(v):
+            raise ValueError(f"ID '{v}' must be a URL-safe slug (lowercase alphanumeric with hyphens)")
+        return v
+
+class Manifest(BaseModel):
+    version: str = Field(default="1.0", description="Manifest schema version")
+    profiles: Dict[str, GeneratorProfile] = Field(default_factory=dict, description="Shared generator profiles")
+    sources: List[Source] = Field(default_factory=list, description="List of documentation sources")
+
+    @field_validator('sources')
+    @classmethod
+    def validate_unique_ids(cls, v: List[Source]) -> List[Source]:
+        ids = [s.id for s in v]
+        if len(ids) != len(set(ids)):
+            from collections import Counter
+            duplicates = [item for item, count in Counter(ids).items() if count > 1]
+            raise ValueError(f"Duplicate source IDs found: {duplicates}")
+        return v
 ```
 
 src/reporting/__init__.py
@@ -696,7 +402,10 @@ class RunReport:
         dir_name = target_path.parent
         with tempfile.NamedTemporaryFile("w", dir=str(dir_name) if dir_name.name else ".", delete=False, encoding="utf-8") as tmp:
             json.dump(data, tmp, indent=2)
-[TRUNCATED]
+            tmp.write("\n")
+            tmp_path = Path(tmp.name)
+            
+        os.replace(tmp_path, target_path)
 ```
 
 </source_code>

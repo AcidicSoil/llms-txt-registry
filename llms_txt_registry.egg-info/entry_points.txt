@@ -1,0 +1,2 @@
+[console_scripts]
+llms-registry = scripts.refresh:main
