@@ -31,7 +31,6 @@ Project Structure:
 │   ├── test_registry_config.py
 │   ├── test_reporting.py
 │   └── test_runner.py
-├── .browser-echo-mcp.json
 ├── GitMCP-usage-example.md
 ├── package.json
 ├── requirements.txt
@@ -40,11 +39,6 @@ Project Structure:
 </filetree>
 
 <source_code>
-.browser-echo-mcp.json
-```
-{"url":"http://127.0.0.1:36823","route":"/__client-logs","timestamp":1767042908585,"pid":269479}
-```
-
 GitMCP-usage-example.md
 ```
 ---
@@ -145,6 +139,7 @@ def main():
     
     args = parser.parse_args()
 
+    if args.check:
 [TRUNCATED]
 ```
 
@@ -299,6 +294,7 @@ def test_load_manifest(tmp_path):
     
     manifest = load_manifest(str(manifest_file))
     assert len(manifest.sources) == 1
+    assert manifest.sources[0].id == "test-source"
 [TRUNCATED]
 ```
 
@@ -467,6 +463,8 @@ def generate_registry_index(docs_root: Path, output_path: Path = None):
             for artifact in source_dir.glob(pattern):
                 found_artifacts.add(str(artifact.relative_to(docs_root)))
         
+        source_data["artifacts"] = sorted(list(found_artifacts))
+            
 [TRUNCATED]
 ```
 
@@ -562,6 +560,7 @@ class GeneratorRunner:
         cmd.append("--stamp") # Always stamp for registry
         
         # Set environment variables (e.g. for CTX generation)
+        env = os.environ.copy()
 [TRUNCATED]
 ```
 
@@ -709,6 +708,7 @@ class RunReport:
         # Atomic write: write to temp file then rename
         dir_name = target_path.parent
         with tempfile.NamedTemporaryFile("w", dir=str(dir_name) if dir_name.name else ".", delete=False, encoding="utf-8") as tmp:
+            json.dump(data, tmp, indent=2)
 [TRUNCATED]
 ```
 
