@@ -9,3 +9,6 @@ refresh-report.json
 node_modules/
 .archived
 artifacts/
+.ck/
+.clinerules/
+
