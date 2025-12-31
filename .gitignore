@@ -8,3 +8,4 @@ refresh-report.json
 .venv/
 node_modules/
 .archived
+artifacts/
