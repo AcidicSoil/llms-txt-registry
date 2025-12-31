@@ -6,6 +6,7 @@ llms_txt_registry.egg-info/dependency_links.txt
 llms_txt_registry.egg-info/entry_points.txt
 llms_txt_registry.egg-info/requires.txt
 llms_txt_registry.egg-info/top_level.txt
+scripts/populate_manifest.py
 scripts/refresh.py
 src/__init__.py
 src/artifact_ingest/__init__.py
