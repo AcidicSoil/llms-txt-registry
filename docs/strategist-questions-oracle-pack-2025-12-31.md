@@ -12,8 +12,8 @@
 - deadline: Unknown
 - out_dir: docs/oracle/strategist-questions/2025-12-31
 - oracle_cmd: oracle
-- oracle_flags: --browser-attachments always --files-report
-- extra_files: 
+- oracle_flags:  --files-report
+- extra_files:
 
 ---
 
@@ -24,7 +24,7 @@ out_dir="docs/oracle/strategist-questions/2025-12-31"
 mkdir -p "$out_dir"
 
 # 01) ROI=4.5 impact=0.9 confidence=1.0 effort=0.2 horizon=Immediate category=invariants reference=src/artifact_ingest/ingest.py
-oracle --browser-attachments always --files-report --write-output "$out_dir/01-invariants-ingest.md" -p "Strategist question #01
+oracle  --files-report --write-output "$out_dir/01-invariants-ingest.md" -p "Strategist question #01
 Reference: src/artifact_ingest/ingest.py
 Category: invariants
 Horizon: Immediate
@@ -39,10 +39,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py" -f "src/artifact_ingest/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py" -f "src/artifact_ingest/__init__.py"
 
 # 02) ROI=4.0 impact=0.8 confidence=1.0 effort=0.2 horizon=Immediate category=failure modes reference=src/artifact_ingest/ingest.py
-oracle --browser-attachments always --files-report --write-output "$out_dir/02-failure-modes-network.md" -p "Strategist question #02
+oracle  --files-report --write-output "$out_dir/02-failure-modes-network.md" -p "Strategist question #02
 Reference: src/artifact_ingest/ingest.py
 Category: failure modes
 Horizon: Immediate
@@ -57,10 +57,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py"
 
 # 03) ROI=3.5 impact=0.7 confidence=1.0 effort=0.2 horizon=Immediate category=contracts/interfaces reference=sources.json
-oracle --browser-attachments always --files-report --write-output "$out_dir/03-contracts-sources.md" -p "Strategist question #03
+oracle  --files-report --write-output "$out_dir/03-contracts-sources.md" -p "Strategist question #03
 Reference: sources.json
 Category: contracts/interfaces
 Horizon: Immediate
@@ -75,10 +75,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "sources.json" -f "src/registry_config/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "sources.json" -f "src/registry_config/__init__.py"
 
 # 04) ROI=3.2 impact=0.8 confidence=0.8 effort=0.2 horizon=Immediate category=caching/state reference=src/git_sync
-oracle --browser-attachments always --files-report --write-output "$out_dir/04-caching-git.md" -p "Strategist question #04
+oracle  --files-report --write-output "$out_dir/04-caching-git.md" -p "Strategist question #04
 Reference: src/git_sync
 Category: caching/state
 Horizon: Immediate
@@ -93,10 +93,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/git_sync/__init__.py" -f "pyproject.toml" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/git_sync/__init__.py" -f "pyproject.toml"
 
 # 05) ROI=3.0 impact=0.6 confidence=1.0 effort=0.2 horizon=Immediate category=UX flows reference=pyproject.toml
-oracle --browser-attachments always --files-report --write-output "$out_dir/05-ux-entrypoint.md" -p "Strategist question #05
+oracle  --files-report --write-output "$out_dir/05-ux-entrypoint.md" -p "Strategist question #05
 Reference: pyproject.toml
 Category: UX flows
 Horizon: Immediate
@@ -111,10 +111,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "pyproject.toml" -f "src/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "pyproject.toml" -f "src/__init__.py"
 
 # 06) ROI=2.8 impact=0.7 confidence=0.8 effort=0.2 horizon=Immediate category=observability reference=src/reporting
-oracle --browser-attachments always --files-report --write-output "$out_dir/06-observability-metrics.md" -p "Strategist question #06
+oracle  --files-report --write-output "$out_dir/06-observability-metrics.md" -p "Strategist question #06
 Reference: src/reporting
 Category: observability
 Horizon: Immediate
@@ -129,10 +129,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py"
 
 # 07) ROI=2.7 impact=0.8 confidence=0.7 effort=0.3 horizon=Immediate category=background jobs reference=src/generator_runner
-oracle --browser-attachments always --files-report --write-output "$out_dir/07-background-jobs-runner.md" -p "Strategist question #07
+oracle  --files-report --write-output "$out_dir/07-background-jobs-runner.md" -p "Strategist question #07
 Reference: src/generator_runner
 Category: background jobs
 Horizon: Immediate
@@ -147,10 +147,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py"
 
 # 08) ROI=2.4 impact=0.6 confidence=0.8 effort=0.2 horizon=Strategic category=permissions reference=src/git_sync
-oracle --browser-attachments always --files-report --write-output "$out_dir/08-permissions-auth.md" -p "Strategist question #08
+oracle  --files-report --write-output "$out_dir/08-permissions-auth.md" -p "Strategist question #08
 Reference: src/git_sync
 Category: permissions
 Horizon: Strategic
@@ -165,10 +165,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/git_sync/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/git_sync/__init__.py"
 
 # 09) ROI=2.2 impact=0.5 confidence=0.9 effort=0.2 horizon=Immediate category=feature flags reference=src/registry_config
-oracle --browser-attachments always --files-report --write-output "$out_dir/09-feature-flags-config.md" -p "Strategist question #09
+oracle  --files-report --write-output "$out_dir/09-feature-flags-config.md" -p "Strategist question #09
 Reference: src/registry_config
 Category: feature flags
 Horizon: Immediate
@@ -183,10 +183,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json"
 
 # 10) ROI=2.0 impact=0.6 confidence=0.7 effort=0.3 horizon=Immediate category=migrations reference=src/registry_config
-oracle --browser-attachments always --files-report --write-output "$out_dir/10-migrations-versioning.md" -p "Strategist question #10
+oracle  --files-report --write-output "$out_dir/10-migrations-versioning.md" -p "Strategist question #10
 Reference: src/registry_config
 Category: migrations
 Horizon: Immediate
@@ -201,10 +201,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json"
 
 # 11) ROI=1.9 impact=0.5 confidence=0.8 effort=0.3 horizon=Strategic category=observability reference=src/reporting
-oracle --browser-attachments always --files-report --write-output "$out_dir/11-observability-tracing.md" -p "Strategist question #11
+oracle  --files-report --write-output "$out_dir/11-observability-tracing.md" -p "Strategist question #11
 Reference: src/reporting
 Category: observability
 Horizon: Strategic
@@ -219,10 +219,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py"
 
 # 12) ROI=1.8 impact=0.6 confidence=0.6 effort=0.2 horizon=Strategic category=caching/state reference=src/artifact_ingest
-oracle --browser-attachments always --files-report --write-output "$out_dir/12-caching-content.md" -p "Strategist question #12
+oracle  --files-report --write-output "$out_dir/12-caching-content.md" -p "Strategist question #12
 Reference: src/artifact_ingest
 Category: caching/state
 Horizon: Strategic
@@ -237,10 +237,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/artifact_ingest/ingest.py"
 
 # 13) ROI=1.7 impact=0.5 confidence=0.7 effort=0.2 horizon=Immediate category=failure modes reference=src/generator_runner
-oracle --browser-attachments always --files-report --write-output "$out_dir/13-failure-modes-output.md" -p "Strategist question #13
+oracle  --files-report --write-output "$out_dir/13-failure-modes-output.md" -p "Strategist question #13
 Reference: src/generator_runner
 Category: failure modes
 Horizon: Immediate
@@ -255,10 +255,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py"
 
 # 14) ROI=1.6 impact=0.5 confidence=0.6 effort=0.3 horizon=Strategic category=UX flows reference=src/reporting
-oracle --browser-attachments always --files-report --write-output "$out_dir/14-ux-errors.md" -p "Strategist question #14
+oracle  --files-report --write-output "$out_dir/14-ux-errors.md" -p "Strategist question #14
 Reference: src/reporting
 Category: UX flows
 Horizon: Strategic
@@ -273,10 +273,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/reporting/__init__.py"
 
 # 15) ROI=1.5 impact=0.6 confidence=0.5 effort=0.3 horizon=Strategic category=background jobs reference=src/generator_runner
-oracle --browser-attachments always --files-report --write-output "$out_dir/15-jobs-concurrency.md" -p "Strategist question #15
+oracle  --files-report --write-output "$out_dir/15-jobs-concurrency.md" -p "Strategist question #15
 Reference: src/generator_runner
 Category: background jobs
 Horizon: Strategic
@@ -291,10 +291,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py"
 
 # 16) ROI=1.4 impact=0.4 confidence=0.7 effort=0.2 horizon=Strategic category=contracts/interfaces reference=src/generator_runner
-oracle --browser-attachments always --files-report --write-output "$out_dir/16-contracts-output.md" -p "Strategist question #16
+oracle  --files-report --write-output "$out_dir/16-contracts-output.md" -p "Strategist question #16
 Reference: src/generator_runner
 Category: contracts/interfaces
 Horizon: Strategic
@@ -309,10 +309,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py"
 
 # 17) ROI=1.3 impact=0.4 confidence=0.6 effort=0.3 horizon=Strategic category=invariants reference=src/registry_config
-oracle --browser-attachments always --files-report --write-output "$out_dir/17-invariants-duplication.md" -p "Strategist question #17
+oracle  --files-report --write-output "$out_dir/17-invariants-duplication.md" -p "Strategist question #17
 Reference: src/registry_config
 Category: invariants
 Horizon: Strategic
@@ -327,10 +327,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/registry_config/__init__.py" -f "sources.json"
 
 # 18) ROI=1.2 impact=0.3 confidence=0.8 effort=0.2 horizon=Strategic category=feature flags reference=src/__init__.py
-oracle --browser-attachments always --files-report --write-output "$out_dir/18-feature-flags-experimental.md" -p "Strategist question #18
+oracle  --files-report --write-output "$out_dir/18-feature-flags-experimental.md" -p "Strategist question #18
 Reference: src/__init__.py
 Category: feature flags
 Horizon: Strategic
@@ -345,10 +345,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/__init__.py"
 
 # 19) ROI=1.1 impact=0.4 confidence=0.5 effort=0.4 horizon=Strategic category=migrations reference=src/generator_runner
-oracle --browser-attachments always --files-report --write-output "$out_dir/19-migrations-rebuild.md" -p "Strategist question #19
+oracle  --files-report --write-output "$out_dir/19-migrations-rebuild.md" -p "Strategist question #19
 Reference: src/generator_runner
 Category: migrations
 Horizon: Strategic
@@ -363,10 +363,10 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/generator_runner/__init__.py"
 
 # 20) ROI=1.0 impact=0.3 confidence=0.5 effort=0.4 horizon=Strategic category=permissions reference=sources.json
-oracle --browser-attachments always --files-report --write-output "$out_dir/20-permissions-filesystem.md" -p "Strategist question #20
+oracle  --files-report --write-output "$out_dir/20-permissions-filesystem.md" -p "Strategist question #20
 Reference: sources.json
 Category: permissions
 Horizon: Strategic
@@ -381,7 +381,7 @@ Answer format:
 1) Direct answer (1–4 bullets, evidence-cited)
 2) Risks/unknowns (bullets)
 3) Next smallest concrete experiment (1 action)
-4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/__init__.py" 
+4) If evidence is insufficient, name the exact missing file/path pattern(s) to attach next." -f "src/__init__.py"
 ```
 
 ---
